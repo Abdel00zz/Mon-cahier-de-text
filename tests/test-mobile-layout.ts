@@ -13,12 +13,12 @@ test('les fenêtres Paramètres et Aide se serrent autour de leur contenu', () =
   const guideModal = read('src/features/guide/GuideModal.tsx');
   const modalMotion = read('src/components/ui/modal-motion.css');
   // Au-delà de 768 px, l’aide est un dialogue compact ; en dessous, le socle
-  // partagé la transforme en écran plein (une seule règle effective).
-  assert.match(guide, /width:\s*min\(94vw, 34rem\)/, 'l’aide garde un dialogue compact sur grand écran');
-  assert.match(guide, /max-height:\s*min\(80dvh, 42rem\)/, 'la hauteur du dialogue reste limitée');
-  assert.match(guide, /border-radius:\s*28px/, 'le dialogue desktop garde ses quatre coins arrondis');
+  // partagé la pose en carte flottante, avec presque toute la hauteur.
+  assert.match(guide, /width:\s*min\(92vw, 48rem\)/, 'l’aide garde un dialogue compact sur grand écran');
+  assert.match(guide, /height:\s*min\(78dvh, 42rem\)/, 'la hauteur du dialogue reste limitée');
+  assert.match(guide, /border-radius:\s*1\.5rem/, 'le dialogue desktop garde ses quatre coins arrondis');
   assert.match(guideModal, /mobilePresentation="dialog"/, 'l’aide utilise la présentation immersive du socle');
-  assert.match(modalMotion, /@media \(max-width: 767px\) \{[\s\S]*?width: 100% !important;/, 'le socle impose le plein écran sous 768 px');
+  assert.match(modalMotion, /@media \(max-width: 767px\) \{[\s\S]*?top: auto !important;[\s\S]*?border-radius: clamp\(1\.5rem, 7vw, 2rem\) !important;/, 'le socle pose les fenêtres en cartes flottantes sous 768 px');
 });
 
 test('le hub Paramètres se resserre sans perdre ses cibles tactiles', () => {
@@ -56,7 +56,10 @@ test('les cartes Paramètres partagent une seule surface neutre', () => {
 });
 
 test('les choix en modale reprennent les tuiles et boîtes d’icônes de la référence', () => {
-  const content = read('src/features/editor/modals/ContentModal.tsx');
+  const content = [
+    'src/features/editor/modals/ContentModal.tsx',
+    'src/features/editor/modals/ContentTypePicker.tsx',
+  ].map(read).join('\n');
   const contentStyles = read('src/features/editor/modals/paperFormModal.css');
   const evaluationStyles = read('src/features/evaluations/evaluationsResponsive.css');
   assert.equal((content.match(/className="grid grid-cols-2 gap-2\.5"/g) ?? []).length, 4,
@@ -73,9 +76,9 @@ test('les choix en modale reprennent les tuiles et boîtes d’icônes de la ré
 
 test('la grille d’emploi du temps et le dock s’adaptent aux téléphones 360–430 px', () => {
   const schedule = read('src/features/settings/components/schedule.css');
-  assert.match(schedule, /@media \(max-width: 480px\)[\s\S]*?\.schedule-grid \{ min-width: 26rem; \}/,
+  assert.match(schedule, /@media \(max-width: 480px\)[\s\S]*?\.schedule-grid \{ min-width: 32rem; \}/,
     'la grille garde des colonnes lisibles et défile horizontalement');
-  assert.match(schedule, /\.schedule-grid\[data-period='all'\] \{ min-width: 44rem; \}/);
+  assert.match(schedule, /\.schedule-grid\[data-period='all'\] \{ min-width: 52rem; \}/);
   const navigation = read('src/components/navigation/navigation.css');
   assert.match(navigation, /\.mobile-tab-bar\s*\{[^}]*position:\s*fixed;[^}]*left:\s*0; right:\s*0; bottom:\s*0;[^}]*width:\s*100%;/,
     'la barre reste fixe et pleine largeur sur le téléphone');

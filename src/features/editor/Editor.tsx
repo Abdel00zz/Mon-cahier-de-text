@@ -54,7 +54,7 @@ import { useNotebookDocumentPreviews } from './hooks/useNotebookDocumentPreviews
 import { DocumentPreview } from '@/components/documents/DocumentPreview';
 import { dateTimeFormat } from '@/lib/formatters';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/infrastructure/sync/syncBus';
-import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs, sessionPrintSignatures } from '@/infrastructure/printing/printMeta';
+import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs, sessionPrintSignatures, type PrintPrefs } from '@/infrastructure/printing/printMeta';
 import { toDisplayWarnings, validateSessionDate } from '@/domain/calendar/dateValidation';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '@/domain/curriculum/predefinedContent';
 import { PrintModal, PrintMode, PrintOptions } from './modals/PrintModal';
@@ -91,10 +91,22 @@ const DOCUMENT_UPDATED_FORMAT: Intl.DateTimeFormatOptions = {
     minute: '2-digit',
 };
 
+/** Valeur stable tant que la modale d'impression est fermée : aucune signature
+ *  de séance n'est calculée pendant la frappe. */
+const EMPTY_PRINT_STATS = {
+    totalDates: 0,
+    allDates: [] as string[],
+    newDates: [] as string[],
+    printedDates: [] as string[],
+    lastPrintedAt: null as string | null,
+    prefs: null as PrintPrefs | null,
+};
+
 export interface EditorProps {
     classInfo: ClassInfo;
     /** ouvre la page Paramètres (utilisé pour renseigner l'emploi du temps) */
     onOpenSettings?: () => void;
+    onOpenGuide?: () => void;
     /** retour aux classes */
     onBack?: () => void;
 }
@@ -113,7 +125,7 @@ type ActiveModal =
 
 
 
-export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings, onBack }) => {
+export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings, onOpenGuide, onBack }) => {
   const [workspaceIsActive] = useState(() => captureWorkspaceLease());
   const { t, locale } = useLocale();
   const { syncNow } = useSync();
@@ -938,8 +950,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   /*
    * Impression intelligente : la modale PrintModal montre ce qui a déjà été
    * imprimé (dates mémorisées par classe) et recommande le mode économique.
+   * Le calcul des signatures parcourt tout le cahier : il n'a de sens que
+   * lorsque la modale est ouverte. Le refaire à chaque sauvegarde pendant la
+   * frappe coûtait plusieurs millisecondes par édition sur un gros cahier.
    */
   const printStats = useMemo(() => {
+      if (activeModal !== 'print') return EMPTY_PRINT_STATS;
       const meta = readPrintMeta(classInfo.id);
       const allDates = collectSessionDates(lessonsData, absenceSessions);
       const newDates = getNewDates(lessonsData, classInfo.id, meta, absenceSessions, sessionAnnotationTexts);
@@ -952,7 +968,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           lastPrintedAt: meta.lastPrintedAt,
           prefs: meta.prefs ?? null,
       };
-  }, [classInfo.id, lessonsData, absenceSessions, sessionAnnotationTexts, printMetaVersion]);
+  }, [activeModal, classInfo.id, lessonsData, absenceSessions, sessionAnnotationTexts, printMetaVersion]);
 
   const handleSmartPrint = useCallback(() => {
       setEditorState(draft => { draft.activeModal = 'print'; });
@@ -1302,7 +1318,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         <div className="print-hidden flex flex-col flex-1">
           <Header
             classInfo={classInfo}
-            establishmentName={config.establishmentName}
             onClassInfoChange={handleClassInfoChange}
             onBack={onBack}
           />
@@ -1321,7 +1336,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
                   saveStatus={saveStatus}
                   onOpenDataTransfer={() => setEditorState(draft => { draft.activeModal = 'dataTransfer'; })}
                   onOpenManageLessons={() => setEditorState(draft => { draft.activeModal = 'manageLessons'; })}
-                  onOpenGuide={() => setEditorState(draft => { draft.activeModal = 'guide'; })}
+                  onOpenGuide={onOpenGuide ?? (() => setEditorState(draft => { draft.activeModal = 'guide'; }))}
                   onOpenAnalyse={() => setEditorState(draft => { draft.activeModal = 'analyse'; })}
                   onOpenEvaluations={() => {
                     persistCurrentData(false);

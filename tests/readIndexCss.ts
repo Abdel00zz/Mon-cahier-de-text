@@ -5,8 +5,11 @@ const STYLES_DIR = resolve('src/styles');
 
 const MODULAR_IMPORTS = new Set([
   './theme-tokens.css',
+  './theme-palette.css',
+  './theme-base.css',
   './editor-surface.css',
   './workspace-shell.css',
+  './settings-hubShell.css',
   './settings-hub.css',
   './class-tones.css',
   './document-sheet.css',

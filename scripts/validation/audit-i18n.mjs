@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const LOCALE_FILE = join(ROOT, 'src', 'i18n', 'messages.ts');
 const DOMAINS_DIR = join(ROOT, 'src', 'i18n', 'domains');
+const MESSAGES_DIR = join(ROOT, 'src', 'i18n', 'messages');
 
 const localeFiles = [
   LOCALE_FILE,
@@ -26,6 +27,16 @@ const extract = (name) => localeFiles.map((filePath) => {
   return end === -1 ? '' : content.slice(bodyStart, end);
 }).join('\n');
 
+/** Les tables découpées vivent dans messages/<locale>/*.ts (sans bloc fr/en/ar). */
+const splitPairs = (locale) => {
+  const directory = join(MESSAGES_DIR, locale);
+  if (!existsSync(directory)) return new Map();
+  return readdirSync(directory)
+    .filter(file => file.endsWith('.ts') && file !== 'index.ts')
+    .map(file => parsePairs(readFileSync(join(directory, file), 'utf8')))
+    .reduce((all, map) => new Map([...all, ...map]), new Map());
+};
+
 const decode = (s) => s.replace(/\\'/g, "'").replace(/\\n/g, '\n').replace(/\\\\/g, '\\');
 
 const parsePairs = (text) => {
@@ -40,9 +51,10 @@ const parsePairs = (text) => {
   return map;
 };
 
-const fr = parsePairs(extract('fr'));
-const en = parsePairs(extract('en'));
-const ar = parsePairs(extract('ar'));
+const merge = (split, domains) => new Map([...split, ...domains]);
+const fr = merge(splitPairs('fr'), parsePairs(extract('fr')));
+const en = merge(splitPairs('en'), parsePairs(extract('en')));
+const ar = merge(splitPairs('ar'), parsePairs(extract('ar')));
 
 // ---- (1) parité ----
 const onlyIn = (a, b, label) => [...a.keys()].filter((k) => !b.has(k)).map((k) => `${label} : ${k}`);

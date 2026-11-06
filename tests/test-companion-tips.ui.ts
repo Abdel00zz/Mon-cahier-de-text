@@ -29,7 +29,7 @@ test('tips disclose naturally with a source, a bold keyword and accessible nativ
     if (locale === 'ar') assert.match(html, /<q>/, 'published Arabic excerpts are marked as quotations');
     else assert.doesNotMatch(html, /<q>/, 'practical translations are not literal quotations');
     assert.match(html, /rel="noopener noreferrer"/);
-    assert.match(html, /type="button"/);
+    assert.doesNotMatch(html, /type="button"/, 'la tip ne charge pas un bouton supplémentaire');
     assert.doesNotMatch(html, /<h[1-6]|assistant-panel__close/);
   }
 });

@@ -25,12 +25,16 @@ export const useClassManager = () => {
         if (!workspaceIsActive() || typeof localStorage === 'undefined') return;
         try {
             const normalized = readStoredClasses();
+            const serialized = JSON.stringify(normalized);
             const raw = localStorage.getItem(CLASS_STORAGE_KEY);
-            if (raw !== null && raw !== JSON.stringify(normalized)) {
-                writeDurably(CLASS_STORAGE_KEY, JSON.stringify(normalized));
+            if (raw !== null && raw !== serialized) {
+                writeDurably(CLASS_STORAGE_KEY, serialized);
                 markClassesListDirty();
             }
-            setClasses(normalized);
+            // La valeur initiale vient déjà du même stockage : ne pas remplacer
+            // le tableau par une copie identique, sinon chaque montage paie un
+            // rendu supplémentaire de tout le tableau de bord.
+            setClasses(current => JSON.stringify(current) === serialized ? current : normalized);
         } catch (error) {
             // Un stockage corrompu reste récupérable : ne jamais le remplacer par [].
             logger.error('Local class initialization failed', error);

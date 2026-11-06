@@ -132,3 +132,10 @@ export const firstFreeGroup = (used: ReadonlySet<string>): string => {
   for (let number = 1; number <= 99; number++) if (!used.has(String(number))) return String(number);
   return '';
 };
+
+/** Premier palier proposé par l’onboarding et par la fiche de classe. */
+export const defaultSelectionForCycle = (cycle: Cycle): { groupKey: ClassLevelGroupKey; level: string } => {
+  if (cycle === 'college') return { groupKey: 'college', level: '1AC' };
+  if (cycle === 'prepa') return { groupKey: 'prepaFirst', level: '1re année MPSI' };
+  return { groupKey: 'common', level: 'Tronc Commun Scientifique' };
+};

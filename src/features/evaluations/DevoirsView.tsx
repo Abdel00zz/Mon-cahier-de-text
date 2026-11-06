@@ -3,7 +3,7 @@ import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
-import { AppConfig, ClassInfo, ClassEvaluationEntry, DevoirType, LessonsData, ManualAssessment, PedagogicalEvent } from '@/types';
+import { AppConfig, ClassInfo, ClassEvaluationEntry, LessonsData, PedagogicalEvent } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { getBundledCalendar, todayInMorocco } from '@/domain/calendar/calendar';
@@ -13,18 +13,16 @@ import { homeworkCorrectionDocumentId } from '@/domain/evaluations/homeworkIds';
 import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
 import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
 import './evaluationsResponsive.css';
+import './evaluationReferenceBase.css';
+import './evaluationReferenceCore.css';
 import './evaluationReference.css';
 import { ChevronDown } from 'lucide-react';
 import { ltrIsolate } from '@/lib/text/textDirection';
 import { ActionIcon } from './components/ActionIcon';
+import { EvaluationDate } from './components/EvaluationDate';
 import { useEvaluationNotebook } from './hooks/useEvaluationNotebook';
-import { useEvaluationConflictGuard } from './hooks/useEvaluationConflictGuard';
-import { assessmentSlot, eventSlot, evaluationSlots } from '@/domain/evaluations/evaluationConflicts';
 import { countHomeworkOutcomes } from '@/domain/evaluations/homeworkSubmissions';
-import { syncHomeworkCorrectionContent } from '@/domain/evaluations/homeworkCorrectionContent';
 import {
-  syncEventToNotebook,
-  syncAssessmentDateToNotebook,
   removeEventFromNotebook,
   removeAssessmentFromNotebook,
   removeHomeworkCorrectionFromNotebook,
@@ -38,8 +36,6 @@ import { PedagogicalEventsSection } from './components/PedagogicalEventsSection'
 import { DevoirsModals } from './components/DevoirsModals';
 import { KindGroupHeader } from './components/KindGroupHeader';
 import {
-  CalendarSheetVisual,
-  CorrectionCurveConnector,
   resolveSectionPanelVariant,
   SectionPanelGlyph,
 } from './components/SectionPanelBadge';
@@ -79,10 +75,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const { assessments } = useClassAssessments(selectedClass, effectiveConfig);
   const evaluationModals = useEvaluationModals();
   const {
-    editingAssessment,
-    setAbsencesFor, setOralFor, setSubmissionsFor, setDocumentFor, setStudentsFor, setManualEditorOpen,
-    setEditingAssessment,
-    setDeletingAssessment, setDeletingEvent, setEditingDateAssessment, setDeletingCorrection,
+    setAbsencesFor, setOralFor, setSubmissionsFor, setDocumentFor, setStudentsFor,
+    setDeletingAssessment, setDeletingEvent, setDeletingCorrection,
   } = evaluationModals;
   const actions = useEvaluationActions(classInfo.id, effectiveConfig, onConfigChange);
 
@@ -130,10 +124,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     [effectiveConfig.pedagogicalEvents, selectedClass]
   );
 
-  const conflictSlots = useMemo(() => evaluationSlots(activeLessons, assessments, pedagogicalEvents), [activeLessons, assessments, pedagogicalEvents]);
-  const conflictRevision = useMemo(() => ({ config, activeLessons }), [config, activeLessons]);
-  const conflicts = useEvaluationConflictGuard(conflictSlots, conflictRevision);
-
   // La direction décide, nature par nature, ce que la feuille propose (voir evaluationPolicy.ts).
   const policy = config.evaluationPolicy;
 
@@ -161,35 +151,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const eventsOfKind = (kind: EvaluationKind): PedagogicalEvent[] =>
     (kind.family === 'event' ? pedagogicalEvents.filter((event) => event.type === kind.type) : []);
 
-  const setAssessmentDate = (assessmentId: string, dateISO: string) => {
-    const targetAssessment = assessments.find(item => item.id === assessmentId);
-    if (targetAssessment) {
-      conflicts.run(assessmentSlot({ ...targetAssessment, dateISO }), () => {
-        const { lessons: nextLessons } = syncAssessmentDateToNotebook(
-          activeLessons,
-          {
-            id: targetAssessment.id,
-            type: targetAssessment.type,
-            num: targetAssessment.num,
-            dateISO,
-            label: targetAssessment.label,
-            clearIfEmpty: !dateISO,
-            entryKey: links.find(link => link.planned.id === assessmentId)?.entry?.key,
-          },
-          locale
-        );
-        commitNotebookChange(nextLessons, () => actions.setAssessmentDate(assessmentId, dateISO, targetAssessment.legacyId));
-      }, assessmentId);
-    }
-  };
-
-  const changeEventDate = (event: PedagogicalEvent, date: string, endDate?: string) => {
-    const next = { ...event, date, endDate: date && endDate && endDate >= date ? endDate : undefined };
-    conflicts.run(eventSlot(next), () => {
-      const notebook = syncEventToNotebook(activeLessons, next, locale);
-      commitNotebookChange(notebook.lessons, () => actions.updateEvent(next));
-    }, event.id);
-  };
   const deletePedagogicalEvent = (eventOrId: string | { id: string; title?: string }) => {
     const id = typeof eventOrId === 'string' ? eventOrId : eventOrId.id;
     const title = typeof eventOrId === 'string' ? undefined : eventOrId.title;
@@ -205,42 +166,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const activityLabelOf = (event: PedagogicalEvent) =>
     localizedActivityTitle(event.title, event.type, locale);
-
-  const openEditAssessment = (assessment: { id: string; type: DevoirType; num: number; dateISO: string; duree?: string; semestre: 1 | 2 }) => {
-    setEditingAssessment({
-      id: assessment.id,
-      type: assessment.type,
-      num: assessment.num,
-      dateISO: assessment.dateISO,
-      duree: assessment.duree,
-      semestre: assessment.semestre,
-    });
-    setManualEditorOpen(true);
-  };
-
-  const saveAssessment = (manual: ManualAssessment) => {
-    conflicts.run(assessmentSlot({ ...manual, id: editingAssessment?.id ?? manual.id,
-      label: `${t(`evaluations.type.${manual.type}`)} ${number.format(manual.num)}` }), () => {
-      const previous = editingAssessment;
-      const entryKey = links.find(link => link.planned.id === previous?.id)?.entry?.key;
-      const source = previous && previous.type !== manual.type
-        ? removeAssessmentFromNotebook(activeLessons, previous.id, previous.type, previous.num, entryKey).lessons
-        : activeLessons;
-      const { lessons: nextLessons } = syncAssessmentDateToNotebook(
-        source,
-        { id: editingAssessment?.id ?? manual.id, type: manual.type, num: manual.num, dateISO: manual.dateISO,
-          entryKey: source === activeLessons ? entryKey : undefined,
-          updatedTitle: previous && (previous.num !== manual.num || previous.type !== manual.type) ? `${t(`evaluations.type.${manual.type}`)} ${number.format(manual.num)}` : undefined },
-        locale
-      );
-      if (!commitNotebookChange(nextLessons, () => actions.saveAssessment(manual, editingAssessment?.id))) return;
-      setManualEditorOpen(false);
-      setEditingAssessment(null);
-      toast.success(
-        t('evaluations.manualSaved', { type: t(`evaluations.type.${manual.type}`), number: manual.num })
-      );
-    }, editingAssessment?.id);
-  };
 
   const deleteAssessment = (id: string) => {
     const target = assessments.find(item => item.id === id);
@@ -258,24 +183,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     }
     if (!commitNotebookChange(nextLessons, () => actions.deleteAssessment(id, target?.legacyId))) return;
     toast.success(t('evaluations.manualDeleted'));
-  };
-
-  /** Date limite ou séance de correction d'un devoir maison, écrite sur SON enregistrement (aucune clé de plus à synchroniser). */
-  const setHomeworkDate = (id: string, field: 'due' | 'correction', dateISO: string) => {
-    const planned = assessments.find(item => item.id === id);
-    if (!planned || planned.type !== 'maison') return;
-    const chosen = config.assessmentDates?.[classInfo.id]?.[id]
-      ?? (planned.legacyId ? config.assessmentDates?.[classInfo.id]?.[planned.legacyId] : undefined)
-      ?? (planned.manual ? planned.dateISO : '');
-    const previous = config.manualAssessments?.[classInfo.id]?.find(item => item.id === id || item.id === planned.legacyId);
-    const nextLessons = field === 'correction'
-      ? syncHomeworkCorrectionContent(activeLessons, { id: previous?.id ?? id, num: planned.num, correctionDateISO: dateISO }, locale, previous?.correctionDateISO)
-      : activeLessons;
-    commitNotebookChange(nextLessons, () => actions.setHomeworkSchedule(
-      { id: planned.id, legacyId: planned.legacyId, schoolYear: planned.schoolYear, semestre: planned.semestre, num: planned.num },
-      chosen,
-      field === 'due' ? { dueDateISO: dateISO } : { correctionDateISO: dateISO },
-    ));
   };
 
   /** Corbeille de la correction : date et corrigé — et le bloc du cahier, pour qu'elle ne revienne pas. */
@@ -329,13 +236,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     const kindStyle = DEVOIR_KIND_CONFIG[a.type] ?? DEVOIR_KIND_CONFIG.controle;
     const displayName = `${t(`evaluations.type.${a.type}`)} ${number.format(a.num)}`;
 
-    // Seul l'écart de date reste signalé sous le titre : c'est lui qui appelle une action.
-    // Les dates restent de gauche à droite au milieu d'une phrase arabe.
-    const mismatchExplanation = t('evaluations.align.gap', {
-      planned: ltrIsolate(formatSingleDate(link.planned.dateISO)),
-      notebook: link.entry?.date ? ltrIsolate(formatSingleDate(link.entry.date)) : '',
-    });
-
     const docIndicator = documentIndicator(documentRequirementForAssessment(a.type, policy), assessmentDocument);
     const docTooltip = t(docIndicator === 'attached' ? 'evaluations.tip.docAttached'
       : docIndicator === 'missing' ? 'evaluations.tip.docMissing' : 'evaluations.tip.docIdle');
@@ -373,55 +273,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         data-custom={custom ? 'true' : undefined}
       >
             <div className="ev-row__id min-w-0">
-              <button
-                type="button"
-                dir="auto"
-                onClick={() => openEditAssessment(a)}
-                className="-ms-1 inline-flex max-w-full cursor-pointer items-center truncate rounded-md px-1 py-0.5 text-start text-[11.5px] font-semibold text-foreground/90 transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/30"
-              >
-                              {displayName}
-              </button>
-              {((link.status === 'mismatch' && link.entry?.date) || (a.type === 'maison' && dueDateISO)) && (
-                <div className="ev-row__meta">
-                  {link.status === 'mismatch' && link.entry?.date && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const targetDate = link.entry?.date;
-                        if (!targetDate) return;
-                        setAssessmentDate(a.id, targetDate);
-                        toast.success(t('evaluations.align.done', { date: ltrIsolate(formatSingleDate(targetDate)) }));
-                      }}
-                      className="ev-row__align inline-flex cursor-pointer items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-bold text-amber-700 transition-all hover:bg-amber-500/25 active:scale-95 dark:text-amber-400"
-                      data-tippy-content={mismatchExplanation}
-                    >
-                      <span>{t('evaluations.align.action', { date: ltrIsolate(formatSingleDate(link.entry.date)) })}</span>
-                    </button>
-                  )}
-                  {a.type === 'maison' && dueDateISO && (
-                    <span className="ev-row__note">{dueDateISO === today ? t('evaluations.homework.dueToday') : t('evaluations.homework.dueOn', { date: ltrIsolate(formatSingleDate(dueDateISO)) })}</span>
-                  )}
-                </div>
-              )}
+              <span dir="auto">{displayName}</span>
+              {a.type === 'maison' && dueDateISO && <div className="ev-row__meta">
+                <span className="ev-row__note">{dueDateISO === today ? t('evaluations.homework.dueToday') : t('evaluations.homework.dueOn', { date: ltrIsolate(formatSingleDate(dueDateISO)) })}</span>
+              </div>}
             </div>
-
-            <div className="ev-row__date">
-              {rawDate ? (
-                <button
-                  type="button"
-                  onClick={() => setEditingDateAssessment({ id: a.id, name: displayName, date: rawDate })}
-                  className="ev-date-trigger inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold text-foreground select-none cursor-pointer transition-all hover:text-primary hover:bg-muted/50 rounded-full active:scale-95 border border-border/40 shadow-xs"
-                  data-tippy-content={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : undefined}
-                  aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
-                >
-                  <CalendarSheetVisual iso={rawDate} />
-                  <span className="ev-date-sr whitespace-nowrap tabular-nums text-[11px] font-bold"><bdi dir="ltr">{formatSingleDate(rawDate)}</bdi></span>
-                </button>
-              ) : (
-                /* La date vient du tableau de l'éditeur : sans date, un simple constat, rien à cliquer. */
-                <span className="ev-date-empty" data-tippy-content={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : undefined}>{t('evaluations.noDateYet')}</span>
-              )}
-            </div>
+            <div className="ev-row__date"><EvaluationDate date={rawDate} /></div>
             <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
               {a.type !== 'colle' && docIndicator !== 'none' && (
                 <button
@@ -472,26 +329,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 </button>
               )}
 
-              {/* Date limite à laquelle les élèves rendent le devoir. */}
-              {a.type === 'maison' && (
-                <button
-                  type="button"
-                  onClick={() => setEditingDateAssessment({ id: a.id, name: displayName, date: dueDateISO, field: 'due' })}
-                  // A calm semantic state; the exact deadline remains in the row metadata.
-                  className={cn("ev-action shrink-0", dueDateISO === today && "glow-pulse-warning")}
-                  data-filled={dueDateISO ? 'tone' : undefined}
-                  data-due={dueDateISO === today ? 'today' : undefined}
-                  data-tippy-content={dueDateISO === today ? t('evaluations.homework.dueToday') : t('evaluations.tip.dueDate')}
-                  aria-label={dueDateISO
-                    ? `${t('evaluations.action.dueDate')} — ${formatSingleDate(dueDateISO)} — ${displayName}`
-                    : `${t('evaluations.action.dueDate')} — ${displayName}`}
-                >
-                  <ActionIcon name="deadline" />
-                  <span className="sr-only">{t('evaluations.action.dueDate')}</span>
-                  {dueDateISO && <span className="sr-only"><bdi dir="ltr">{formatSingleDate(dueDateISO)}</bdi></span>}
-                </button>
-              )}
-
               <AnimatedTrashButton
                 iconOnly
                 size="sm"
@@ -515,28 +352,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         data-assessment-type="maison_correction"
         data-tone={kindStyle.tone}
       >
-        <CorrectionCurveConnector />
         <div className="ev-row__id min-w-0">
           <span dir="auto" className="-ms-1 inline-flex max-w-full items-center truncate px-1 py-0.5 text-start text-[11.5px] font-semibold text-foreground/90">{correctionName}</span>
         </div>
-        <div className="ev-row__date">
-          <button
-            type="button"
-            onClick={() => setEditingDateAssessment({ id: a.id, name: correctionName, date: correctionDateISO, field: 'correction' })}
-            className={cn(
-              "ev-date-trigger inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold select-none cursor-pointer transition-all active:scale-95 border border-border/40 rounded-full shadow-xs",
-              correctionDateISO
-                ? "text-foreground hover:text-primary hover:bg-muted/50"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-            )}
-            aria-label={t('evaluations.assessmentDateAria', { assessment: correctionName })}
-          >
-            {correctionDateISO && <CalendarSheetVisual iso={correctionDateISO} />}
-            <span className={cn("whitespace-nowrap tabular-nums text-[11px] font-bold", correctionDateISO && "ev-date-sr")}>
-              {correctionDateISO ? <bdi dir="ltr">{formatSingleDate(correctionDateISO)}</bdi> : t('evaluations.noDateYet')}
-            </span>
-          </button>
-        </div>
+        <div className="ev-row__date"><EvaluationDate date={correctionDateISO} /></div>
         <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
           {(
             <button
@@ -584,7 +403,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   return (
     <div lang={locale} className="evaluation-workspace space-y-4 font-sans sm:space-y-5">
-      {conflicts.dialog}
       <div className="evaluation-class-meta flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
           <div className="min-w-0">
@@ -661,7 +479,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                               <PedagogicalEventsSection
                                 events={eventsOfKind(kind)}
                                 showHeader={false}
-                                onDateChange={changeEventDate}
                                 onDelete={event => setDeletingEvent({ id: event.id, title: activityLabelOf(event) })}
                                 onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
                                 onOpenStudents={(event) => setStudentsFor(event)}
@@ -694,13 +511,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         classInfo={classInfo}
         classDisplayName={selectedClassDisplayName}
         config={effectiveConfig}
-        today={today}
-        assessments={assessments}
         modals={evaluationModals}
         actions={actions}
-        saveAssessment={saveAssessment}
-        setAssessmentDate={setAssessmentDate}
-        setHomeworkDate={setHomeworkDate}
         deletePedagogicalEvent={deletePedagogicalEvent}
         deleteAssessment={deleteAssessment}
         deleteHomeworkCorrection={deleteHomeworkCorrection}

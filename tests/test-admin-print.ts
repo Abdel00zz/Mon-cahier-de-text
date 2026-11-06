@@ -12,6 +12,7 @@ import {
 } from '../src/domain/calendar/calendar';
 import { analyseSessionProgression, snapshotSlots } from '../src/domain/notebook/sessionProgression';
 import type { ClassSnapshot, LessonsData, ScheduleSlot } from '../src/types';
+import { readMessageSource } from './readMessages';
 
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const sourceOf = (path: string) => read(path);
@@ -139,7 +140,10 @@ test('les créneaux viennent de la projection fidèle, sinon des jours seuls', (
    3. Modale d'impression : la variante « direction » reste honnête
    ══════════════════════════════════════════════════════════════════════════ */
 
-const printModal = sourceOf('src/features/editor/modals/PrintModal.tsx');
+const printModal = [
+  'src/features/editor/modals/PrintModal.tsx',
+  'src/features/editor/modals/printModalTypes.ts',
+].map(sourceOf).join('\n');
 
 test('la modale n’annonce « nouveautés » que si l’historique est consultable', () => {
   assert.match(printModal, /historyKnown\?: boolean;/, 'option explicite');
@@ -157,7 +161,7 @@ test('la modale n’annonce « nouveautés » que si l’historique est consulta
 });
 
 test('l’explication de l’historique manquant existe dans les trois langues', () => {
-  const messages = sourceOf('src/i18n/messages.ts');
+  const messages = readMessageSource();
   const occurrences = messages.match(/'print\.historyUnavailable'/g) ?? [];
   assert.equal(occurrences.length, 3, 'fr, en et ar');
 });
@@ -201,7 +205,8 @@ test('le document est figé, composé, puis imprimé par le circuit de l’édit
 });
 
 test('seul le document A4 part à l’imprimante depuis l’administration', () => {
-  const printCss = sourceOf('src/features/editor/print.css');
+  const printCss = ['src/features/editor/print.css', 'src/features/editor/printRows.css']
+  .map(sourceOf).join('\n');
   assert.match(
     printCss,
     /body:has\(> \.print-document\.print-only\) > \*:not\(\.print-document\) \{ display: none !important; \}/,

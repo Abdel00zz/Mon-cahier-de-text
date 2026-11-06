@@ -24,8 +24,8 @@ test('les titres des cartes, listes et pages respectent la politique commune de 
 });
 
 test('les fontes arabes et latines ont des plages unicode disjointes sans mélange', () => {
-  const arabicFamilies = new Set(['KOMission Black', 'KOMission', 'Elgharib Hayyakum Allah', 'Elgharib', 'Elgharib Hayyakum Allah Light', 'SamsungOne Arabic']);
-  const latinFamilies = new Set(['Inter', 'Roboto Slab', 'Latin Modern Sans', 'Source Sans 3']);
+  const arabicFamilies = new Set(['SamsungOne Arabic']);
+  const latinFamilies = new Set(['Latin Modern Sans', 'Source Sans 3']);
   const seenArabic = new Set<string>();
   const seenLatin = new Set<string>();
   postcss.parse(readFileSync('src/styles/fonts.css', 'utf8')).walkAtRules('font-face', face => {
@@ -71,7 +71,10 @@ test('le tableau de contenu compose en Computer Modern Sans Serif (Medium, Demi 
 
 test('les cellules de date restent centrées et la typographie du cahier s’adapte au téléphone', () => {
   const surface = readFileSync('src/styles/editor-surface.css', 'utf8');
-  const row = readFileSync('src/features/editor/TableRow.tsx', 'utf8');
+  const row = [
+  'src/features/editor/TableRow.tsx',
+  'src/features/editor/tableRowCells.tsx',
+].map(path => readFileSync(path, 'utf8')).join('\n');
   const session = readFileSync('src/features/editor/SessionGroupRow.tsx', 'utf8');
   const table = readFileSync('src/features/editor/MainTable.tsx', 'utf8');
 

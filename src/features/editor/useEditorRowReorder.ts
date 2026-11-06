@@ -1,26 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, TouchEvent as ReactTouchEvent, MouseEvent as ReactMouseEvent, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { clamp } from 'es-toolkit';
-
-type Side = 'before' | 'after';
-type Reorder = (sourceKey: string, targetKey: string, side: Side) => boolean;
-type CanReorder = (sourceKey: string, targetKey: string, side: Side) => boolean;
-interface ReorderMessages {
-  started: string; moved: string; cancelled: string;
-  before?: string; after?: string; inside?: string; choose?: string; unavailable?: string; cancel?: string;
-}
-interface DragState {
-  source: HTMLElement;
-  sourceKey: string;
-  ghost: HTMLElement | null;
-  target?: HTMLElement;
-  targetKey?: string;
-  side?: Side;
-}
-
-const rows = (root: HTMLElement | null) =>
-  Array.from(root?.querySelectorAll<HTMLElement>('[data-editor-sort-row]') ?? []);
-
+import { rows, type CanReorder, type DragState, type Reorder, type ReorderMessages, type Side } from './rowReorderTypes';
 /** One animation frame owns pointer feedback and edge scrolling. React only
  * renders when the gesture starts/ends or the notebook order changes. */
 export function useEditorRowReorder(
@@ -416,3 +397,4 @@ export function useEditorRowReorder(
   }, [announce]);
   return { onPointerDown, onTouchStart: onPointerDown, onKeyDown, onClickCapture, onContextMenu, cancelReorder, announcement };
 }
+

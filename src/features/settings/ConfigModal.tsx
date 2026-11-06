@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo, FC } from 'react';
-import { dequal } from 'dequal';
+import React, { useState, useEffect, useCallback } from 'react';
 import './settingsModal.css';
-import { SettingsTabNavigation } from './components/SettingsTabNavigation';
 import { cn } from '@/lib/utils';
 import { AppConfig, ClassInfo, Cycle } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -9,47 +7,13 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Button } from '@/components/ui/button';
-import { AccountDataTab } from './components/AccountDataTab';
-import { ProfileTab } from './components/ProfileTab';
-import { AbsencesTab } from './components/AbsencesTab';
-import { SettingsPanel } from './components/SettingsPrimitives';
-import { CalendarRange, Bell, User, Cloud, Palette, BookOpen, Save, Undo2, ChevronLeft, FileSignature } from '@/components/ui/icons';
-
-const ScheduleTab = React.lazy(() => import('./components/ScheduleTab').then(m => ({ default: m.ScheduleTab })));
-const NotificationsTab = React.lazy(() => import('./components/NotificationsTab').then(m => ({ default: m.NotificationsTab })));
-const AppearanceTab = React.lazy(() => import('./components/AppearanceTab').then(m => ({ default: m.AppearanceTab })));
-
-const preloadTabComponent = (tab: SettingsCategory) => {
-  switch (tab) {
-    case 'apparence':
-      import('./components/AppearanceTab');
-      break;
-    case 'emploi':
-      import('./components/ScheduleTab');
-      break;
-    case 'notifications':
-      import('./components/NotificationsTab');
-      break;
-    case 'compte':
-      import('./components/ArchivesSection');
-      break;
-    default:
-      break;
-  }
-};
-
-const TabLoadingSkeleton: FC = () => (
-  <div className="space-y-3 py-2">
-    <div className="h-6 w-40 rounded-md skeleton-shimmer" />
-    <div className="h-24 w-full rounded-lg skeleton-shimmer" />
-    <div className="h-36 w-full rounded-lg skeleton-shimmer" />
-  </div>
-);
-
+import { BookOpen, Save, Undo2, ChevronLeft } from '@/components/ui/icons';
+import { SETTINGS_SECTIONS, consumeSettingsTarget, type SettingsCategory } from './settingsSections';
+import { SettingsContent, preloadSettingsSection } from './SettingsContent';
+import { useSettingsProfile } from './useSettingsProfile';
 
 interface ConfigModalProps {
   isOpen?: boolean;
-  asPage?: boolean;
   initialSection?: 'emploi' | 'notifications';
   scheduleClassId?: string;
   onClose: () => void;
@@ -60,46 +24,8 @@ interface ConfigModalProps {
   onExportPlatform: () => void;
   onOpenImport: () => void;
   classes?: ClassInfo[];
-  /** création de classe depuis la grille d'emploi du temps */
   onCreateClass?: (details: { name: string; subject: string; cycle?: Cycle }) => ClassInfo;
 }
-
-type SettingsCategory = 'emploi' | 'absences' | 'profil' | 'apparence' | 'notifications' | 'compte';
-
-type SettingsTone = 'blue' | 'violet' | 'pink' | 'amber' | 'green' | 'teal' | 'rose';
-
-interface SettingMenuItem {
-  id: SettingsCategory;
-  titleKey: string;
-  /** Phrase courte sous le titre de la carte (téléphone et tablette). */
-  hintKey: string;
-  icon: React.ComponentType<{ className?: string }>;
-  /** Couleur propre à la rubrique : la carte, puis la rubrique, se reconnaissent d'un coup d'œil. */
-  tone: SettingsTone;
-}
-
-/** Six rubriques : l'aide n'en est pas une, c'est une carte-lien (et un lien en bas du menu sur grand écran). */
-const SETTING_ITEMS: SettingMenuItem[] = [
-  { id: 'emploi', titleKey: 'settings.item.schedule', hintKey: 'settings.card.schedule', icon: CalendarRange, tone: 'blue' },
-  { id: 'absences', titleKey: 'settings.item.absences', hintKey: 'settings.card.absences', icon: FileSignature, tone: 'rose' },
-  { id: 'profil', titleKey: 'settings.item.profile', hintKey: 'settings.card.profile', icon: User, tone: 'violet' },
-  { id: 'apparence', titleKey: 'settings.item.appearance', hintKey: 'settings.card.appearance', icon: Palette, tone: 'pink' },
-  { id: 'notifications', titleKey: 'settings.item.notifications', hintKey: 'settings.card.notifications', icon: Bell, tone: 'amber' },
-  { id: 'compte', titleKey: 'settings.item.account', hintKey: 'settings.card.account', icon: Cloud, tone: 'green' },
-];
-const GUIDE_TONE: SettingsTone = 'teal';
-
-/** Liens directs : les anciens identifiants d'onglets restent valides. */
-const TAB_ALIASES: Record<string, SettingsCategory> = {
-  emploi: 'emploi',
-  absences: 'absences',
-  profil: 'profil',
-  apparence: 'apparence',
-  notifications: 'notifications',
-  compte: 'compte',
-  donnees: 'compte',
-  archives: 'compte',
-};
 
 export const ConfigModal: React.FC<ConfigModalProps> = ({
   isOpen = true,
@@ -112,32 +38,20 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   onOpenImport,
   classes = [],
   onCreateClass,
-  asPage = false,
   initialSection,
   scheduleClassId,
 }) => {
   const { t } = useLocale();
-  // Seuls les champs de profil réellement modifiés attendent « Enregistrer ».
-  // Les autres onglets suivent toujours la configuration courante (synchro incluse).
-  const [profileDraft, setProfileDraft] = useState<Partial<AppConfig>>({});
+  const profile = useSettingsProfile(config, onConfigChange);
   const [pendingExit, setPendingExit] = useState<'close' | 'guide' | null>(null);
-  const hasProfileChanges = useMemo(() => Object.entries(profileDraft).some(([key, value]) =>
-    !dequal(value, config[key as keyof AppConfig])), [profileDraft, config]);
   const finishExit = (destination: 'close' | 'guide') => {
-    setProfileDraft({});
+    profile.reset();
     setPendingExit(null);
-    if (destination === 'guide') onOpenGuide();
-    else onClose();
+    if (destination === 'guide') onOpenGuide(); else onClose();
   };
   const requestExit = (destination: 'close' | 'guide' = 'close') => {
-    if (hasProfileChanges) setPendingExit(destination);
-    else finishExit(destination);
+    if (profile.hasChanges) setPendingExit(destination); else finishExit(destination);
   };
-  const localConfig = useMemo(() => ({ ...config, ...profileDraft }), [config, profileDraft]);
-  const updateProfileDraft = (patch: Partial<AppConfig>) => {
-    setProfileDraft(previous => ({ ...previous, ...patch }));
-  };
-  const wasOpenRef = useRef(false);
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>(initialSection ?? 'emploi');
   // Téléphone et tablette : l'accueil est une grille de cartes, une rubrique s'ouvre en plein cadre.
   // Sur grand écran (lg), le menu latéral reste affiché et cet état n'a aucun effet visuel.
@@ -153,33 +67,16 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     }
   }, [initialSection]);
 
-  const tabsId = React.useId();
-
+  useEffect(() => { if (!isOpen) profile.reset(); }, [isOpen, profile.reset]);
   useEffect(() => {
-    if ((isOpen || asPage) && !wasOpenRef.current) {
-      setProfileDraft({});
-      setPendingExit(null);
-    }
-    wasOpenRef.current = Boolean(isOpen || asPage);
-  }, [isOpen, asPage, config]);
-
-  // Consomme d'éventuels liens directs (ex. « compléter l'emploi du temps »).
-  useEffect(() => {
-    try {
-      const requested = sessionStorage.getItem('config_initial_tab_v1');
-      if (requested) {
-        sessionStorage.removeItem('config_initial_tab_v1');
-        if (Object.hasOwn(TAB_ALIASES, requested)) openSection(TAB_ALIASES[requested]);
-      }
-    } catch {
-      // ignore
-    }
+    const requested = consumeSettingsTarget();
+    if (requested) openSection(requested);
   }, [openSection]);
 
   // Téléphone et tablette : Échap / retour Android revient d'abord à la grille de cartes, puis ferme.
   // Un menu, un sélecteur ou une fenêtre ouverte par-dessus garde la main sur sa propre touche.
   useEffect(() => {
-    if ((!isOpen && !asPage) || !sectionOpen) return;
+    if (!isOpen || !sectionOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape' || isDesktop) return;
       if (document.querySelector('[role="listbox"], [role="menu"]')) return;
@@ -190,99 +87,16 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     };
     window.addEventListener('keydown', onKeyDown, true);
     return () => window.removeEventListener('keydown', onKeyDown, true);
-  }, [isOpen, asPage, sectionOpen, isDesktop]);
-
-  const applyLive = useCallback((patch: Partial<AppConfig>) => {
-    onConfigChange(patch);
-  }, [onConfigChange]);
-
-  const handleSave = () => {
-    if (Object.keys(profileDraft).length > 0) {
-      onConfigChange(profileDraft);
-    }
-    setProfileDraft({});
-  };
-
-  const toggleSubject = (subject: string) => {
-    setProfileDraft(prev => {
-      const current = prev.selectedSubjects ?? config.selectedSubjects ?? [];
-      if (current.length === 1 && current.includes(subject)) return prev;
-      const next = current.includes(subject)
-        ? current.filter(s => s !== subject)
-        : [...current, subject];
-      return { ...prev, selectedSubjects: next, showAllSubjects: false };
-    });
-  };
-
-  const toggleCycle = (cycle: Cycle) => {
-    setProfileDraft(prev => {
-      const current = prev.selectedCycles ?? config.selectedCycles ?? [];
-      if (current.length === 1 && current.includes(cycle)) return prev;
-      const next = current.includes(cycle)
-        ? current.filter(c => c !== cycle)
-        : [...current, cycle];
-      return { ...prev, selectedCycles: next, showAllCycles: false };
-    });
-  };
-
-  const renderCategoryContent = () => {
-    switch (activeCategory) {
-      case 'profil':
-        return (
-          <ProfileTab
-            config={localConfig}
-            onDraft={updateProfileDraft}
-            onToggleSubject={toggleSubject}
-            onToggleCycle={toggleCycle}
-          />
-        );
-
-      case 'apparence':
-        return (
-          <React.Suspense fallback={<TabLoadingSkeleton />}>
-            <AppearanceTab config={localConfig} onConfigChange={applyLive} />
-          </React.Suspense>
-        );
-
-      case 'emploi':
-        return (
-          <SettingsPanel title={t('settings.item.schedule')}>
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
-              <ScheduleTab classes={classes} config={localConfig} onChange={applyLive} onCreateClass={onCreateClass} suggestedClassId={scheduleClassId} />
-            </React.Suspense>
-          </SettingsPanel>
-        );
-
-      case 'notifications':
-        return (
-          <SettingsPanel title={t('settings.item.notifications')}>
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
-              <NotificationsTab config={localConfig} onChange={applyLive} />
-            </React.Suspense>
-          </SettingsPanel>
-        );
-
-      case 'absences':
-        return (
-          <AbsencesTab config={localConfig} classes={classes} onConfigChange={applyLive} visible={isDesktop || sectionOpen} />
-        );
-
-      case 'compte':
-        return <AccountDataTab config={config} onExport={onExportPlatform} onImport={onOpenImport} />;
-
-      default:
-        return null;
-    }
-  };
+  }, [isOpen, sectionOpen, isDesktop]);
 
   const footer = (
     <div className="grid w-full grid-cols-2 gap-2.5">
-      <Button variant="secondary" onClick={() => setProfileDraft({})}
+      <Button variant="secondary" onClick={profile.reset}
         className="h-auto min-h-11 whitespace-normal rounded-xl px-3 py-2 text-sm">
         <Undo2 aria-hidden className="shrink-0" />
         <span>{t('settings.resetDraft')}</span>
       </Button>
-      <Button onClick={handleSave} className="h-auto min-h-11 whitespace-normal rounded-xl px-3 py-2 text-sm">
+      <Button onClick={profile.save} className="h-auto min-h-11 whitespace-normal rounded-xl px-3 py-2 text-sm">
         <Save aria-hidden className="shrink-0" />
         <span>{t('settings.saveProfile')}</span>
       </Button>
@@ -295,7 +109,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       {/* Téléphone et tablette : de grandes cartes, pas d'onglets. */}
       <div className={cn('settings-home lg:hidden', sectionOpen && 'hidden')}>
         <ul className="hub-grid" aria-label={t('settings.title')}>
-          {SETTING_ITEMS.map(item => {
+          {SETTINGS_SECTIONS.map(item => {
             const Icon = item.icon;
             return (
               <li key={item.id} className="contents">
@@ -303,8 +117,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                   type="button"
                   data-tone={item.tone}
                   onClick={() => openSection(item.id)}
-                  onPointerEnter={() => preloadTabComponent(item.id)}
-                  onFocus={() => preloadTabComponent(item.id)}
+                  onPointerEnter={() => preloadSettingsSection(item.id)}
+                  onFocus={() => preloadSettingsSection(item.id)}
                   className="hub-card"
                 >
                   <span className="hub-card__icon" aria-hidden="true"><Icon /></span>
@@ -317,7 +131,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
             );
           })}
           <li className="contents">
-            <button type="button" data-tone={GUIDE_TONE} onClick={() => requestExit('guide')} className="hub-card">
+            <button type="button" data-tone={"teal"} onClick={() => requestExit('guide')} className="hub-card">
               <span className="hub-card__icon" aria-hidden="true"><BookOpen /></span>
               <span className="hub-card__body">
                 <span className="hub-card__title line-clamp-2">{t('settings.item.support')}</span>
@@ -330,7 +144,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
 
       <nav aria-label={t('settings.title')} className="settings-nav hidden lg:flex">
         <ul className="space-y-0.5">
-          {SETTING_ITEMS.map(item => {
+          {SETTINGS_SECTIONS.map(item => {
             const active = activeCategory === item.id;
             const Icon = item.icon;
             return (
@@ -339,8 +153,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                   type="button"
                   aria-current={active ? 'page' : undefined}
                   onClick={() => setActiveCategory(item.id)}
-                  onPointerEnter={() => preloadTabComponent(item.id)}
-                  onFocus={() => preloadTabComponent(item.id)}
+                  onPointerEnter={() => preloadSettingsSection(item.id)}
+                  onFocus={() => preloadSettingsSection(item.id)}
                   className="settings-nav__link"
                 >
                   <Icon aria-hidden />
@@ -361,57 +175,17 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       <div className={cn('settings-scroll modern-scrollbar', !sectionOpen && 'max-lg:hidden')}>
         <section
           key={activeCategory}
-          aria-label={t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}
+          aria-label={t(SETTINGS_SECTIONS.find(item => item.id === activeCategory)!.titleKey)}
           className="settings-page-content"
         >
-          {renderCategoryContent()}
+          <SettingsContent category={activeCategory} config={config} classes={classes} profile={profile}
+            onChange={onConfigChange} onCreateClass={onCreateClass} scheduleClassId={scheduleClassId}
+            onExport={onExportPlatform} onImport={onOpenImport} />
         </section>
       </div>
     </div>
   );
 
-  if (asPage) {
-    return (
-      <div data-settings-ui className="settings-page-root w-full max-w-5xl mx-auto pt-2 pb-6 sm:py-7 px-4 sm:px-6">
-        <SettingsTabNavigation items={SETTING_ITEMS} activeId={activeCategory} onChange={setActiveCategory}
-          onPrepare={preloadTabComponent} translate={t} idPrefix={tabsId} label={t('settings.title')} />
-
-        <main className="settings-page-main min-w-0">
-          <div className="settings-page-panel min-w-0">
-            <section
-              key={activeCategory}
-              role="tabpanel"
-              id={`${tabsId}-panel`}
-              aria-labelledby={`${tabsId}-${activeCategory}`}
-              tabIndex={0}
-              aria-label={t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}
-              className="settings-page-section"
-            >
-              {renderCategoryContent()}
-            </section>
-          </div>
-        </main>
-
-        {/* Sauvegarde flottante si profil modifié */}
-        {hasProfileChanges && (
-          <div className="settings-profile-save sticky z-20 mt-6 max-w-md mx-auto p-3 bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-xl">
-            {footer}
-          </div>
-        )}
-
-        <ConfirmDialog
-          open={pendingExit !== null}
-          onOpenChange={open => { if (!open) setPendingExit(null); }}
-          title={t('settings.discardProfileTitle')}
-          description={t('settings.discardProfileDescription')}
-          confirmLabel={t('settings.discardProfile')}
-          cancelLabel={t('settings.keepEditing')}
-          onConfirm={() => { if (pendingExit) finishExit(pendingExit); }}
-          variant="destructive"
-        />
-      </div>
-    );
-  }
 
   return (
     <>
@@ -423,7 +197,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
           <button type="button" onClick={() => setSectionOpen(false)} className="hub-back" aria-label={t('settings.back')}>
             <ChevronLeft aria-hidden className="hub-back__chevron" />
           </button>
-          <span className="min-w-0 truncate">{t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}</span>
+          <span className="min-w-0 truncate">{t(SETTINGS_SECTIONS.find(item => item.id === activeCategory)!.titleKey)}</span>
         </span>
       ) : <span className="hub-titlebar" data-codex-title>{t('settings.title')}</span>}
       maxWidth="lg"
@@ -432,7 +206,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       className="hub-modal settings-modal-frame settings-modal-sheet liquid-modal overflow-hidden"
       headerClassName="hub-modal-header"
       bodyClassName="hub-modal-body settings-modal-body"
-      footer={hasProfileChanges ? footer : undefined}
+      footer={profile.hasChanges ? footer : undefined}
       bottomNavigation={mobileNavigation}
     >
       {settingsShell}

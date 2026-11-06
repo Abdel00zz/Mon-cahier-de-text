@@ -1,0 +1,23 @@
+// Traductions fr — editContent.
+export const messages: Record<string, string> = {
+  'editContent.title': 'Modifier l’élément',
+  'editContent.titleOnlyTitle': 'Modifier le titre',
+  'editContent.sharedDescription': 'Contenu commun à {count} séances. Les modifications s’appliquent à toutes ; leurs dates et remarques sont conservées.',
+  'editContent.reset': 'Annuler les modifications',
+  'editContent.preview': 'Aperçu du contenu',
+  'editContent.formatSelection': 'Mettre en forme le texte sélectionné',
+  'editContent.formatBold': 'Gras',
+  'editContent.formatItalic': 'Italique',
+  'editContent.formatUnderline': 'Souligné',
+  'editContent.formatBullets': 'Liste à puces',
+  'editContent.formatNumbered': 'Liste numérotée',
+  'editContent.formatMath': 'Formule TeX',
+  'editContent.formatColor': 'Couleur du texte',
+  'editContent.formatHighlight': 'Surlignage',
+  'editContent.colorRed': 'Rouge (Important)',
+  'editContent.colorBlue': 'Bleu (Information)',
+  'editContent.colorGreen': 'Vert (Validation)',
+  'editContent.colorAmber': 'Ambre (Attention)',
+  'editContent.colorPurple': 'Violet (Méthode)',
+  'editContent.colorClear': 'Effacer la couleur',
+};

@@ -4,7 +4,7 @@ import { AppConfig, AppLocale, AppTextSize, ThemeMode } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { localeMetadata } from '@/i18n/messages';
 import { cn } from '@/lib/utils';
-import { SettingsPanel, SettingsRow, SettingsSection, settingsChoiceClass } from './SettingsPrimitives';
+import { SettingsPanel, SettingsSection, settingsChoiceClass } from './SettingsPrimitives';
 
 interface AppearanceTabProps {
   config: AppConfig;

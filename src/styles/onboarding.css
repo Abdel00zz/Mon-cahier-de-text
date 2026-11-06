@@ -60,7 +60,6 @@
   box-shadow: none;
 }
 .onboarding-studio .artistic-cta-button:not(:disabled):hover,
-.registration-studio .registration-dock button:not(:disabled):hover { background: color-mix(in srgb, var(--setup-ink) 90%, hsl(var(--card))); }
 .onboarding-studio .onboarding-navigation button { border-radius: 999px; }
 .onboarding-studio .onboarding-heading-illustration { opacity: 1; }
 .onboarding-step[data-complete] .onboarding-step-mark { animation: onboarding-check-in 200ms var(--setup-ease); }
@@ -68,41 +67,11 @@
 .onboarding-navigation { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; padding-bottom: 24px; }
 .onboarding-class-next { min-width: 0; }
 .onboarding-class-next button:first-child:not(:last-child) { flex: 0 0 auto; }
-.onboarding-studio :is(button, select, input), .registration-studio :is(button, input) { transition: transform 200ms var(--setup-ease), background-color 180ms, border-color 180ms; }
-.onboarding-studio :is(button, select, input):focus-visible, .registration-studio :is(button, input):focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 3px; }
-.onboarding-studio button:not(:disabled):active, .registration-studio button:not(:disabled):active { transform: scale(.98); }
+.onboarding-studio :is(button, select, input) { transition: transform 200ms var(--setup-ease), background-color 180ms, border-color 180ms; }
+.onboarding-studio :is(button, select, input):focus-visible:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 3px; }
+.onboarding-studio button:not(:disabled):active { transform: scale(.98); }
 .onboarding-studio [data-onboarding-subjects] { border-radius: 16px; }
 
-/* First notebook preparation: visible progress, large choices and a live summary. */
-.registration-studio { padding: 24px; }
-.registration-progress { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-.registration-progress li { display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 3px solid hsl(var(--border)); color: hsl(var(--muted-foreground)); font-size: 12px; }
-.registration-progress li[aria-current] { border-color: var(--setup-ink); color: var(--setup-ink); font-weight: 600; }
-.registration-progress li>span { display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid hsl(var(--border)); border-radius: 50%; font-size: 11px; }
-.registration-progress li[aria-current]>span { background: var(--setup-fill); border-color: transparent; }
-.registration-hero { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-.registration-hero>div { min-width: 0; flex: 1; }
-.registration-hero>.dynamic-illustration { flex: 0 0 168px; }
-.registration-notebook { display: block; width: 104px; height: 114px; flex: 0 0 104px; }
-.registration-form { border: 1px solid hsl(var(--border)); border-radius: 24px; padding: 22px; background: hsl(var(--card)); box-shadow: 0 10px 30px -24px hsl(var(--foreground) / .18); }
-.registration-studio .auth-choice { border-radius: 12px; font-weight: 500; }
-.registration-studio .auth-choice[aria-pressed="true"] { background: var(--setup-fill); border-color: var(--setup-ink); color: var(--setup-ink); }
-.registration-cycle-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
-.registration-cycle-grid .auth-choice { position: relative; min-width: 0; min-height: 116px; flex-direction: column; gap: 12px; padding: 16px 7px; font-size: 12px; line-height: 1.5; border-radius: 17px; }
-.registration-cycle-grid .auth-choice>span:not(.registration-cycle-icon, .registration-cycle-check) { min-height: 36px; display: flex; align-items: center; justify-content: center; }
-.registration-cycle-grid .registration-cycle-icon { display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; background: hsl(var(--muted)); }
-.registration-cycle-icon .app-icon { display: block; width: 24px; height: 24px; }
-.registration-cycle-check { position: absolute; top: 8px; inset-inline-end: 8px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; }
-.auth-choice[aria-pressed='true'] .registration-cycle-check { background: var(--setup-ink); color: hsl(var(--card)); }
-.registration-studio input, .registration-studio [role="combobox"] { border-radius: 12px; min-height: 48px; }
-.registration-preview { display: flex; align-items: center; gap: 12px; margin-top: 24px; padding: 15px; border: 1px solid hsl(var(--border)); border-radius: 15px; background: hsl(var(--muted) / .4); }
-.registration-preview>div { min-width: 0; flex: 1; }
-.registration-preview p { font-size: 14px; font-weight: 600; }
-.registration-preview span { font-size: 12px; color: hsl(var(--muted-foreground)); }
-.registration-preview>svg:last-child { color: hsl(var(--success-strong)); }
-.registration-dock { padding: 22px 0; }
-.registration-dock>p { font-size: 12px; color: hsl(var(--muted-foreground)); margin-bottom: 10px; text-align: center; }
-.registration-dock button { min-height: 52px; width: 100%; border-radius: 16px; gap: 12px; font-weight: 600; }
 @media (min-width: 640px) {
   .onboarding-cycle-card { flex-direction: column; text-align: center; min-height: 190px; padding: 22px 14px; }
   .onboarding-cycle-check { position: absolute; inset-inline-end: 10px; top: 10px; }
@@ -112,7 +81,6 @@
   .onboarding-artisan-header > div { flex-wrap: wrap; }
   .onboarding-artisan-header > div > div:last-child { margin-inline-start: auto; }
   .onboarding-pill-rail button { min-width: 44px; min-height: 44px; padding-inline: 10px; }
-  .registration-notebook { width: 72px; height: 82px; flex-basis: 72px; }
   .onboarding-studio main { padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
   .onboarding-studio .onboarding-heading { min-height: 122px; }
   .onboarding-heading-illustration { width: 118px; flex-basis: 118px; }
@@ -126,17 +94,6 @@
   .onboarding-back-label { display: none; }
   .onboarding-navigation[data-first-step] { grid-template-columns: 1fr; }
   .onboarding-navigation[data-first-step]>button:first-child { display: none; }
-  .registration-studio { padding: 18px 16px calc(120px + env(safe-area-inset-bottom)); }
-  .registration-progress { margin-bottom: 16px; }
-  .registration-hero { gap: 0; margin-bottom: 22px; }
-  .registration-hero>.dynamic-illustration { width: 116px; flex-basis: 116px; }
-  .registration-hero h1 { font-size: 28px; }
-  .registration-hero p:not(.onboarding-eyebrow) { font-size: 12px; line-height: 1.6; }
-  .registration-form { padding: 16px; border-radius: 22px; }
-  .registration-cycle-grid { gap: 8px; }
-  .registration-cycle-grid .auth-choice { min-height: 112px; padding-inline: 6px; font-size: 11px; }
-  .registration-dock { position: fixed; z-index: 30; bottom: 0; inset-inline: 0; padding: 10px 16px max(12px, env(safe-area-inset-bottom)); border-top: 1px solid hsl(var(--border) / .7); background: hsl(var(--background) / .95); backdrop-filter: blur(18px) saturate(140%); }
-  .registration-dock>p { font-size: 11px; margin-bottom: 8px; }
 }
 @media (max-width: 420px) {
   /* Le logo conserve sa place ; les cinq commandes restent tactiles sans
@@ -149,6 +106,6 @@
 @media (prefers-reduced-motion: reduce) {
   .onboarding-progress-ring circle { transition: none; }
   .onboarding-step[data-complete] .onboarding-step-mark { animation: none; }
-  .onboarding-studio :is(button, select, input), .onboarding-step, .registration-studio :is(button, input) { transition: none; }
-  .onboarding-studio button:not(:disabled):active, .registration-studio button:not(:disabled):active { transform: none; }
+  .onboarding-studio :is(button, select, input), .onboarding-step { transition: none; }
+  .onboarding-studio button:not(:disabled):active { transform: none; }
 }

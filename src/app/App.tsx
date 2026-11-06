@@ -26,6 +26,9 @@ import { useAdminMessages } from '../hooks/useAdminMessages';
 import { useClassManager } from '../hooks/useClassManager';
 import { useTheme } from '../hooks/useTheme';
 import { useDevice } from '../hooks/useDevice';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+import type { GuideReference } from '../constants/guide/model';
+import { GuideNavigationContext } from './navigation/GuideNavigationContext';
 import { TabBar, TabType } from '../components/navigation/TabBar';
 import { MobileTabBar } from '../components/navigation/MobileTabBar';
 import { NAV_COPY } from '../components/navigation/navigationConfig';
@@ -49,6 +52,9 @@ const AdminMessageModal = lazy(() => import('../features/messages/AdminMessageMo
 
 const App: React.FC = () => {
   const { isPhone } = useDevice();
+  const isWideWorkspace = useMediaQuery('(min-width: 1024px)');
+  const useWorkspacePages = isPhone || !isWideWorkspace;
+  const [guideReference, setGuideReference] = useState<GuideReference>();
   const [, setClassActivitiesOpen] = useState(false);
   const [assistantSettingsSection, setAssistantSettingsSection] = useState<{ section: 'emploi'; classId: string } | { section: 'notifications' }>();
   const { isOpen: isCommandPaletteOpen, close: closeCommandPalette, toggle: toggleCommandPalette } = useCommandPaletteStore();
@@ -102,8 +108,12 @@ const App: React.FC = () => {
     markCurrentSessionHandled(session.scope, session.key);
   }, []);
   const { view, activeClass, backgroundRoute, initialView, handleSelectClass, handleBackToDashboard,
-    handleOpenSettings, handleBackFromSettings, handleOpenHelp, handleBackFromHelp, resetNavigation } = useAppNavigation(updateClass, markSessionHandledFor,
-      !AUTH_REQUIRED || authStatus === 'authenticated' || (authStatus === 'offline' && Boolean(authUser)));
+    handleOpenSettings, handleBackFromSettings, handleOpenHelp: navigateToHelp, handleBackFromHelp, resetNavigation } = useAppNavigation(updateClass, markSessionHandledFor,
+      !AUTH_REQUIRED || authStatus === 'authenticated' || (authStatus === 'offline' && Boolean(authUser)), !useWorkspacePages);
+  const handleOpenHelp = useCallback((reference?: GuideReference) => {
+    setGuideReference(reference);
+    navigateToHelp();
+  }, [navigateToHelp]);
   useEffect(() => {
     setAssistantSettingsSection(undefined);
   }, [authOwner]);
@@ -224,7 +234,8 @@ const App: React.FC = () => {
     if (backgroundView === 'editor' && backgroundClass) {
       // Le Web propose un retour visible ; Android utilise son bouton système.
       return <Editor classInfo={backgroundClass} onBack={handleBackToDashboard}
-        onOpenSettings={() => handleOpenSchedule(backgroundClass.id)} />;
+        onOpenSettings={() => handleOpenSchedule(backgroundClass.id)}
+        onOpenGuide={useWorkspacePages ? () => handleOpenHelp() : undefined} />;
     }
     return (
       <Dashboard
@@ -241,7 +252,7 @@ const App: React.FC = () => {
 
   const routeKey = backgroundView === 'editor' && backgroundClass
     ? `editor-${backgroundClass.id}`
-    : 'dashboard';
+    : backgroundView;
   const routeFallback = <PageTransitionLoader />;
 
   const activeTab: TabType = view === 'settings' ? 'settings' : view === 'help' ? 'help' : 'dashboard';
@@ -249,7 +260,9 @@ const App: React.FC = () => {
 
   const handleTabChange = useCallback((tab: TabType) => {
     if (tab === 'dashboard') {
-      if (view === 'settings') {
+      if (useWorkspacePages) {
+        handleBackToDashboard();
+      } else if (view === 'settings') {
         handleBackFromSettings();
       } else if (view === 'help') {
         handleBackFromHelp();
@@ -261,7 +274,7 @@ const App: React.FC = () => {
     } else if (tab === 'help') {
       handleOpenHelp();
     }
-  }, [view, handleBackToDashboard, handleBackFromSettings, handleBackFromHelp, handleOpenSettings, handleOpenHelp]);
+  }, [view, useWorkspacePages, handleBackToDashboard, handleBackFromSettings, handleBackFromHelp, handleOpenSettings, handleOpenHelp]);
   const modalNavigation = (
     <MobileTabBar
       activeTab={activeTab}
@@ -282,7 +295,17 @@ const App: React.FC = () => {
     isOnboardingVisible || shouldBootOnboarding;
 
   const showNavigation = !isAuthView && !isBooting && backgroundView !== 'editor' && !isCurrentlyOnboarding;
-  const isOverlayOpen = !isAuthView && !isBooting && (view === 'settings' || view === 'help');
+  const isOverlayOpen = !useWorkspacePages && !isAuthView && !isBooting && (view === 'settings' || view === 'help');
+  const workspaceSection = !isBooting && !isAuthView && (view === 'settings'
+    ? <SettingsPage asPage={useWorkspacePages} mobileNavigation={useWorkspacePages ? undefined : modalNavigation}
+        initialSection={assistantSettingsSection?.section}
+        scheduleClassId={assistantSettingsSection?.section === 'emploi' ? assistantSettingsSection.classId : undefined}
+        onBack={handleBackFromSettings} onOpenGuide={() => handleOpenHelp()} config={config}
+        onConfigChange={updateConfig} classes={classes} addClass={addClass} />
+    : view === 'help'
+      ? <GuidePage asPage={useWorkspacePages} onBack={handleBackFromHelp}
+          initialReference={guideReference} mobileNavigation={useWorkspacePages ? undefined : modalNavigation} />
+      : null);
 
   const dynamicCanvasStyle = useMemo(() => {
     return computeDynamicCanvasStyle(classes, currentSession.classIds);
@@ -322,34 +345,10 @@ const App: React.FC = () => {
       >
         <div key={routeKey} className="relative z-10 min-h-dvh">
           <Suspense fallback={routeFallback}>
-            {renderContent()}
+            {useWorkspacePages && workspaceSection ? workspaceSection : renderContent()}
           </Suspense>
         </div>
-        {!isBooting && !isAuthView && view === 'settings' && (
-          <Suspense fallback={null}>
-            <SettingsPage
-              asPage={false}
-              mobileNavigation={modalNavigation}
-              initialSection={assistantSettingsSection?.section}
-              scheduleClassId={assistantSettingsSection?.section === 'emploi' ? assistantSettingsSection.classId : undefined}
-              onBack={handleBackFromSettings}
-              onOpenGuide={handleOpenHelp}
-              config={config}
-              onConfigChange={updateConfig}
-              classes={classes}
-              addClass={addClass}
-            />
-          </Suspense>
-        )}
-        {!isBooting && !isAuthView && view === 'help' && (
-          <Suspense fallback={null}>
-            <GuidePage
-              onBack={handleBackFromHelp}
-              onClose={handleBackFromHelp}
-              mobileNavigation={modalNavigation}
-            />
-          </Suspense>
-        )}
+        {!useWorkspacePages && <Suspense fallback={null}>{workspaceSection}</Suspense>}
         {/* L'onboarding ne compose aucune formule : il reste utilisable
             pendant le chargement du moteur destiné aux cahiers. */}
       </div>
@@ -367,7 +366,7 @@ const App: React.FC = () => {
             page blanche ni faire perdre la saisie locale. */}
         <AppErrorBoundary onError={reportAppError}>
           <Suspense fallback={<AppBootSkeleton />}>
-            {appSurface}
+            <GuideNavigationContext.Provider value={useWorkspacePages ? handleOpenHelp : null}>{appSurface}</GuideNavigationContext.Provider>
           </Suspense>
         </AppErrorBoundary>
 

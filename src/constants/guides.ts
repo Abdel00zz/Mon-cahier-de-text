@@ -29,15 +29,22 @@ export const GUIDE_FR: GuideChapter[] = chapters.map(entry => entry.fr);
 export const GUIDE_AR: GuideChapter[] = chapters.map(entry => entry.ar);
 
 /** Every query word must occur; accents and Arabic harakat do not block matches. */
-export function searchGuide(entries: GuideChapter[], query: string): GuideChapter[] {
-  const words = normalizeGuideSearch(query).trim().split(/\s+/).filter(Boolean);
-  if (!words.length) return entries;
-  return entries.filter(entry => {
-    const text = normalizeGuideSearch([
+export function createGuideSearch(entries: GuideChapter[]): (query: string) => GuideChapter[] {
+  const index = entries.map(entry => ({
+    entry,
+    text: normalizeGuideSearch([
       entry.title, entry.summary, entry.keywords, entry.tip,
       ...entry.sections.flatMap(section => [section.title, section.body, ...(section.steps ?? []),
         ...(section.items ?? []).flatMap(item => [item.term, item.detail])]),
-    ].filter(Boolean).join(' '));
-    return words.every(word => text.includes(word));
-  });
+    ].filter(Boolean).join(' ')),
+  }));
+  return query => {
+    const words = normalizeGuideSearch(query).trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return entries;
+    return index.filter(({ text }) => words.every(word => text.includes(word))).map(({ entry }) => entry);
+  };
+}
+
+export function searchGuide(entries: GuideChapter[], query: string): GuideChapter[] {
+  return createGuideSearch(entries)(query);
 }

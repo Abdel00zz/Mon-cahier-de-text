@@ -1,0 +1,290 @@
+
+.notebook-filter-info button,
+.notebook-undo button {
+    min-height: 44px;
+    padding: 5px 8px;
+    border-radius: 8px;
+    color: var(--text-dark);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
+/* 2. Barre de statut créative & Synthèse (Devoirs) */
+.status-summary-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 4px 2px 4px;
+    border: none;
+    background: transparent;
+}
+
+.stats-progress-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stats-count {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-sub, #767770);
+}
+
+.mini-progress-track {
+    width: 52px;
+    height: 5px;
+    background: var(--surface-subtle);
+    border-radius: var(--radius-pill, 9999px);
+    overflow: hidden;
+}
+
+.mini-progress-fill {
+    height: 100%;
+    background: #166b44;
+    border-radius: var(--radius-pill, 9999px);
+    transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+}
+
+.dark .mini-progress-fill {
+    background: #85e0b0;
+}
+
+.btn-mark-all {
+    background: none;
+    border: none;
+    color: var(--text-dark);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: #c9c7be;
+    transition: text-decoration-color var(--transition), color var(--transition);
+}
+
+.btn-mark-all:hover {
+    text-decoration-color: var(--text-dark);
+}
+
+
+/* 3. Zone centrale & Liste d'élèves */
+.notebook-empty,
+.empty-state-text {
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14.5px;
+    font-weight: 400;
+}
+
+.notebook-students,
+.students-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.notebook-student,
+.student-card {
+    background: var(--card-bg, var(--bg-page));
+    border: 1px solid var(--border-card, var(--border-subtle));
+    border-radius: var(--radius-card, 16px);
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.notebook-student:hover,
+.student-card:hover {
+    border-color: #d8d6cf;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+.dark .notebook-student:hover,
+.dark .student-card:hover {
+    border-color: #4a4b45;
+}
+
+.card-main-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    width: 100%;
+    min-width: 0;
+}
+
+/* Informations de l'élève (sans avatar/initiale) */
+.student-text-group,
+.notebook-student__identity {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.student-name,
+.notebook-student__name {
+    display: block;
+    overflow-wrap: anywhere;
+    font-size: 15.5px;
+    font-weight: 600;
+    color: var(--text-dark);
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+}
+
+
+
+/* Bouton de retrait / suppression */
+.btn-delete-row,
+.notebook-student__remove {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+
+.btn-delete-row:hover,
+.notebook-student__remove:hover {
+    background: #fdf2f2;
+    color: var(--danger-color, #c45555);
+}
+
+.dark .btn-delete-row:hover,
+.dark .notebook-student__remove:hover {
+    background: rgba(196, 85, 85, 0.18);
+    color: #f87171;
+}
+
+.btn-delete-row:active,
+.notebook-student__remove:active {
+    transform: scale(0.92);
+}
+
+/* 4. Footer */
+.notebook-tracker__footer {
+    flex: none;
+    padding: 16px 24px max(14px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-page);
+    margin-top: auto;
+}
+.notebook-footer__auxiliary { min-width: 0; font-size: 12px; }
+.notebook-footer__auxiliary summary { min-height: 44px; padding: 12px 6px; cursor: pointer; color: var(--text-muted); }
+.notebook-footer__auxiliary summary:focus-visible { outline: 2px solid var(--border-focus); border-radius: 8px; }
+.notebook-footer__auxiliary[open] { flex-basis: 100%; }
+
+.notebook-footer,
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.footer-actions-left,
+.notebook-footer__tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.footer-actions-right,
+.notebook-footer__commit {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-inline-start: auto;
+}
+
+.action-link,
+.notebook-text-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 550;
+    letter-spacing: 0.015em;
+    cursor: pointer;
+    padding: 4px 7px;
+    min-height: 44px;
+    border-radius: 7px;
+    transition: color var(--transition), background var(--transition), transform 0.12s ease;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.action-link svg,
+.notebook-text-action svg {
+    width: 12.5px;
+    height: 12.5px;
+    flex-shrink: 0;
+}
+
+.action-link:active:not(:disabled),
+.notebook-text-action:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+.action-link:disabled,
+.notebook-text-action:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.action-link.danger,
+.notebook-text-action--danger {
+    color: var(--danger-soft);
+}
+
+.action-link.danger:hover:not(:disabled),
+.notebook-text-action--danger:hover:not(:disabled) {
+    color: var(--danger-soft-hover);
+    background: color-mix(in srgb, var(--danger-soft) 10%, transparent);
+}
+
+.action-link.neutral {
+    color: var(--text-muted);
+}
+
+.action-link.neutral:hover:not(:disabled) {
+    color: var(--text-dark);
+    background: var(--surface-subtle);
+}
+
+/* « Copié » : la confirmation se lit dans le libellé, le vert sémantique la souligne. */
+.action-link[data-copied='true'],
+.action-link[data-copied='true']:hover:not(:disabled) {
+    color: #15803d;
+}
+
+.dark .action-link[data-copied='true'],
+.dark .action-link[data-copied='true']:hover:not(:disabled) {
+    color: #76d59a;
+}

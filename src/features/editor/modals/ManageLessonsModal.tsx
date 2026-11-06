@@ -196,7 +196,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                       <option value="decimal">1 · 1.1 · 1.1.1</option>
                       <option value="roman">I · I.1 · I.1.1</option>
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" aria-hidden />
+                    <ChevronDown className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" aria-hidden />
                   </div>
                 </label>
 
@@ -212,7 +212,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                       <option value="roman">I, II, III…</option>
                       <option value="hierarchical">1.1, 1.2, 2.1…</option>
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" aria-hidden />
+                    <ChevronDown className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" aria-hidden />
                   </div>
                 </label>
 
@@ -228,7 +228,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                       <option value="section">{t('manageLessons.numbering.section')}</option>
                       <option value="document">{t('manageLessons.numbering.document')}</option>
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" aria-hidden />
+                    <ChevronDown className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" aria-hidden />
                   </div>
                 </label>
               </div>

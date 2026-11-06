@@ -11,6 +11,8 @@ import { retainNotebookConditions, notebookConditionReport } from '@/domain/eval
 import { countHomeworkOutcomes, retainHomeworkOutcomes } from '@/domain/evaluations/homeworkSubmissions';
 import { namesWithRoster, normalizeStudentNames, studentSearchKey, retainOralOutcomes, retainOralGrades } from '@/domain/evaluations/studentRoster';
 import { StudentReviewList, NOTEBOOK_REVIEW_CHOICES, ORAL_REVIEW_CHOICES, HOMEWORK_REVIEW_CHOICES } from './NotebookConditionList';
+import './notebookTrackingBase.css';
+import './notebookTrackingCore.css';
 import './notebookTracking.css';
 import './oralTracking.css';
 

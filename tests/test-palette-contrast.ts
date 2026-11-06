@@ -154,7 +154,7 @@ test('les aplats d’avertissement portent l’encre de leur thème', () => {
 });
 
 test('le numéro de groupe porte une encre pleine et reste décoratif', () => {
-  const cards = readFileSync(new URL('../src/features/dashboard/classCards.css', import.meta.url), 'utf8');
+  const cards = [new URL('../src/features/dashboard/classCardsBase.css', import.meta.url), new URL('../src/features/dashboard/classCards.css', import.meta.url)].map(url => readFileSync(url, 'utf8')).join('\n');
   const start = cards.indexOf('.class-card .class-card__group {');
   assert.ok(start > 0);
   const group = cards.slice(start, cards.indexOf('}', start));
@@ -175,7 +175,7 @@ test('le numéro de groupe porte une encre pleine et reste décoratif', () => {
 });
 
 test('le numéro sur la fiche conserve un contraste AA sur les huit tons dans les deux thèmes', () => {
-  const cardCss = readFileSync(new URL('../src/features/dashboard/classCards.css', import.meta.url), 'utf8');
+  const cardCss = [new URL('../src/features/dashboard/classCardsBase.css', import.meta.url), new URL('../src/features/dashboard/classCards.css', import.meta.url)].map(url => readFileSync(url, 'utf8')).join('\n');
   const paperWeight = Number(cardCss.match(/--class-paper: color-mix\(in srgb, hsl\(var\(--card\)\) (\d+)%/)![1]) / 100;
   const lightPaper = cardCss.match(/--class-paper: hsl\(([\d.]+) ([\d.]+)% ([\d.]+)%\)/);
   assert.ok(lightPaper, 'la fiche claire utilise un papier neutre');

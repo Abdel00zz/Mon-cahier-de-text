@@ -127,10 +127,13 @@ test('le numéro suivant d’un devoir manuel se calcule sur le PLUS GRAND, jama
 });
 
 test('deux portes, un seul enregistrement : les épreuves se créent au tableau, la feuille les reçoit', () => {
-  const addModal = readFileSync('src/features/editor/modals/ContentModal.tsx', 'utf8');
+  const addModal = [
+    'src/features/editor/modals/ContentModal.tsx',
+    'src/features/editor/modals/ContentTypePicker.tsx',
+  ].map(path => readFileSync(path, 'utf8')).join('\n');
   const family = ['evaluation_diagnostic', 'controle_continu', 'controle_court', 'controle_global', 'oral', 'correction_devoir_maison', 'correction_controle_continu'];
   for (const type of family) {
-    assert.ok(addModal.includes(`handleSelectType('${type}')`),
+    assert.ok(addModal.includes(`onSelect('${type}')`),
       `« Ajouter un contenu » offre ${type} : la famille des épreuves a sa porte`);
   }
   // Position : posé DIRECTEMENT APRÈS l'élément cliqué, jamais renvoyé en fin
@@ -138,7 +141,7 @@ test('deux portes, un seul enregistrement : les épreuves se créent au tableau,
   const editor = readFileSync('src/features/editor/Editor.tsx', 'utf8');
   assert.match(editor, /insertAssessmentBlock\(draft, anchor, newItem\)/,
     'le tableau pose le bloc après l’élément cliqué');
-  const placement = readFileSync('src/domain/notebook/dataUtils.ts', 'utf8');
+  const placement = readFileSync('src/domain/notebook/dataUtilsTree.ts', 'utf8');
   assert.match(placement, /ancre = ligne de contenu → juste après elle/,
     'la règle de placement est écrite noir sur blanc');
   assert.match(placement, /located\.parent\.splice\(located\.targetIndex \+ 1, 0, block/,
@@ -146,7 +149,7 @@ test('deux portes, un seul enregistrement : les épreuves se créent au tableau,
   // Le devoir à la maison a DEUX portes (la pastille de la remarque, la carte
   // « Devoir maison ») et UNE écriture : il rejoint la feuille d'évaluations, jamais
   // le cahier sous forme de bloc caché.
-  assert.ok(addModal.includes("handleSelectType('devoir_maison')"), 'la carte Devoir maison est proposée');
+  assert.ok(addModal.includes("onSelect('devoir_maison')"), 'la carte Devoir maison est proposée');
   assert.match(editor, /if \(type === 'devoir_maison'\) \{[\s\S]{0,1600}assignHomeworkPatch\(config, classInfo\.id, date, num\)[\s\S]{0,600}return;/,
     'la carte écrit le devoir dans la feuille, sans toucher au cahier');
   const remark = readFileSync('src/domain/evaluations/sessionRemarkChanges.ts', 'utf8');

@@ -90,31 +90,23 @@ export function ClassActionsMenu({
                     isOpen={isOpen}
                     onClose={closeMenu}
                     dir={isRtl ? 'rtl' : 'ltr'}
-                    title={title}
+                    title={(
+                        <span className="class-quick-sheet__title">
+                            <span>{title}</span>
+                            <span className="class-quick-sheet__class" dir="auto">{name}</span>
+                        </span>
+                    )}
                     dragHandle
                     swipeToDismiss
                     swipeFromBody
                     mobilePresentation="sheet"
-                    mobileMaxHeight={0.72}
+                    mobileMaxHeight={0.56}
                     maxWidth="sm"
                     className="class-quick-sheet"
                     headerClassName="class-quick-sheet__header"
                     bodyClassName="class-quick-sheet__body"
                 >
-                    <div className="class-quick-sheet__actions hub-grid" data-tiles>
-                        {onOpenEvaluations && (
-                            <button
-                                type="button"
-                                onClick={() => openEvaluations('all')}
-                                data-tone="blue"
-                                data-layout="tile"
-                                className="class-quick-sheet__action hub-card"
-                            >
-                                <span className="hub-card__icon" aria-hidden="true"><CalendarCheck /></span>
-                                <span className="hub-card__title">{t('dashboard.openEvaluations')}</span>
-                            </button>
-                        )}
-
+                    <div className="class-quick-sheet__actions">
                         <button
                             type="button"
                             onClick={() => {
@@ -122,13 +114,22 @@ export function ClassActionsMenu({
                                 setActiveMenu(null);
                                 onConfigure();
                             }}
-                            data-tone="violet"
-                            data-layout="tile"
-                            className="class-quick-sheet__action hub-card"
+                            className="class-quick-sheet__action"
                         >
-                            <span className="hub-card__icon" aria-hidden="true"><Pencil /></span>
-                            <span className="hub-card__title">{editLabel}</span>
+                            <span className="class-quick-sheet__icon" data-tone="violet" aria-hidden="true"><Pencil /></span>
+                            <span className="class-quick-sheet__label">{editLabel}</span>
                         </button>
+
+                        {onOpenEvaluations && (
+                            <button
+                                type="button"
+                                onClick={() => openEvaluations('all')}
+                                className="class-quick-sheet__action"
+                            >
+                                <span className="class-quick-sheet__icon" data-tone="blue" aria-hidden="true"><CalendarCheck /></span>
+                                <span className="class-quick-sheet__label">{t('dashboard.openEvaluations')}</span>
+                            </button>
+                        )}
 
                         {onDelete && (
                             <button
@@ -138,12 +139,11 @@ export function ClassActionsMenu({
                                     setActiveMenu(null);
                                     onDelete();
                                 }}
-                                data-tone="rose"
-                                data-layout="tile"
-                                className="class-quick-sheet__action class-quick-sheet__action--danger hub-card"
+                                className="class-quick-sheet__action"
+                                data-danger="true"
                             >
-                                <span className="hub-card__icon" aria-hidden="true"><Trash2 /></span>
-                                <span className="hub-card__title">{deleteLabel}</span>
+                                <span className="class-quick-sheet__icon" data-tone="rose" aria-hidden="true"><Trash2 /></span>
+                                <span className="class-quick-sheet__label">{deleteLabel}</span>
                             </button>
                         )}
                     </div>

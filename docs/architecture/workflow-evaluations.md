@@ -7,33 +7,36 @@
 
 ## 1. Principe directeur — une seule porte par famille
 
-Deux familles d’objets, une seule porte de création pour chacune, **un seul
-enregistrement** par objet — et deux surfaces qui le lisent.
+La saisie d’une évaluation ou d’une activité part du **Table Editor**.
+La feuille **« Contrôle continu et activités »** reçoit les entrées capturées
+et ouvre le suivi des entrées existantes. Son état vide renvoie vers le cahier.
+Le choix de nature se fait dans le tableau, par le formulaire de contenu ou
+la remarque de séance selon la famille.
 
 ### Famille A — les faits de séance, énoncés dans la REMARQUE
 
 Contrôle des cahiers des élèves, remédiation, soutien, rattrapage et **devoir à
 la maison assigné aux élèves** s’écrivent dans la **remarque** de leur séance :
-c’est là que le professeur raconte son cours. Ils n’ont **aucune carte** dans
-« Ajouter un contenu ». La feuille « Contrôle continu et activités » les reçoit
-ensuite : activité datée pour les quatre premiers, évaluation `maison` datée
-pour le devoir à la maison (pastilles « donné » et « correction » de la cellule
-de séance). Dans le CHOIX de création de la feuille, le contrôle des cahiers est
-un type du **contrôle continu** : sa carte vit dans la famille « Devoirs et
-évaluations », les trois autres dans « Activités pédagogiques ».
+c’est là que le professeur raconte son cours. Les quatre activités sont
+saisies par puce ou reconnues dans le texte d’une remarque datée. La feuille
+reçoit un événement par activité détectée. Le devoir à la maison donné passe
+par la puce « Devoir à la maison assigné aux élèves » ou la carte « Devoir
+maison » d’« Ajouter un contenu ». Les deux entrées de l’éditeur appellent
+`assignHomeworkPatch` et alimentent le même devoir.
 
 ### Famille B — les épreuves, créées depuis « Ajouter un contenu »
 
-Évaluation diagnostique, devoir surveillé, devoir écrit court, devoir écrit
-global, évaluation orale, correction du devoir maison et correction du devoir
-surveillé se créent depuis la modale « Ajouter un contenu » du tableau. Elles
-ne font **pas partie du plan d'un chapitre** — reconnues par leur TYPE
-(`dev-block-<id>` / `event-<id>`), jamais par leur position — et se posent
-**directement après l'élément cliqué** (`insertAssessmentBlock`,
-`dataUtils.ts`), à n'importe quelle profondeur du document. La feuille les
-reçoit à son tour — bloc daté `dev-block-<id>` pour les épreuves écrites et
-l'oral, activité `event-<id>` pour le diagnostic et la correction du devoir
-surveillé, date de correction du devoir pour la correction du devoir maison.
+| Saisie dans « Ajouter un contenu » | Entrée reçue dans la feuille |
+| --- | --- |
+| Devoir surveillé, écrit court, écrit global, oral, colle | Évaluation reconnue par le type du bloc, même imbriqué |
+| Diagnostic, correction du devoir surveillé, examen blanc, olympiade, concours | Activité reconnue par le type du bloc |
+| Correction du devoir maison | Date du second temps du devoir, associée par identité ou numéro |
+
+Le bloc se pose à l’ancre du tableau via `insertAssessmentBlock`. Son
+emplacement règle l’ordre de lecture, tandis que son type détermine ce que
+la capture en extrait. Le bloc oral peut ainsi venir du tableau. Le pont
+de retour de la feuille projette l’oral dans la remarque et ne matérialise
+pas de nouveau bloc oral.
 
 - Le **tableau** (cahier de textes) reste la surface de **capture quotidienne** :
   contenu, date de séance, remarque. C’est lui qui porte le document.
@@ -51,20 +54,20 @@ surveillé, date de correction du devoir pour la correction du devoir maison.
 | Ligne de contenu (séance) | Cahier (`LessonsData`) | `_tempId` ou position (`indices`) |
 | Cellule date / remarque | Ligne fusionnée (`dateMerge`) | date de séance `AAAA-MM-JJ` |
 | Annotation de séance | Projection — jamais stockée dans le cahier | `event:<id>` (activité), `assessment:<id>` (évaluation), `assessment:<id>:correction` (correction) |
-| Bloc « épreuve » | Cahier | `_tempId = dev-block-<assessmentId>` |
+| Bloc « épreuve » | Cahier | `_tempId` de saisie, ou `dev-block-<assessmentId>` pour un bloc rattaché par le pont |
 | Bloc « devoir maison » | Historique du cahier | masqué à l’affichage, conservé pour compatibilité |
 | Bloc « correction du devoir maison » | Cahier | position + numéro déclaré — il DATE le devoir de ce numéro, sans jamais le dupliquer |
 | Évaluation manuelle | `manualAssessments[classId]` | `<année>:s<semestre>-<type><num>` |
 | Évaluation planifiée | Planning ministériel + surcharges | même forme, millésime inclus |
-| Activité pédagogique | `pedagogicalEvents[classId]` | `event-<id>` côté cahier |
-| Sujette / corrigé | `assessmentDocuments` | par identité d’évaluation |
+| Activité pédagogique | `pedagogicalEvents[classId]` | Identité d’événement liée à un bloc ou dérivée de la ligne de remarque |
+| Sujet / corrigé | `assessmentDocuments` | par identité d’évaluation |
 | Absences, remises, oral | `assessmentAbsences`, `assessmentParticipants` | par identité d’évaluation |
 
-**Règle d’identité** : jamais de correspondance par date seule. Les blocs
-venus de la modale portent leur identité dans `_tempId` ; les blocs saisis au
-tableau sont rapprochés par type + numéro (convention ordinale « N-ième devoir
-d’un type »), puis par date seulement en dernier recours lors de la
-réconciliation initiale.
+La clé de position sert à adresser la ligne. Pour rattacher le suivi, le
+moteur privilégie l’identité portée par `_tempId`, puis l’appariement par
+type et numéro avec le planning ou une entrée existante. Le numéro explicite
+du titre prime sur l’ordinal. L’année et le semestre entrent dans la clé
+calculée lorsqu’une date valide permet de les déterminer.
 
 ## 3. États d’un devoir
 
@@ -89,38 +92,44 @@ annotée (projections ci-dessus).
 
 ## 4. Flux et sens des écritures
 
-1. **Capture — tableau → modale.** À chaque sauvegarde du cahier,
-   `syncNotebookToEvaluations` (`notebookReconciliation.ts`) compare
-   l’avant/après : un bloc d’épreuve daté devient une évaluation, un bloc
-   d’événement (diagnostic, correction CC, examen blanc, olympiade, concours)
-   devient une activité — dès sa création, même avant d’être daté (« + Définir
-   une date ») quand la ligne porte un `_tempId` —, une ligne supprimée marque
-   l’évaluation supprimée. Idempotent : une seconde synchronisation sans
-   changement n’écrit rien. Un bloc « correction du devoir maison » date le
+1. **Capture — tableau → modale.** À l’enregistrement, et à la relecture du
+   cahier dans la feuille, `syncNotebookToEvaluations` parcourt l’arbre complet,
+   indépendamment du filtre et de la fenêtre de défilement. La feuille peut
+   aussi afficher un bloc d’évaluation sans date à partir du lien lu dans
+   le cahier. Un bloc d’activité avec `_tempId` est transmis avant sa
+   datation. La cellule indique alors « Pas encore de date ». Le tableau
+   fournit la date initiale. Un ancien bloc d’activité sans identité attend
+   une date s’il ne correspond à aucune entrée existante. La disparition
+   d’un bloc est traitée lorsque l’état précédent est connu. Une deuxième
+   capture identique ne produit aucun correctif. Un bloc « correction du devoir maison » date le
    SECOND temps du devoir (`withHomeworkCorrection`, `homeworkCycle.ts`) :
    devoir de la feuille, devoir du planning officiel daté par le professeur
    (il rejoint alors les entrées de la feuille), ou — aucun devoir de ce
    numéro dans le semestre — devoir transmis à la feuille avec sa correction,
    attribution à compléter. Jamais de doublon ; un devoir supprimé ne renaît
    pas.
-2. **Matérialisation — modale → tableau.** À la création ou au changement de
-   date dans la modale :
-   - épreuves écrites (contrôle continu, court, global) :
-     `syncAssessmentDateToNotebook` crée/actualise le bloc daté
-     `dev-block-<id>` (`notebookSyncBridge.ts`) ;
-   - oral et devoir maison : **aucune écriture en bloc** — l’annotation datée
-     est **projetée** par `buildSessionRemarkEntries`
-     (`sessionActivityRemarks.ts`) sur la séance du même jour ;
+2. **Retour de suivi — modale → tableau.** Changer la date d’une entrée
+   reçue peut actualiser sa représentation dans le cahier.
+   - contrôles écrits et colle : `syncAssessmentDateToNotebook` actualise le
+     bloc daté ou le matérialise si l’entrée existante n’a pas encore de bloc ;
+   - oral et devoir maison : `buildSessionRemarkEntries` projette les
+     annotations d’attribution dans la remarque. Pour l’oral, modifier la
+     date côté feuille ne réécrit pas le bloc de saisie ;
    - activités : `syncEventToNotebook` matérialise le diagnostic, la
      correction CC, l’**examen blanc**, l’**olympiade** et le **concours** en
      blocs datés `event-<id>` ; contrôle des cahiers, remédiation, soutien et
      rattrapage restent des annotations de séance ;
    - suppression symétrique par identité : `removeAssessmentFromNotebook`,
      `removeEventFromNotebook`.
-3. **Séance → évaluation (direct).** Les pastilles « Devoir maison N donné »
-   et « Correction devoir maison N » de la cellule de séance patchent
-   l’évaluation par la MÊME identité que la réconciliation
-   (`homeworkGiven`, `homeworkCorrection` — `sessionRemarkChanges.ts`).
+3. **Capture de la remarque.** L’édition de la séance compare les remarques
+   avant et après pour transmettre immédiatement les activités détectées.
+   Le même détecteur relit les remarques lors de la réconciliation. Il exige
+   une date de début valide, normalise le texte français, anglais ou arabe,
+   puis cherche les motifs du contrôle des cahiers, de la remédiation, du
+   soutien et du rattrapage. L’identité `remark-<type>-<ligne>` associe le suivi
+   à la remarque. Une activité explicite correspondante le même jour
+   prime sur la mention. Le devoir maison donné utilise la validation de
+   la remarque et son numéro détecté ou proposé, via `assignHomeworkPatch`.
 4. **Dates.** La date du cahier reste la source de vérité affichée ; tout écart
    planning/tableau est **signalé** (statut `mismatch` + bouton « Aligner »),
    jamais corrigé en silence. Les dates ministérielles ne sont jamais
@@ -146,9 +155,10 @@ annotée (projections ci-dessus).
   remarque et la carte « Devoir maison » de `ContentModal` — mais UNE seule
   écriture (`assignHomeworkPatch`, `sessionRemarkChanges.ts`) : il rejoint la
   feuille, jamais le cahier sous forme de bloc.
-- **Position = l'élément cliqué** : une épreuve se pose juste après l'élément
-  sur lequel le professeur a cliqué (`insertAssessmentBlock`) — jamais en fin
-  de cahier — et reste reçue par la feuille, même imbriquée dans une section.
+- **Placement à l’ancre** : `insertAssessmentBlock` pose le bloc après le
+  contenu ciblé ou sous le titre de section. Un chapitre ciblé place le bloc
+  juste après ce chapitre à la racine. Sans ancre, le bloc va en fin de cahier.
+  La capture le retrouve même imbriqué dans une section.
 - **Correction transmise, jamais dupliquée** : un bloc de correction du devoir
   maison date le devoir de son numéro (feuille ou planning daté) ; sans devoir
   de ce numéro dans le semestre, il le transmet à la feuille (attribution à
@@ -156,11 +166,14 @@ annotée (projections ci-dessus).
 - **Idempotence** : deux synchronisations identiques → aucune écriture.
 - **Pas de doublon** : une identité donnée n’existe qu’une fois, des deux
   côtés (bloc ↔ évaluation).
-- **Oral et maison** : jamais de bloc — uniquement des annotations.
+- **Retour de suivi pour l’oral et le devoir maison** : le pont ne matérialise
+  aucun nouveau bloc pour ces deux natures. Le tableau peut saisir l’oral
+  comme bloc et conserve les anciens blocs maison pour compatibilité.
 - **Épreuves écrites** : bloc daté garanti, mis à jour sur place, retiré par
   identité.
-- **Suppression à double sens** : retirer d’un côté retire l’autre par
-  identité, jamais par position.
+- **Suppression des entrées à bloc** : la suppression peut retirer le bloc
+  associé. Pour une activité issue d’une remarque, retirer la mention à sa
+  source évite qu’elle soit détectée de nouveau à la lecture du cahier.
 ## 7. Politique du contrôle continu (réglée par la direction)
 
 La direction décide, **nature par nature** (16 natures : 6 devoirs, 10 activités),
@@ -170,7 +183,7 @@ Page d'administration « Contrôle continu » (politique générale) et, par com
 
 | Réglage | Effet |
 | --- | --- |
-| `transmit` | le cahier (bloc ou remarque) crée l'évaluation / l'activité dans la feuille |
+| `transmit` | autorise le moteur de réconciliation à transmettre une nature saisie dans le cahier |
 | `continuous` | famille « Devoirs et évaluations » plutôt que « Activités pédagogiques » (présentation seulement) |
 | `document` | contenu rédigé : `off` / `optional` / `required` (rouge si requis et manquant) |
 | `students` | commande « Élèves » / « Suivi » / « Remises » / « Cahiers » : liste d'élèves |
@@ -219,10 +232,11 @@ avec le cloud (Redis ou Firestore stockent le même blob JSON, octet pour octet)
   daterait de nouveau). Le devoir, son sujet et sa date limite restent.
 - **Réglage de la direction** : « Correction du devoir » (page *Contrôle continu*) décide si la séance de
   correction est datée sur la feuille ; le contenu du corrigé suit le réglage « Contenu » du devoir maison.
-- **Cahier ⇄ feuille** : la date de correction posée sur la feuille s’affiche en pastille dans la séance du cahier
-  (et inversement via le bloc ou la pastille « Correction du devoir à la maison N »). Le corrigé s’ouvre depuis cette
-  séance. Les phrases que l’application écrit elle-même (`remark.devoirMaisonGiven`, `remark.devoirMaisonCorrection`)
-  sont reconnues dans les trois langues (`homeworkNumbering.ts`).
+- **Cahier ⇄ feuille** : la date de correction saisie sur la feuille se reporte
+  sur le bloc de correction du devoir. Inversement, dater ce bloc dans le
+  tableau renseigne la correction du même devoir. Les libellés générés pour
+  le devoir donné sont reconnus dans les trois langues
+  (`homeworkNumbering.ts`).
 - **Direction** : la fiche enseignant montre la date limite, la correction et son corrigé en lecture seule.
 - **Compatibilité** : un appareil plus ancien ignore `dueDateISO` et la clé `:correction`, sans les perdre (le blob
   est conservé tel quel côté serveur).

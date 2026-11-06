@@ -156,10 +156,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
     useEffect(() => { setScheduleClockNow(new Date()); }, [sessionBoundaryIds]);
 
     // Card, grouping and companion consume the same timestamp and calendar.
-    const activeSessionKey = JSON.stringify([...scheduleStatusByClassId]
-        .filter(([, status]) => status.state === 'in_progress').map(([id]) => id));
-    // A countdown tick with the same classes must not restart the notebook analysis.
-    const activeSessionClassIds = useMemo<string[]>(() => JSON.parse(activeSessionKey), [activeSessionKey]);
+    // A countdown tick with the same classes must not restart the notebook analysis:
+    // the key keeps its identity, and splitting it is cheaper than a JSON round-trip.
+    const activeSessionKey = useMemo(
+        () => [...scheduleStatusByClassId]
+            .filter(([, status]) => status.state === 'in_progress')
+            .map(([id]) => id)
+            .join('|'),
+        [scheduleStatusByClassId],
+    );
+    const activeSessionClassIds = useMemo<string[]>(
+        () => activeSessionKey ? activeSessionKey.split('|') : [],
+        [activeSessionKey],
+    );
     const preferredClassId = activeSessionClassIds.length === 1 ? activeSessionClassIds[0] : undefined;
 
     // Si le cloud sait que l'accueil est terminé (config.hasCompletedWelcome) mais que

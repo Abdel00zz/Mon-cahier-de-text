@@ -90,9 +90,9 @@ const TableHeader: React.FC = React.memo(() => {
   return (
   /* §G : aucun padding externe, les colonnes de l'en-tête restent alignées
      avec celles des rangées. Style épuré inspiré de Google Keep. */
-  <div className="border-b border-border/60 bg-muted/30">
+  <div className="border-b border-border/60 bg-muted/40">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
-    <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
+    <div className={`grid min-h-11 sm:min-h-12 ${TABLE_GRID_CLASS}`}>
       <div className="flex items-center justify-center border-e border-border/60 px-1 py-1.5 text-center sm:px-2.5 sm:py-2">
         <span dir={textDirectionAttribute(t('editor.date'))} className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">{t('editor.date')}</span>
       </div>
@@ -165,11 +165,12 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     }
     return String(id);
   }, []);
+  const descriptionTypesKey = useMemo(() => descriptionTypes.join(','), [descriptionTypes]);
   const itemKeys = useMemo(() => renderRows.map(row => {
     if (row.kind === 'absence') return row.key + ':' + JSON.stringify(row.sessions) + ':' + contentDirection;
     const items = row.kind === 'single' ? [row.item] : row.items;
-    return items.map(item => getSortId(item.data)).join(':') + ':' + contentDirection + ':' + showDescriptions + ':' + descriptionTypes.join(',');
-  }), [renderRows, contentDirection, showDescriptions, descriptionTypes, getSortId]);
+    return items.map(item => getSortId(item.data)).join(':') + ':' + contentDirection + ':' + showDescriptions + ':' + descriptionTypesKey;
+  }), [renderRows, contentDirection, showDescriptions, descriptionTypesKey, getSortId]);
   const sortRootRef = useRef<HTMLDivElement>(null);
   const sort = useEditorRowReorder(sortRootRef, itemKeys, {
     started: t('editor.reorderStarted'), moved: t('editor.reorderMoved'), cancelled: t('editor.reorderCancelled'),
@@ -276,7 +277,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       data-editor-table
       data-content-direction={contentDirection}
       dir={contentDirection}
-      className="rtl-table mx-0 overflow-clip rounded-xl border border-border bg-card shadow-xs transition-shadow duration-200 print:border-none"
+      className="rtl-table mx-0 overflow-clip rounded-2xl border border-border bg-card shadow-xs transition-shadow duration-200 print:border-none"
     >
       <TableHeader />
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true"><span key={sort.announcement.sequence}>{sort.announcement.text}</span></span>

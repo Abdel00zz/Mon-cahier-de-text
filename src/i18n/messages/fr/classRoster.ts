@@ -1,0 +1,20 @@
+// Traductions fr — classRoster.
+export const messages: Record<string, string> = {
+  'classRoster.title': "Élèves de la classe",
+  'classRoster.identity': "Informations",
+  'classRoster.manage': "Ajouter ou gérer les élèves",
+  'classRoster.help': "Une seule liste pour les évaluations, les activités et l’administration. Les observations déjà enregistrées sont conservées.",
+  'classRoster.label': "Noms complets",
+  'classRoster.format': "Séparez les noms par « ؛ » ou un retour à la ligne.",
+  'classRoster.placeholder': "أحمد العلوي ؛ سلمى الفاسي ؛ يوسف أمين",
+  'classRoster.count': "{count} / 200 élèves · doublons retirés",
+  'classRoster.empty': "La liste est vide. Ajoutez les élèves dans les paramètres de la classe.",
+  'classRoster.selection': "Sélectionnez les élèves concernés.",
+  'classRoster.discard': "Quitter sans enregistrer ?",
+  'classRoster.discardBody': "Les modifications de la liste des élèves ne sont pas encore enregistrées.",
+  'classRoster.leave': "Quitter",
+  'classRoster.changed': "La liste a été actualisée. Vos modifications seront fusionnées à l’enregistrement.",
+  'classRoster.saved': "Liste des élèves enregistrée",
+  'classRoster.history': "Élèves des suivis existants",
+  'classRoster.import': "Reprendre ces noms",
+};

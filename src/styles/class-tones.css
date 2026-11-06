@@ -4,15 +4,8 @@
 
 /* Shared Keep surfaces: one neutral card, a hairline, no filter or loop. */
 @layer components {
-  .keep-surface {
-    --keep-border: hsl(var(--border));
-    border: 1px solid var(--keep-border);
-    border-radius: var(--radius-lg, 14px);
-    background-color: hsl(var(--card));
-    color: hsl(var(--foreground));
-  }
-
-  /* Couche fonctionnelle : IBM Plex pour les zones de travail, sans empilement décoratif. */
+  /* Couche fonctionnelle : une seule famille pour les zones de travail, sans
+     empilement décoratif. */
   [role="dialog"], [role="menu"], [role="listbox"], [data-radix-popper-content-wrapper],
   input, textarea, select, button, [role="button"] {
     font-family: var(--font-sans);
@@ -25,24 +18,11 @@
     box-shadow: var(--ui-focus-ring);
   }
 
-  /* Fondation Swiss mobile : hiérarchie stricte, surfaces calmes et densité maîtrisée. */
+  /* Fondation Swiss mobile : hiérarchie stricte, surfaces calmes et densité maîtrisée.
+     L'encre suit la palette sémantique ; aucun hex ne double le thème. */
   :root {
-    --app-ink: #1f1e1d;
-    --app-ink-muted: #6b6a64;
-    --app-surface: #fefdfb;
-    --app-surface-soft: #f0eee6;
-    --app-line: rgb(20 20 19 / 0.10);
-    --app-accent: #b35230;
-    --app-accent-soft: rgb(179 82 48 / 0.1);
-  }
-  .dark {
-    --app-ink: #ecebe0;
-    --app-ink-muted: #b0aea5;
-    --app-surface: #30302e;
-    --app-surface-soft: #3a3a37;
-    --app-line: rgb(236 235 224 / 0.12);
-    --app-accent: #e08a6b;
-    --app-accent-soft: rgb(217 119 87 / 0.14);
+    --app-ink: hsl(var(--foreground));
+    --app-ink-muted: hsl(var(--muted-foreground));
   }
   :is(.dashboard-artisan-shell, .onboarding-artisan-shell, .auth-artisan-shell) {
     color: var(--app-ink);

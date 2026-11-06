@@ -19,7 +19,7 @@ export function ClassCreationProgress({ steps, currentIndex, label, stepLabel, o
   const progressRatio = count > 1 ? Math.min(1, Math.max(0, currentIndex / (count - 1))) : 0;
 
   return (
-    <nav className="claude-circuit-steps" aria-label={label}>
+    <nav className="claude-circuit-steps" aria-label={label} role="list">
       {/* Circuit track de liaison */}
       <div className="claude-circuit-track" aria-hidden="true">
         <div
@@ -51,6 +51,7 @@ export function ClassCreationProgress({ steps, currentIndex, label, stepLabel, o
             key={step}
             className="claude-circuit-step"
             data-state={state}
+            role="listitem"
             aria-current={current ? 'step' : undefined}
           >
             {complete ? (
@@ -59,6 +60,7 @@ export function ClassCreationProgress({ steps, currentIndex, label, stepLabel, o
                 onClick={() => onReturn(step)}
                 className="flex flex-col items-center gap-1.5 bg-transparent border-0 p-0 cursor-pointer"
                 title={stepLabel(step)}
+                aria-label={stepLabel(step)}
               >
                 {nodeContent}
               </button>

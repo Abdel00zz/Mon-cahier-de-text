@@ -17,7 +17,10 @@ import type { AppConfig, ClassInfo, PedagogicalEvent } from '../src/types';
  * lignes, et des cibles tactiles qui ne rétrécissent jamais.
  */
 
-const css = readFileSync('src/features/evaluations/evaluationsBoard.css', 'utf8');
+const css = [
+  'src/features/evaluations/evaluationsBoard.css',
+  'src/features/evaluations/evaluationsBoardAccordion.css',
+].map(path => readFileSync(path, 'utf8')).join('\n');
 const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/PedagogicalEventsSection.tsx', 'utf8');
 
 const classInfo = {
@@ -110,13 +113,12 @@ test('au téléphone, les boutons restent alignés et les cibles suivent le toke
   assert.match(touch, /inset: -4\.5px/, 'extension tactile invisible à 44 px (35 + 2×4.5)');
 });
 
-test('plus de colonne « État » : l’écart de date reste signalé et actionnable sous le titre, sans répéter la date du devoir', () => {
-  // L'état se déduisait de la date et du cahier : ce qui demande une action — aligner la
-  // date sur la séance — passe sous le titre de la ligne, avec l'échéance du devoir maison.
+test('le suivi affiche les dates du cahier sans permettre de les modifier', () => {
+  assert.doesNotMatch(view, /setAssessmentDate|setEditingDateAssessment|openEditAssessment/, 'aucun chemin indirect ne modifie une date');
+  assert.match(view, /EvaluationDate date=\{rawDate\}/, 'la date du cahier est affichée en lecture seule');
   assert.doesNotMatch(view, /STATUS_CHIP|STATUS_STYLE/, 'plus de pastille d’état par devoir');
   assert.doesNotMatch(view, /evaluations\.colState/, 'plus d’en-tête « État »');
   assert.match(view, /className="ev-row__meta"/, 'les dates et l’alignement vivent sous le titre');
-  assert.match(view, /setAssessmentDate\(a\.id, targetDate\)/, 'l’alignement sur le cahier est conservé');
   assert.doesNotMatch(view, /evaluations\.homework\.givenOn/, 'la date de remise n’est plus répétée sous le titre');
   assert.match(view, /evaluations\.homework\.dueOn/, 'la date limite de rendu est rappelée sous le titre du devoir maison');
   assert.match(view, /ev-row--correction/, 'la date de correction est celle de l’entrée « Correction du devoir maison »');

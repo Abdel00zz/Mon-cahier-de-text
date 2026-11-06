@@ -1,0 +1,301 @@
+@import './evaluationTypography.css';
+
+/* ══════════════════════════════════════════════════════════════
+   Fiche classe (« Contrôle continu et activités ») — Espace de travail serein :
+   - Bandeau héros en dégradé pastel vertical doux (.hero), titre Readex Pro 600
+   - Nom du cours dans une pastille teintée plate (.stk) sous le titre
+   - 4 sections en accordéons pastel asymétriques (.ac : 1.4rem / .5rem) + icône ronde blanche (.ci) + compteur (.cnt)
+   - Chaque évaluation est un ticket blanc épuré (.tk : 1.1rem / .4rem) : titre à droite, date sur pastille (.lf), actions dessous séparées par un trait fin plein (#f0ebe3)
+   - Correction du devoir reliée au devoir par un connecteur coudé arrondi continu (.tk.ch::before)
+   - Mobile : feuille quasi pleine hauteur ; Grand écran : modale centrée 44rem avec rayon asymétrique (2rem / .6rem)
+   - Cibles tactiles ≥ 44px
+   ══════════════════════════════════════════════════════════════ */
+
+.evaluation-reference {
+  --bg-page: color-mix(in srgb, var(--hero-border, #f6d9bd) 10%, #fffdfa);
+  --text-dark: #2f2822;
+  --text-secondary: #7a7169;
+  --text-muted: #7a7169;
+  --color-terracotta: #7a5a49;
+  --pad: clamp(.65rem, 2.4cqi, 1.1rem);
+
+  /* Tons du bandeau héros par défaut (pêche PAL) */
+  --hero-bg: #fdeede;
+  --hero-border: #f6d9bd;
+  --hero-ink: #6b3a12;
+  --hero-secondary: #a8642a;
+
+  /* Tons sémantiques des actions (.ab) */
+  --badge-green-bg: #e2f3e7;
+  --badge-green-text: #2f7a4d;
+  --icon-blue-bg: #ece9f7;
+  --icon-blue-fg: #5d55a3;
+  --icon-gray-bg: #f0ebe3;
+  --icon-gray-fg: #3b2f28;
+  --danger-bg: #fde4ea;
+  --danger-border: #f1d3d9;
+  --danger-text: #c2255c;
+
+  --border-card: #ebe5dc;
+  --border-subtle: #f0ebe3;
+  --header-row-bg: #f0ebe3;
+
+  --radius-card: 1.8rem;
+  --radius-item: 1.2rem;
+  --eval-card: #ffffff;
+
+  font-family: "Readex Pro", var(--font-sans);
+  line-height: 1.55;
+  color: var(--text-dark);
+}
+
+/* Variantes de couleur du bandeau héros (PAL) */
+.evaluation-reference.eval-hero-tone-peach,
+.evaluation-reference .eval-hero-tone-peach {
+  --hero-bg: #fdeede;
+  --hero-border: #f6d9bd;
+  --hero-ink: #6b3a12;
+  --hero-secondary: #a8642a;
+}
+.evaluation-reference.eval-hero-tone-lavender,
+.evaluation-reference .eval-hero-tone-lavender {
+  --hero-bg: #ece9f7;
+  --hero-border: #d9d4ee;
+  --hero-ink: #2e2766;
+  --hero-secondary: #5d55a3;
+}
+.evaluation-reference.eval-hero-tone-green,
+.evaluation-reference .eval-hero-tone-green {
+  --hero-bg: #e6f3e9;
+  --hero-border: #cfe6d5;
+  --hero-ink: #14503a;
+  --hero-secondary: #3f7f63;
+}
+.evaluation-reference.eval-hero-tone-sky,
+.evaluation-reference .eval-hero-tone-sky {
+  --hero-bg: #e0eefa;
+  --hero-border: #c6dff2;
+  --hero-ink: #0f3f6b;
+  --hero-secondary: #3a78a8;
+}
+.evaluation-reference.eval-hero-tone-sand,
+.evaluation-reference .eval-hero-tone-sand {
+  --hero-bg: #f7f0d4;
+  --hero-border: #ebe0ad;
+  --hero-ink: #5c4a05;
+  --hero-secondary: #8f7a1c;
+}
+.evaluation-reference.eval-hero-tone-rose,
+.evaluation-reference .eval-hero-tone-rose {
+  --hero-bg: #fbe6ee;
+  --hero-border: #f2cddb;
+  --hero-ink: #6e1c3e;
+  --hero-secondary: #a8486f;
+}
+
+.dark .evaluation-reference {
+  --bg-page: color-mix(in srgb, hsl(var(--background)) 92%, hsl(224 28% 15%));
+  --text-dark: hsl(var(--foreground));
+  --text-secondary: hsl(var(--muted-foreground));
+  --text-muted: hsl(var(--muted-foreground));
+  --eval-card: color-mix(in srgb, hsl(var(--card)) 95%, hsl(224 25% 20%));
+  --border-card: rgba(255, 255, 255, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --icon-gray-bg: rgba(255, 255, 255, 0.08);
+  --icon-gray-fg: hsl(var(--foreground) / 0.9);
+  --danger-bg: rgba(244, 63, 94, 0.16);
+  --danger-border: rgba(244, 63, 94, 0.34);
+  --danger-text: #fda4af;
+}
+
+.dark .evaluation-reference.eval-hero-tone-peach,
+.dark .evaluation-reference .eval-hero-tone-peach {
+  --hero-bg: #362419;
+  --hero-border: #593a27;
+  --hero-ink: #fce8d5;
+  --hero-secondary: #e7bfa0;
+}
+.dark .evaluation-reference.eval-hero-tone-lavender,
+.dark .evaluation-reference .eval-hero-tone-lavender {
+  --hero-bg: #26223e;
+  --hero-border: #433b6b;
+  --hero-ink: #eae6fc;
+  --hero-secondary: #c5bdf0;
+}
+.dark .evaluation-reference.eval-hero-tone-green,
+.dark .evaluation-reference .eval-hero-tone-green {
+  --hero-bg: #183124;
+  --hero-border: #2a543e;
+  --hero-ink: #dcf5e6;
+  --hero-secondary: #a8dec0;
+}
+.dark .evaluation-reference.eval-hero-tone-sky,
+.dark .evaluation-reference .eval-hero-tone-sky {
+  --hero-bg: #182d3f;
+  --hero-border: #2b4e6b;
+  --hero-ink: #ddeefb;
+  --hero-secondary: #abd1ee;
+}
+.dark .evaluation-reference.eval-hero-tone-sand,
+.dark .evaluation-reference .eval-hero-tone-sand {
+  --hero-bg: #332915;
+  --hero-border: #544423;
+  --hero-ink: #f7ecd2;
+  --hero-secondary: #dec99a;
+}
+.dark .evaluation-reference.eval-hero-tone-rose,
+.dark .evaluation-reference .eval-hero-tone-rose {
+  --hero-bg: #381c26;
+  --hero-border: #5c2f3f;
+  --hero-ink: #fbe3ea;
+  --hero-secondary: #e5b5c4;
+}
+
+/* ── Dimensions fluides de la Fiche classe (.pgs) ── */
+.evaluation-reference.modal-motion-surface {
+  container: pgs / inline-size;
+  border-radius: 1.8rem 1.8rem 0 0;
+  border: 0 !important;
+  background-color: var(--bg-page) !important;
+  background-image: none !important;
+  overflow: hidden;
+  box-shadow: 0 -12px 60px #2f282233 !important;
+}
+
+@media (min-width: 720px) {
+  .evaluation-reference.modal-motion-surface {
+    max-width: min(100%, clamp(26rem, 68vw, 46rem)) !important;
+    width: min(100%, clamp(26rem, 68vw, 46rem)) !important;
+    border-radius: 1.4rem !important;
+  }
+}
+
+@media (max-width: 719px) {
+  .evaluation-reference.modal-motion-surface {
+    max-height: 94dvh !important;
+    min-height: 0;
+    height: fit-content !important;
+    border-top-left-radius: 1.8rem !important;
+    border-top-right-radius: 1.8rem !important;
+  }
+}
+
+/* ── Bandeau Héros en dégradé doux (.hero) ── */
+.evaluation-reference .modal-header {
+  position: relative;
+  overflow: hidden;
+  padding-block: 10px;
+  padding-inline-start: 16px;
+  padding-inline-end: 56px;
+  border-bottom: 0 !important;
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+
+.evaluation-reference .modal-drag-indicator {
+  width: 2.4rem !important;
+  height: 0.28rem !important;
+  border-radius: 4px !important;
+  background-color: color-mix(in srgb, var(--hero-secondary) 30%, transparent) !important;
+}
+
+.evaluation-reference .dialog-close {
+  width: max(44px, 2.75rem) !important;
+  height: max(44px, 2.75rem) !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  border-radius: 50% !important;
+  background: hsl(var(--muted)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  transition: transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 0.15s ease;
+}
+
+.evaluation-reference .dialog-close:hover {
+  background: hsl(var(--muted) / .7) !important;
+}
+
+.evaluation-reference .dialog-close:active {
+  transform: scale(0.95);
+}
+
+.course-hero-shapes,
+.eval-hero-wave {
+  display: none !important;
+}
+
+.eval-hero-banner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.eval-hero-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  max-width: 100%;
+}
+
+/* Titre Readex Pro 600 (.hero h1) — taille affinée proportionnellement */
+.evaluation-reference .main-title.eval-hero-title {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  font: 600 clamp(1.04rem, 2.9cqi + 0.48rem, 1.32rem)/1.36 "Readex Pro", var(--font-sans) !important;
+  letter-spacing: -0.01em !important;
+  color: var(--text-dark) !important;
+}
+
+.eval-hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+
+/* Pastille teintée plate sous le titre (.stk) */
+.evaluation-reference .eval-course-white-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.68rem;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--hero-secondary) 12%, transparent) !important;
+  color: var(--hero-ink) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  font: 500 0.75rem/1.4 "Readex Pro", var(--font-sans) !important;
+  transform: none !important;
+  margin-inline-start: 0 !important;
+}
+
+.dark .evaluation-reference .eval-course-white-tag {
+  background: color-mix(in srgb, var(--hero-secondary) 24%, transparent) !important;
+  color: var(--hero-ink) !important;
+}
+
+/* Pastille matière secondaire (.stk.alt) */
+.evaluation-reference .eval-subject-tilted-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.68rem;
+  border-radius: 99px;
+  background: #ffffffb3;
+  color: var(--hero-ink);
+  border: 0;
+  font: 500 0.75rem/1.4 "Readex Pro", var(--font-sans);
+  transform: none;
+}

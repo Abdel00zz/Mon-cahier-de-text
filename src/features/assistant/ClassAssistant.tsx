@@ -243,19 +243,14 @@ export function ClassAssistant({
       onOpenGuide={openGuide}
       contactLabel={brain.canContactTeam ? copy.contact : undefined}
       primaryAction={isContentOffer ? whatsapp : undefined}
-      alternateAction={brain.emptyContentSuggestion ? whatsapp : undefined}
       secondaryActionLabel={
-        decision.kind === 'enable-notifications' && decision.mode === 'activate' && onOpenNotifications
-          ? labels['enable-notifications'].settingsLink
-          : isContentOffer ? labels.ready.action
+        isContentOffer ? labels.ready.action
           : decision.kind === 'guidance' && brain.guidance.step === 'standby'
           ? (locale === 'ar' ? 'استعادة التنبيهات' : locale === 'en' ? 'Restore reminders' : 'Réactiver les rappels')
           : undefined
       }
       onSecondaryAction={
-        decision.kind === 'enable-notifications' && decision.mode === 'activate'
-          ? onOpenNotifications
-          : isContentOffer && brain.target ? () => onOpenClass(brain.target!)
+        isContentOffer && brain.target ? () => onOpenClass(brain.target!)
           : decision.kind === 'guidance' && brain.guidance.step === 'standby'
           ? () => {
               setSkippedTasks(new Set());
@@ -268,8 +263,6 @@ export function ClassAssistant({
       dismissLabel={brain.canSkip ? labels.skip : undefined}
       onDismiss={brain.canSkip ? handleSkipCurrentMessage : undefined}
       keepOpenOnDismiss={hasMoreTasksAfterSkip}
-      nextTaskLabel={brain.nextTaskId ? `${locale === 'ar' ? 'النقطة التالية' : locale === 'en' ? 'Next point' : 'Point suivant'} · ${new Intl.NumberFormat(locale).format(brain.taskPosition)}/${new Intl.NumberFormat(locale).format(brain.tasks.length)}` : undefined}
-      onNextTask={brain.nextTaskId ? () => setSelectedTaskId(brain.nextTaskId) : undefined}
       onContact={openContact}
       mood={behavior.mood}
       robotAction={behavior.robotAction}

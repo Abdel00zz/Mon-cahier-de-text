@@ -6,6 +6,8 @@ import { LandingPage } from '../../src/features/auth/LandingPage';
 import { OnboardingPage } from '../../src/features/dashboard/OnboardingPage';
 import { CreateClassModal } from '../../src/features/dashboard/modals/CreateClassModal';
 import { ConfigModal } from '../../src/features/settings/ConfigModal';
+import { SettingsOverview } from '../../src/features/settings/SettingsOverview';
+import { GuidePage } from '../../src/features/guide/GuidePage';
 import { ImportPlatformModal } from '../../src/features/settings/ImportPlatformModal';
 import { GuideModal } from '../../src/features/guide/GuideModal';
 import { ContentModal } from '../../src/features/editor/modals/ContentModal';
@@ -36,6 +38,7 @@ import { KindChooser } from '../../src/features/evaluations/components/KindChoos
 import { ClassEvaluationsSheet } from '../../src/features/evaluations/ClassEvaluationsSheet';
 import { Modal } from '../../src/components/ui/modal';
 import { readSessionSelection } from '../../src/domain/notebook/sessionEditing';
+import { evaluationFixtures } from './evaluationFixtures';
 
 const noop = () => {};
 const names = ['أحمد العلوي', 'سلمى الفاسي', 'يوسف العمراني', 'مريم العلمي', 'Ahmed Alami', 'Sara Fassi'];
@@ -59,6 +62,8 @@ export function UiGallery({ page, config, classes, lessons }: { page: string; co
         case 'create-class': view = <CreateClassModal {...common} onCreate={noop} teacherSubjects={['Mathématiques']} teacherCycles={['lycee']}/>; break;
         case 'edit-class': view = <CreateClassModal {...common} onCreate={noop} onUpdate={noop} editingClass={classInfo} teacherSubjects={['Mathématiques']} teacherCycles={['lycee']}/>; break;
         case 'settings': view = <ConfigModal {...common} config={draft} classes={classes} onConfigChange={change} onOpenGuide={noop} onExportPlatform={noop} onOpenImport={noop}/>; break;
+        case 'settings-page': view = <SettingsOverview config={draft} classes={classes} onChange={change} onExport={noop} onImport={noop}/>; break;
+        case 'guide-page': view = <GuidePage asPage />; break;
         case 'platform-import': view = <ImportPlatformModal {...common} onImport={noop}/>; break;
         case 'guide': view = <GuideModal {...common}/>; break;
         case 'add-content': view = <ContentModal {...common} lessonsData={lessons} selectedIndices={{ chapterIndex: 0 }} onConfirm={noop} subject={classInfo.subject} contentDirection={isAr ? 'rtl' : 'ltr'}/>; break;
@@ -90,6 +95,7 @@ export function UiGallery({ page, config, classes, lessons }: { page: string; co
         case 'edit-manual-assessment': view = <Modal isOpen onClose={noop} title={isAr ? 'تعديل الفرض' : 'Modifier le devoir'} maxWidth="lg"><ManualAssessmentEditor today="2026-10-15" homeworkDate="2026-10-20" initialType="controle" cycle="lycee" onCancel={noop} onSave={noop}/></Modal>; break;
         case 'evaluation-kind-picker': view = <Modal isOpen onClose={noop} title={isAr ? 'نوع التقييم' : 'Nature de l’évaluation'} maxWidth="xl"><KindChooser onSelect={noop}/></Modal>; break;
         case 'class-evaluations-direct': view = <ClassEvaluationsSheet open onOpenChange={noop} classInfo={classInfo} config={draft} onConfigChange={change} entry="all" lessonsData={lessons}/>; break;
+        case 'evaluation-types': view = <ClassEvaluationsSheet open onOpenChange={noop} classInfo={classInfo} config={{ ...draft, ...evaluationFixtures(classInfo.id, config.applicationLocale ?? 'fr') }} onConfigChange={change} lessonsData={[]} />; break;
         default: view = <p role="alert">Écran de capture inconnu : {page}</p>;
     }
     return <AuthProvider><div data-ui-gallery={page}>{view}</div></AuthProvider>;

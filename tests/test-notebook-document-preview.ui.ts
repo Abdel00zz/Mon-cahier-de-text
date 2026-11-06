@@ -8,6 +8,7 @@ import { LocaleProvider } from '../src/i18n/LocaleProvider';
 import { ContentRenderer } from '../src/features/editor/ContentRenderer';
 import { activityDocumentPreviews } from '../src/domain/evaluations/activityDocumentPreviews';
 import { findNotebookAssessments, linkAssessments, notebookDocumentPreviews, type NotebookDocumentPreview } from '../src/domain/evaluations/assessmentSync';
+import { readMessageSource } from './readMessages';
 import { homeworkCorrectionDocumentId } from '../src/domain/evaluations/homeworkIds';
 import type { AppConfig, LessonsData } from '../src/types';
 import type { PlannedAssessment } from '../src/domain/evaluations/assessments';
@@ -111,7 +112,7 @@ test('la fenêtre affiche une phrase et le document sans contexte ajouté', () =
     }
 
     // Le libellé remplace l’ancienne phrase d’introduction : trois langues, aucune clé morte.
-    const messages = readFileSync('src/i18n/messages.ts', 'utf8');
+    const messages = readMessageSource();
     const headings = messages.match(/'documentPreview\.heading': '/g) ?? [];
     assert.equal(headings.length, 3, 'FR, EN et AR portent la phrase');
     assert.match(messages, /'documentPreview\.heading': 'Votre document pédagogique'/);

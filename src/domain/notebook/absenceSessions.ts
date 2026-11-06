@@ -50,12 +50,31 @@ export function absenceRemarkGroups(sessions: readonly AbsenceSession[]) {
     return groups;
 }
 
+type GroupedRows = ReturnType<typeof groupLessonRows>;
+
+/**
+ * Une séance d'absence décale toutes les positions suivantes : la projection
+ * n'est donc pas indexée par `groupLessonRows` (qui ne connaît que la liste
+ * source). L'éditeur et le tableau demandent pourtant le MÊME groupement au
+ * même rendu ; on le mémorise par couple (liste source, séances), deux clés
+ * faibles qui disparaissent avec le cahier et la configuration.
+ */
+const absenceGroupingCache = new WeakMap<LessonRow[], WeakMap<readonly AbsenceSession[], GroupedRows>>();
+
 /** A certificate is a visual session boundary: repeated content must not merge
  * across it. Both editing targets and the screen use this grouping, with the
  * original coordinates intact. Positions here belong only to the projection.
  */
-export function groupRowsWithAbsences(source: LessonRow[], sessions: readonly AbsenceSession[]) {
+export function groupRowsWithAbsences(source: LessonRow[], sessions: readonly AbsenceSession[]): GroupedRows {
     if (sessions.length === 0) return groupLessonRows(source);
+    let bySessions = absenceGroupingCache.get(source);
+    if (!bySessions) {
+        bySessions = new WeakMap();
+        absenceGroupingCache.set(source, bySessions);
+    }
+    const cached = bySessions.get(sessions);
+    if (cached) return cached;
+
     let gap = 0;
     let previousDate = '';
     const projected = source.map(row => {
@@ -64,7 +83,9 @@ export function groupRowsWithAbsences(source: LessonRow[], sessions: readonly Ab
         if (date) previousDate = date;
         return { ...row, position: row.position + gap };
     });
-    return groupLessonRows(projected);
+    const grouped = groupLessonRows(projected);
+    bySessions.set(sessions, grouped);
+    return grouped;
 }
 
 /** Insert display-only rows after the latest preceding session, keeping the

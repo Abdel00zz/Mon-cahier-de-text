@@ -1,43 +1,3 @@
-/* ═══════════════════════════════════════════════════════════════════════════
-   3. SETTINGS SHELL, HUB CARDS, TONE PALETTE & NOTIFICATION TOGGLES
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Architecture moderne et aérée des réglages */
-.settings-content-zone {
-  background-color: transparent;
-}
-.settings-surface {
-  border: 1px solid hsl(var(--border)) !important;
-  border-radius: var(--radius-xl, 18px) !important;
-  background: hsl(var(--card)) !important;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04) !important;
-}
-
-.dark .settings-surface {
-  border-color: hsl(var(--border)) !important;
-}
-
-/* ── Réglages : cartes (téléphone, tablette) et menu latéral (grand écran) ───────
-   < 1024 px : l'accueil est une grille de cartes colorées, compacte ; une rubrique s'ouvre en
-   plein cadre, et le bouton de retour vit DANS l'en-tête de la fenêtre, devant le titre de
-   la rubrique (aucune ligne « Paramètres » répétée dans le contenu). Aucun onglet.
-   ≥ 1024 px : menu latéral fixe à gauche, seul le contenu défile. Le cadre fixe commence
-   à 640 px (modal-motion.css) : la zone de défilement a des marges verticales pour que la
-   barre fine reste loin des coins arrondis, et des fondus doux en haut et en bas. */
-.settings-shell { display: flex; flex-direction: column; min-width: 0; }
-.settings-nav {
-  width: 14rem;
-  flex: none;
-  flex-direction: column;
-  padding: 0.5rem 0.75rem 0.75rem;
-  border-inline-end: 1px solid hsl(var(--border) / 0.6);
-}
-.settings-scroll {
-  min-width: 0;
-  flex: 1 1 auto;
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
-}
 .settings-home { min-width: 0; padding: 0.5rem 0 0.5rem; container-type: inline-size; }
 
 /* En-tête compact des fenêtres à cartes (Paramètres, Suivi) : titre et bouton fermer partagent le même axe. */
@@ -409,3 +369,4 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
   .settings-toggle-row__icon { transition: none; }
   .settings-toggle-row.is-on .settings-toggle-row__icon .app-icon { animation: none; }
 }
+

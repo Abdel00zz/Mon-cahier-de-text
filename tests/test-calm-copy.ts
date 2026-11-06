@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { readMessageSource } from './readMessages';
 
 const read = (path: string) => readFileSync(path, 'utf8');
 
@@ -32,7 +33,7 @@ test('aucun texte ne répète ce que dit déjà la section', () => {
 });
 
 test('les clés de texte supprimées ne traînent pas dans les dictionnaires', () => {
-    const messages = read('src/i18n/messages.ts');
+    const messages = readMessageSource();
     const domains = read('src/i18n/domains/accountArchivesSchedule.ts');
     for (const key of ['language.settings.active', 'archives.empty.body', 'notifications.intro']) {
         assert.ok(!messages.includes(`'${key}'`), `${key} doit disparaître de messages.ts`);

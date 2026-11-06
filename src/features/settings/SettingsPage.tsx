@@ -1,5 +1,6 @@
 import React, { Suspense, useCallback, useEffect, useRef, useState, lazy } from 'react';
 import { ConfigModal } from './ConfigModal';
+import { SettingsOverview } from './SettingsOverview';
 import { downloadBackup, restoreBackup } from '@/infrastructure/storage/backup';
 import { parseBoundedJson } from '@/domain/notebook/jsonInput';
 import { locateJsonError } from '@/domain/notebook/contentDiagnostics';
@@ -23,7 +24,7 @@ interface SettingsPageProps {
     mobileNavigation?: React.ReactNode;
 }
 
-/** Paramètres présentés comme une sheet modale au-dessus de la vue d'origine. */
+/** Owns backup actions; mobile uses a continuous page, desktop a dialog. */
 export const SettingsPage: React.FC<SettingsPageProps> = ({
     onBack,
     onOpenGuide,
@@ -88,11 +89,32 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         }
     };
 
+    const handleExport = useCallback(() => {
+        try {
+            downloadBackup();
+            toast.success(t('settings.toast.backupDownloaded'));
+        } catch (error) {
+            logger.error('Export failed', error);
+            toast.error(t('settings.toast.exportFailed'));
+        }
+    }, [t]);
+    const handleCreateClass = useCallback((details: { name: string; subject: string; cycle?: Cycle }) =>
+        addClass({
+            ...details,
+            cycle: details.cycle ?? (config.selectedCycles?.[0] as Cycle) ?? 'lycee',
+            teacherName: config.defaultTeacherName || t('settings.defaultTeacherName'),
+        }), [addClass, config.selectedCycles, config.defaultTeacherName, t]);
+    const openImport = useCallback(() => setImportOpen(true), []);
+
     return (
         <>
-            <ConfigModal
+            {asPage ? <SettingsOverview
+                initialSection={initialSection} scheduleClassId={scheduleClassId}
+                config={config} classes={classes} onChange={updateConfig}
+                onExport={handleExport} onImport={openImport}
+                onCreateClass={handleCreateClass}
+            /> : <ConfigModal
                 isOpen={isSheetOpen}
-                asPage={asPage}
                 initialSection={initialSection}
                 scheduleClassId={scheduleClassId}
                 onClose={requestClose}
@@ -100,25 +122,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 mobileNavigation={mobileNavigation}
                 config={config}
                 onConfigChange={updateConfig}
-                onExportPlatform={() => {
-                    try {
-                        downloadBackup();
-                        toast.success(t('settings.toast.backupDownloaded'));
-                    } catch (error) {
-                        logger.error('Export failed', error);
-                        toast.error(t('settings.toast.exportFailed'));
-                    }
-                }}
-                onOpenImport={() => setImportOpen(true)}
+                onExportPlatform={handleExport}
+                onOpenImport={openImport}
                 classes={classes}
-                onCreateClass={details =>
-                    addClass({
-                        ...details,
-                        cycle: details.cycle ?? (config.selectedCycles?.[0] as Cycle) ?? 'lycee',
-                        teacherName: config.defaultTeacherName || t('settings.defaultTeacherName'),
-                    })
-                }
-            />
+                onCreateClass={handleCreateClass}
+            />}
             {isImportOpen && (
                 <Suspense fallback={null}>
                     <ImportPlatformModal isOpen={isImportOpen} onClose={() => setImportOpen(false)} onImport={handleImport} />

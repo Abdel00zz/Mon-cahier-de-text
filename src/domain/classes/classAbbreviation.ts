@@ -1,6 +1,5 @@
 import type { AppLocale } from '../../types.js';
-import type { ClassIdentity } from './classIdentity';
-import { formatCompactTierLabel, formatStreamSigla, formatLocalizedClassDisplayName } from '../../constants/class-levels.js';
+import { formatCompactTierLabel, formatStreamSigla, formatLocalizedClassDisplayName, type ClassTierKey } from '../../constants/class-levels.js';
 import { toDisplayText } from '../../lib/text/textValue.js';
 
 /**
@@ -232,7 +231,16 @@ export const abbreviateClassName = (name: string, locale: AppLocale = 'fr'): str
  * SVT) hors arabe, initiales à points de l'intitulé officiel en arabe. Un nom
  * libre (« Ma classe ») garde sa forme compactée d'origine.
  */
-export const scheduleClassLabel = (identity: ClassIdentity, locale: AppLocale = 'fr', compact = false): string => {
+/** Forme minimale consommée par la grille : évite un cycle d'imports avec `classIdentity`. */
+export interface ScheduleClassIdentity {
+    tierKey: ClassTierKey | null;
+    streamCode: string | null;
+    stream: string | null;
+    group: string | null;
+    full: string;
+}
+
+export const scheduleClassLabel = (identity: ScheduleClassIdentity, locale: AppLocale = 'fr', compact = false): string => {
     const shortTiers: Record<string, string> = { college1: '1AC', college2: '2AC', college3: '3AC', common: 'TC', firstBac: '1B', secondBac: '2B', prepa: 'CPGE', prepa1: '1CPGE', prepa2: '2CPGE' };
     const tier = identity.tierKey ? (compact && locale !== 'ar' ? shortTiers[identity.tierKey] : formatCompactTierLabel(identity.tierKey, locale)) : '';
     let stream = identity.streamCode

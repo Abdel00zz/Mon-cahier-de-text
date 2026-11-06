@@ -1,14 +1,14 @@
 /* One navigation surface shared by the rail and the phone dock. */
 .workspace-shell { --workspace-rail-width: 76px; --workspace-expanded-width: 236px; }
 :root {
-  --mobile-tab-accent: #0a5bbd;
-  --mobile-tab-accent-wash: rgb(10 91 189 / .08);
-  --mobile-tab-surface: rgb(250 250 250 / .96);
+  --mobile-tab-accent: hsl(var(--primary));
+  --mobile-tab-accent-wash: hsl(var(--primary) / .09);
+  --mobile-tab-surface: hsl(var(--card) / .94);
 }
 .dark {
-  --mobile-tab-accent: #78adf2;
-  --mobile-tab-accent-wash: rgb(120 173 242 / .14);
-  --mobile-tab-surface: rgb(37 38 42 / .96);
+  --mobile-tab-accent: hsl(var(--primary));
+  --mobile-tab-accent-wash: hsl(var(--primary) / .16);
+  --mobile-tab-surface: hsl(var(--card) / .94);
 }
 .workspace-sidebar {
   width: var(--workspace-rail-width); display: none;
@@ -35,8 +35,8 @@
   border: 0; border-top: 1px solid var(--ui-glass-border);
   border-radius: 0;
   padding: 5px 8px calc(5px + env(safe-area-inset-bottom, 0px));
-  backdrop-filter: blur(8px) saturate(130%);
-  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
   touch-action: pan-y pinch-zoom; z-index: 40; box-sizing: border-box;
 }
 .modal-bottom-navigation { display: none; flex: 0 0 auto; }
@@ -62,7 +62,7 @@
 }
 .workspace-nav-button--mobile:hover { background: transparent; }
 .workspace-nav-button--mobile svg {
-  transition: transform 350ms var(--spring, cubic-bezier(.34, 1.4, .5, 1));
+  transition: transform 250ms var(--spring, cubic-bezier(.34, 1.4, .5, 1));
 }
 .workspace-nav-button--mobile[aria-current='page'] svg {
   transform: translateY(-1px) scale(1.12);
@@ -121,7 +121,7 @@ html[data-keyboard='open'] .workspace-shell[data-phone-navigation='true'] .app-s
 html[lang='ar'] .workspace-nav-button--desktop .workspace-nav-label { font-size: 15px; }
 html[lang='ar'] .workspace-sidebar [dir='auto'] { font-size: 13px; }
 @media (prefers-reduced-motion: reduce) {
-  .workspace-sidebar, .workspace-nav-button { transition: none; }
+  .workspace-sidebar, .workspace-nav-button, .workspace-nav-button--mobile svg { transition: none; }
   .workspace-nav-button--mobile:active { transform: none; }
 }
 @media print { .workspace-sidebar, .mobile-tab-bar, .workspace-shell[data-phone-navigation='true'] .mobile-tab-bar { display: none !important; } }

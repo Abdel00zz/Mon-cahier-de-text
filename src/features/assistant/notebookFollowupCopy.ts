@@ -1,6 +1,6 @@
 import type { AppLocale } from '../../types';
 import type { ClassGuidance } from '../../domain/assistant/classGuidance';
-import type { CompanionMessage } from './companionCopy';
+import type { CompanionMessage } from './companionMessage';
 import { companionClassName } from './companionClassName';
 
 /** A dated trace is evidence of recording, never proof of a teacher's absence or lack of work. */

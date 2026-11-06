@@ -1,3 +1,8 @@
+.editor-heading {
+  isolation: isolate;
+}
+.editor-heading__title { font-size: clamp(1.25rem, 2.5vw, 1.75rem); }
+
 .editor-back-button {
   --back-direction: -1;
   --back-rotation: 0deg;
@@ -21,16 +26,6 @@
   transition: transform 230ms cubic-bezier(.16,1,.3,1), border-color 230ms,
     background-color 230ms, box-shadow 230ms;
 }
-.editor-back-button::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  inset: -50%;
-  background: linear-gradient(115deg, transparent 38%, hsl(var(--primary) / .08) 50%, transparent 62%);
-  opacity: 0;
-  transform: translateX(45%);
-  transition: transform 230ms cubic-bezier(.16,1,.3,1), opacity 230ms;
-}
 .editor-back-button[dir='rtl'] { --back-direction: 1; --back-rotation: 180deg; }
 .editor-back-button__arrow {
   width: 22px;
@@ -48,19 +43,18 @@
     border-color: hsl(var(--primary) / .25);
     box-shadow: inset 0 1px 0 hsl(var(--card) / .7), 0 7px 16px -11px hsl(var(--foreground) / .3);
   }
-  .editor-back-button:hover::before { opacity: 1; transform: translateX(0); }
   .editor-back-button:hover .editor-back-button__arrow {
     transform: translateX(calc(var(--back-direction) * 2px)) rotate(var(--back-rotation));
   }
 }
 .editor-back-button:active { transform: scale(.96); background: hsl(var(--muted)); }
 @media (prefers-reduced-motion: reduce) {
-  .editor-back-button, .editor-back-button::before, .editor-back-button__arrow { transition: none; }
+  .editor-back-button, .editor-back-button__arrow { transition: none; }
   .editor-back-button:is(:hover, :active) { transform: none; }
   .editor-back-button:hover .editor-back-button__arrow { transform: rotate(var(--back-rotation)); }
 }
 
   /* Le titre éditable reste une cible tactile confortable sur téléphone. */
   @media (max-width: 639px) {
-    .editor-title-editable { display: inline-flex; align-items: center; min-height: 40px; }
+    .editor-title-editable { display: inline-flex; align-items: center; min-height: 44px; }
   }

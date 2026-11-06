@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { ClassDraftSchema, type ClassDraftValues } from '@/domain/validation/schemas';
 import { parseStudentNames } from '@/domain/evaluations/studentRoster';
 import { ClassRosterFields } from './ClassRosterFields';
+import { ClassColorField } from './ClassColorField';
 import { ClassCreationProgress } from './ClassCreationProgress';
 import type { ClassRoster } from '@/types';
 import type { ClassInfo, Cycle } from '@/types';
@@ -26,7 +27,6 @@ import type { ClassIdentityDraft } from '@/types';
 import { useModalHaptics } from '@/hooks/useModalHaptics';
 import { isTeachingSubject, isClassStream, streamLabelForMistake } from '@/domain/classes/subjectPolicy';
 import './createClassModal.css';
-
 interface CreateClassModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -221,8 +221,9 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const isEditingStreamMistake = Boolean(editingClass?.subject && isClassStream(editingClass.subject));
   const showSubjectChoice = configuredSubjects.length !== 1 || Boolean(editingClass && (editingClass.subject !== configuredSubjects[0] || isEditingStreamMistake));
   const levelGroups = useMemo(() => classLevelGroupsForCycle(cycle), [cycle]);
+  const singleLevelGroup = levelGroups.length === 1 ? levelGroups[0] : null;
   const activeLevelGroup = levelGroups.find(item => item.key === levelGroupKey) ?? levelGroups.find(item => item.levels.includes(level));
-  const needsBranchChoice = !customMode && cycle !== 'college' && (activeLevelGroup ? activeLevelGroup.levels.length > 1 : levelGroups.some(item => item.levels.length > 1));
+  const needsBranchChoice = !customMode && !singleLevelGroup && (activeLevelGroup ? activeLevelGroup.levels.length > 1 : levelGroups.some(item => item.levels.length > 1));
   const steps = useMemo<WizardStep[]>(() => [...(hasCycleChoice ? ['cycle'] as WizardStep[] : []), 'level', ...(needsBranchChoice ? ['branch'] as WizardStep[] : []), 'details'], [hasCycleChoice, needsBranchChoice]);
   const stepIndex = Math.max(0, steps.indexOf(step));
   const effectiveLevel = customMode ? customLevel.trim() : level;
@@ -373,6 +374,15 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const stepLabel = (item: WizardStep) => item === 'cycle' ? copy.cycle : item === 'level' ? copy.level : item === 'branch' ? copy.branch : copy.group;
 
   const [deletePending, setDeletePending] = useState(false);
+
+  const handleTabKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 'identity' : event.key === 'End' ? 'students'
+      : (isRtl ? event.key === 'ArrowRight' : event.key === 'ArrowLeft') ? 'identity' : 'students';
+    setSection(next);
+    document.getElementById(`class-tab-${next}`)?.focus();
+  };
 
   const groupControl = (
     <div className="flex items-center justify-center py-2">
@@ -567,13 +577,16 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
         )}
       >
         {editingClass && onRosterSave && (
-          <div className="claude-tabs mx-0 mb-3" role="tablist" aria-label={copy.editTitle}>
+          <div className="claude-tabs mx-0 mb-3" role="tablist" aria-label={copy.editTitle} onKeyDown={handleTabKeyDown}>
             {(['identity', 'students'] as const).map(item => (
               <button
                 key={item}
                 type="button"
                 role="tab"
+                id={`class-tab-${item}`}
+                aria-controls={`class-panel-${item}`}
                 aria-selected={section === item}
+                tabIndex={section === item ? 0 : -1}
                 data-active={section === item ? 'true' : 'false'}
                 onClick={() => setSection(item)}
                 className="claude-tab-btn"
@@ -606,7 +619,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             <div ref={stepContentRef} tabIndex={-1} aria-label={stepLabel(step)} key={step} className="outline-none">
               {step === 'cycle' && hasCycleChoice && (
                 <section className="space-y-3">
-                  <h3 className="text-sm font-semibold text-foreground">{copy.cycle}</h3>
+                  <h3 className="sr-only">{copy.cycle}</h3>
                   <div className="grid grid-cols-1 gap-2.5">
                     {cycleOptions.map(item => (
                       <ChoiceCard key={item} selected={item === cycle} onClick={() => chooseCycle(item)}>
@@ -619,8 +632,8 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
 
               {step === 'level' && (
                 <section className="space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-semibold text-foreground">{copy.level}</h3>
+                  <div className="flex items-center justify-end gap-2">
+                    <h3 className="sr-only">{copy.level}</h3>
                     {!editingClass && (
                       <button
                         type="button"
@@ -645,9 +658,9 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
                       <label htmlFor="class-custom-level" className="block text-xs font-medium text-muted-foreground">{copy.customLevel}</label>
                       <Input id="class-custom-level" value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); continueCustomLevel(); } }} placeholder={copy.customLevelPlaceholder} className="h-[52px] rounded-[14px]" autoFocus />
                     </div>
-                  ) : cycle === 'college' ? (
+                  ) : singleLevelGroup ? (
                     <div className="grid grid-cols-1 gap-2.5">
-                      {CLASS_LEVELS_BY_CYCLE.college.map(item => (
+                      {singleLevelGroup.levels.map(item => (
                         <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>
                           {formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}
                         </ChoiceCard>
@@ -667,7 +680,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
 
               {step === 'branch' && activeLevelGroup && (
                 <section className="space-y-3">
-                  <h3 className="text-sm font-semibold text-foreground">{copy.branch}</h3>
+                  <h3 className="sr-only">{copy.branch}</h3>
                   <div className="grid grid-cols-1 gap-2.5">
                     {activeLevelGroup.levels.map(item => (
                       <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>
@@ -742,31 +755,19 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             </div>
           )}
 
-          {((!editingClass && step === 'details') || (editingClass && !rosterSection)) && (
-            <div className="space-y-1.5 pt-1">
-              <span className="block text-xs font-medium text-muted-foreground">
-                {locale === 'ar' ? 'اللون' : locale === 'en' ? 'Colour' : 'Couleur'}
-              </span>
-              <div className="claude-swatches" role="group" aria-label={locale === 'ar' ? 'اللون' : 'Couleur'}>
-                {CLASS_COLOR_OPTIONS.map(option => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    title={option.label[locale]}
-                    aria-label={option.label[locale]}
-                    data-selected={classColor === option.value ? 'true' : 'false'}
-                    onClick={() => { haptics.onSelect(); setClassColor(option.value); }}
-                    style={{ backgroundColor: option.background, color: option.background }}
-                    className="claude-swatch"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div hidden={rosterSection}>{editConfiguration}</div>
+          <div hidden={rosterSection} role="tabpanel" id="class-panel-identity" aria-labelledby="class-tab-identity" tabIndex={0}>
+            {editConfiguration}
+            {((!editingClass && step === 'details') || editingClass) && (
+              <ClassColorField
+                value={classColor}
+                options={CLASS_COLOR_OPTIONS}
+                locale={locale}
+                onChange={setClassColor}
+              />
+            )}
+          </div>
           {editingClass && onRosterSave && (
-            <div hidden={!rosterSection}>
+            <div hidden={!rosterSection} role="tabpanel" id="class-panel-students" aria-labelledby="class-tab-students" tabIndex={0}>
               <ClassRosterFields
                 value={rosterText}
                 onChange={setRosterText}

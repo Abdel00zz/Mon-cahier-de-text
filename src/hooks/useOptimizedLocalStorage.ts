@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { logger } from '../lib/logger';
 import { useDebouncedCallback } from './useDebouncedCallback';
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
@@ -40,14 +40,13 @@ export function useOptimizedLocalStorage<T>(
     : { value: defaultValue, error: null });
   const [value, setValue] = useState<T>(initial.value);
   const [error, setError] = useState<string | null>(initial.error);
-  const initializedRef = useRef(true);
   // Aucune attente : la valeur est déjà connue au premier rendu. Le drapeau
   // reste exposé pour les écrans qui gardent un squelette en filet de sécurité.
   const isLoading = false;
 
   // Debounced save to localStorage
   const debouncedSave = useDebouncedCallback((valueToSave: T) => {
-    if (!initializedRef.current || !workspaceIsActive()) return;
+    if (!workspaceIsActive()) return;
     
     try {
       localStorage.setItem(key, JSON.stringify(valueToSave));
@@ -58,23 +57,30 @@ export function useOptimizedLocalStorage<T>(
     }
   }, debounceMs);
 
+  // Persister APRÈS le rendu, jamais dans l'updater de `setValue` : React peut
+  // rejouer un updater (StrictMode, rendu concurrent), un effet de bord y
+  // dupliquerait la sauvegarde. La référence mémorise la dernière valeur écrite
+  // (ou lue) : le premier passage et une valeur identique ne réécrivent rien.
+  const lastPersistedRef = useRef<T>(initial.value);
+  useEffect(() => {
+    if (Object.is(value, lastPersistedRef.current)) return;
+    lastPersistedRef.current = value;
+    debouncedSave(value);
+  }, [debouncedSave, value]);
+
   // Update value and trigger save
   const updateValue = useCallback((newValue: T | ((prev: T) => T)) => {
-    setValue(prevValue => {
-      const nextValue = typeof newValue === 'function' 
-        ? (newValue as (prev: T) => T)(prevValue)
-        : newValue;
-      
-      debouncedSave(nextValue);
-      return nextValue;
-    });
-  }, [debouncedSave]);
+    setValue(prevValue => typeof newValue === 'function'
+      ? (newValue as (prev: T) => T)(prevValue)
+      : newValue);
+  }, []);
 
   // Immediate save (bypass debouncing)
   const saveImmediately = useCallback(() => {
     if (!workspaceIsActive()) return;
     try {
       localStorage.setItem(key, JSON.stringify(value));
+      lastPersistedRef.current = value;
       setError(null);
     } catch (err) {
       logger.error(`Failed to immediately save ${key} to localStorage`, err);
@@ -86,6 +92,10 @@ export function useOptimizedLocalStorage<T>(
   const clearValue = useCallback(() => {
     if (!workspaceIsActive()) return;
     try {
+      // Annule une sauvegarde différée et empêche l'effet de réécrire la valeur
+      // par défaut juste après la suppression de la clé.
+      debouncedSave.cancel();
+      lastPersistedRef.current = defaultValue;
       localStorage.removeItem(key);
       setValue(defaultValue);
       setError(null);
@@ -93,7 +103,7 @@ export function useOptimizedLocalStorage<T>(
       logger.error(`Failed to clear ${key} from localStorage`, err);
       setError(`Erreur de suppression: ${key}`);
     }
-  }, [key, defaultValue, workspaceIsActive]);
+  }, [key, defaultValue, workspaceIsActive, debouncedSave]);
 
   return {
     value,

@@ -6,55 +6,13 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { todayInMorocco } from '@/domain/calendar/calendar';
 import { addDaysIso } from '@/domain/notebook/dataUtils';
-import type { PedagogicalEvent } from '@/types';
 import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
+import { endOfMonthIso, isoToLocalDate, localDateToIso, MONTHS_LIST, WEEKDAYS } from './eventDateCalendar';
+import { eventDateCopy, type EventDateModalProps } from './eventDateModel';
 import './dateCalendar.css';
 
-export interface EventDateModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  event?: PedagogicalEvent | null;
-  title?: string;
-  initialDate?: string;
-  initialEndDate?: string;
-  allowRange?: boolean;
-  onSave?: (event: PedagogicalEvent, date: string, endDate?: string) => void;
-  onApplyDate?: (date: string, endDate?: string) => void;
-}
 
 /** Mois de l'année scolaire, dans l'ordre de l'année (septembre → juillet). */
-const MONTHS_LIST: { m: number; fr: string; ar: string; en: string }[] = [
-  { m: 9, fr: 'Sept', ar: 'شتنبر', en: 'Sep' },
-  { m: 10, fr: 'Oct', ar: 'أكتوبر', en: 'Oct' },
-  { m: 11, fr: 'Nov', ar: 'نونبر', en: 'Nov' },
-  { m: 12, fr: 'Déc', ar: 'دجنبر', en: 'Dec' },
-  { m: 1, fr: 'Janv', ar: 'يناير', en: 'Jan' },
-  { m: 2, fr: 'Févr', ar: 'فبراير', en: 'Feb' },
-  { m: 3, fr: 'Mars', ar: 'مارس', en: 'Mar' },
-  { m: 4, fr: 'Avr', ar: 'أبريل', en: 'Apr' },
-  { m: 5, fr: 'Mai', ar: 'ماي', en: 'May' },
-  { m: 6, fr: 'Juin', ar: 'يونيو', en: 'Jun' },
-  { m: 7, fr: 'Juil', ar: 'يوليوز', en: 'Jul' },
-];
-
-/** Semaine du lundi au dimanche ; en arabe, la grille se lit de droite à gauche. */
-const WEEKDAYS = {
-  fr: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-  ar: ['إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت', 'أحد'],
-  en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-};
-
-const pad = (n: number) => String(n).padStart(2, '0');
-
-/** Conversion locale à midi : évite tout décalage de date lié au fuseau horaire ou à l'heure d'été. */
-const isoToLocalDate = (iso: string): Date => {
-  const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y || 2026, (m || 9) - 1, d || 1, 12, 0, 0, 0);
-};
-
-const localDateToIso = (date: Date): string =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-
 export const EventDateModal: FC<EventDateModalProps> = ({
   isOpen,
   onClose,
@@ -72,14 +30,11 @@ export const EventDateModal: FC<EventDateModalProps> = ({
     if (event?.title) return localizedActivityTitle(event.title, event.type, locale);
     return null;
   }, [propTitle, event, locale]);
-
   const today = useMemo(() => todayInMorocco(), []);
-
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isRange, setIsRange] = useState(false);
   const [activeTarget, setActiveTarget] = useState<'start' | 'end'>('start');
-
   // Mois et Année affichés dans le calendrier interactif
   const [viewYear, setViewYear] = useState(() => Number(today.split('-')[0]) || 2026);
   const [viewMonth, setViewMonth] = useState(() => Number(today.split('-')[1]) || 9);
@@ -164,11 +119,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
   };
 
   const applyEndOfMonth = () => {
-    const parts = (startDate || today).split('-');
-    const y = Number(parts[0]);
-    const m = Number(parts[1]);
-    const lastDay = new Date(y, m, 0).getDate();
-    const iso = `${y}-${pad(m)}-${pad(lastDay)}`;
+    const iso = endOfMonthIso(startDate || today);
     setStartDate(iso);
     jumpToDate(iso);
   };
@@ -193,20 +144,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
     }
   }, [startDate, endDate, isRange, locale, t]);
 
-  const copy = {
-    title: t('dateModal.title'),
-    singleDateMode: t('dateModal.single'),
-    rangeMode: t('dateModal.range'),
-    clearDate: t('dateModal.clear'),
-    cancel: t('common.cancel'),
-    apply: t('dateModal.apply'),
-    todayBtn: t('dateModal.today'),
-    tomorrowBtn: t('dateModal.tomorrow'),
-    plusWeekBtn: t('dateModal.plusWeek'),
-    plusTwoWeeksBtn: t('dateModal.plusTwoWeeks'),
-    endMonthBtn: t('dateModal.endMonth'),
-    month: t('dateModal.month'),
-  };
+  const copy = eventDateCopy(t);
 
   const weekdaysHeader = WEEKDAYS[locale] ?? WEEKDAYS.fr;
 

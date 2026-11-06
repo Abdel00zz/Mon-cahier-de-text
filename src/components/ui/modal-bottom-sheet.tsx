@@ -151,7 +151,7 @@ export function ModalBottomSheet({
       detent="content" unstyled disableScrollLocking avoidKeyboard={false}
       disableDrag={!swipeToDismiss || blockDismiss} disableDismiss={blockDismiss}
       prefersReducedMotion={Boolean(reducedMotion)}
-      tweenConfig={{ duration: .26, ease: [.22, 1, .36, 1] }}
+      tweenConfig={{ duration: .32, ease: [.16, 1, .3, 1] }}
       dragCloseThreshold={.38} dragVelocityThreshold={650}
       className="modal-sheet-viewport" style={{ zIndex: 100 + layer * 20, height: 'var(--app-viewport-height, 100dvh)', top: 'var(--app-viewport-offset-top, 0px)' }}>
       <Dialog.Overlay forceMount asChild>

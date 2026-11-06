@@ -45,7 +45,7 @@
   border-radius: 12px;
   background: hsl(var(--card) / .95);
   color: hsl(var(--foreground));
-  font-family: 'Inter', 'Readex Pro', sans-serif;
+  font-family: var(--font-sans);
   box-shadow: 0 8px 24px hsl(var(--foreground) / .16), 0 2px 6px hsl(var(--foreground) / .08);
   pointer-events: none;
   will-change: transform;

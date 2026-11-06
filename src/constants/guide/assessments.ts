@@ -13,7 +13,7 @@ export const assessments = chapter('assessments', ["students", "editor", "dates"
             "title": "Accéder à la bonne classe",
             "steps": [
                 "Sur la carte de la classe, ouvrez ⋮ puis « Évaluations et activités ».",
-                "Choisissez l’évaluation ou l’activité concernée. Vérifiez son type, son numéro et sa date avant de modifier une information.",
+                "Les évaluations et activités saisies dans le tableau du cahier apparaissent ici. Ouvrez la rubrique concernée pour consulter ses dates et compléter son suivi.",
                 "La liste d’élèves vient des paramètres de cette classe. Utilisez « Ajouter ou gérer les élèves » si un nom manque, puis revenez à votre suivi."
             ]
         },
@@ -22,8 +22,8 @@ export const assessments = chapter('assessments', ["students", "editor", "dates"
             "body": "Un devoir surveillé peut comporter un document et un relevé d’absences. Le devoir maison distingue le travail donné, sa date limite de remise et sa correction. La correction propose son contenu, le suivi « Non rendus » lorsque disponible et la corbeille. La colle propose le suivi des élèves et la corbeille ; elle concerne les classes préparatoires."
         },
         {
-            "title": "Contenu ou remarque ?",
-            "body": "La correction du devoir maison et la colle sont liées à leur élément de contenu dans le cahier. Les remarques et le travail à faire décrivent la séance. Modifier une remarque ne remplace pas la gestion de ces éléments."
+            "title": "Modifier une date",
+            "body": "Les dates sont affichées en gris et en lecture seule. Pour les changer, revenez au tableau du cahier et datez l’élément concerné. La feuille de suivi reçoit les éléments du cahier ; elle ne crée pas de nouvelle évaluation."
         },
         {
             "title": "Observer et noter",
@@ -43,7 +43,7 @@ export const assessments = chapter('assessments', ["students", "editor", "dates"
             "title": "فتح القسم المعني",
             "steps": [
                 "في بطاقة القسم، افتح ⋮ ثم «التقويمات و الأنشطة».",
-                "اختر التقويم أو النشاط المعني وتحقق من نوعه ورقمه وتاريخه قبل التعديل.",
+                "تظهر هنا التقويمات والأنشطة المسجلة في جدول الدفتر. افتح الفئة المعنية للاطلاع على التواريخ وإتمام التتبع.",
                 "تأتي الأسماء من إعدادات القسم نفسه. إذا غاب اسم، افتح رابط إضافة أو تدبير التلاميذ ثم عد إلى التتبع."
             ]
         },
@@ -52,8 +52,8 @@ export const assessments = chapter('assessments', ["students", "editor", "dates"
             "body": "يمكن أن يتضمن الفرض المحروس وثيقة ولائحة غياب. يميّز الفرض المنزلي بين العمل المسند وآخر أجل للتسليم والتصحيح. يتيح التصحيح محتواه وتتبع عدم التسليم عند توفره وسلة الحذف. تتيح الكول تتبع التلاميذ وسلة الحذف، وتخص الأقسام التحضيرية."
         },
         {
-            "title": "محتوى أم ملاحظة؟",
-            "body": "يرتبط تصحيح الفرض المنزلي والكول بعنصر المحتوى الخاص بهما في الدفتر. تصف الملاحظات والعمل المطلوب الحصة. تعديل الملاحظة لا يحل محل تدبير هذه العناصر."
+            "title": "تعديل التاريخ",
+            "body": "تظهر التواريخ بالرمادي للقراءة فقط. لتغييرها، ارجع إلى جدول الدفتر وحدّد تاريخ العنصر المعني. تستقبل ورقة التتبع عناصر الدفتر ولا تنشئ تقويماً جديداً."
         },
         {
             "title": "الملاحظات والنقط",

@@ -101,7 +101,7 @@ export function detectEvaluationConflicts(candidate: EvaluationSlot, slots: read
   return conflicts;
 }
 
-export function conflictMessage(conflict: EvaluationConflict, locale: AppLocale): string {
+function conflictMessage(conflict: EvaluationConflict, locale: AppLocale): string {
   return translateLocaleMessage(locale, `evaluations.conflict.${conflict.kind}`, {
     name: conflict.existing.label, date: conflict.existing.start || '—', end: conflict.existing.end || '—',
   });

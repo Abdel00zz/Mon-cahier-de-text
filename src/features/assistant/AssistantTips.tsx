@@ -88,9 +88,6 @@ export function AssistantTips({ locale, day, initiallyOpen = false }: { locale: 
       <div className="assistant-tips__body">
         <p className="assistant-panel__detail">{copy.quotation ? <q>{text}</q> : text}</p>
         <a href={tip.source.url} target="_blank" rel="noopener noreferrer" className="assistant-tips__source" dir="auto">{tip.source.label}</a>
-        <button type="button" className="assistant-panel__help" onClick={() => setOffset(value => nextIntelligentOffset(value))}>
-          {locale === 'ar' ? 'فكرة أخرى' : locale === 'en' ? 'Another idea' : 'Une autre idée'}
-        </button>
       </div>
     </details>
   );

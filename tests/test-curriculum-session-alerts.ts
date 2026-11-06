@@ -324,9 +324,10 @@ test('dashboard identifies the live session on its class card without a duplicat
   assert.match(dashboard, /const activeSessionClassIds = useMemo/, 'Le tableau de bord reçoit les classes actives');
   assert.doesNotMatch(dashboard, /SessionLiveBanner|data-session-banner/);
   const card = readFileSync('src/features/dashboard/ClassCard.tsx', 'utf8');
-  assert.match(card, /isActiveSession &&[\s\S]*?class-card__live[\s\S]*?t\('dashboard.welcome.nowTitle'\)/);
+  assert.match(card, /data-session-active=\{isActiveSession \? 'true' : undefined\}/);
+  assert.doesNotMatch(card, /class-card__live|welcome\.nowTitle/, 'aucun badge textuel dans la carte');
   assert.doesNotMatch(card, /ActiveSessionGlass/, 'le repère actif reste calme');
   assert.match(dashboard, /isActiveSession=\{isActiveSession\}/);
-  const effects = readFileSync('src/features/dashboard/classCards.css', 'utf8');
+  const effects = ['src/features/dashboard/classCardsBase.css', 'src/features/dashboard/classCards.css'].map(path => readFileSync(path, 'utf8')).join('\n');
   assert.match(effects, /prefers-reduced-motion/, 'Animation adaptée au mouvement réduit');
 });

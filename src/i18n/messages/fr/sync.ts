@@ -1,0 +1,22 @@
+// Traductions fr — sync.
+export const messages: Record<string, string> = {
+  'sync.accountChanged': 'Le compte actif ou la version de l’application a changé. Rechargez la page avant de synchroniser.',
+  'sync.synced': 'Cloud à jour',
+  'sync.syncing': 'Synchronisation',
+  'sync.pending': 'En attente',
+  'sync.offline': 'Hors connexion',
+  'sync.error': 'Erreur',
+  'sync.syncNow': 'Synchroniser maintenant',
+  'sync.statusAria': 'État de synchronisation : {status}',
+  'sync.sessionExpired': 'Session expirée : reconnectez-vous pour reprendre la synchronisation.',
+  'sync.tooLarge': 'Un cahier dépasse la taille maximale de synchronisation (~950 Ko).',
+  'sync.classTooLarge': 'Le cahier « {name} » est trop volumineux pour rejoindre le cloud. Sa copie reste sur cet appareil : répartissez son contenu entre plusieurs classes pour le synchroniser.',
+  'sync.localDataUnreadable': 'La copie locale est illisible. Synchronisation suspendue pour protéger vos données. Restaurez une sauvegarde depuis les paramètres.',
+  'sync.localStorageFull': 'Le stockage de cet appareil est plein. Libérez de l’espace ou exportez une sauvegarde avant de continuer.',
+  'sync.failedWithMessage': 'Synchronisation impossible : {message}',
+  'sync.failed': 'Synchronisation impossible. Nouvel essai automatique dans une minute.',
+  'sync.localNotLinked': '{count} cahier(s) de cet appareil ne sont pas encore associés à votre compte.',
+  'sync.linkAction': 'Associer',
+  'sync.conflictOne': '« {name} » a été modifié sur un autre appareil. La version la plus récente est conservée ; l’autre est archivée ici.',
+  'sync.conflictMany': '{count} cahiers ont été modifiés sur un autre appareil ({names}). Les versions les plus récentes sont conservées ; les autres sont archivées.',
+};

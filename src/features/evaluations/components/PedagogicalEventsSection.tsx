@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { EvaluationPolicy, PedagogicalEvent } from '@/types';
 import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
@@ -6,26 +6,23 @@ import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
 import { documentIndicator, documentRequirementForEvent } from '@/domain/evaluations/documentRequirement';
 import { numberFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { ltrIsolate } from '@/lib/text/textDirection';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG } from '../kindCatalog';
 import { KindGroupHeader } from './KindGroupHeader';
-import { EventDateModal } from './EventDateModal';
+import { EvaluationDate } from './EvaluationDate';
 import { ActionIcon } from './ActionIcon';
-import { CalendarSheetVisual } from './SectionPanelBadge';
 
 /*
  * LA LISTE DES ACTIVITÉS PÉDAGOGIQUES D'UNE NATURE.
  *
  * Même tableau que les devoirs (en-tête + lignes `ev-row`), même langue
  * d'actions : document (jamais pour un contrôle des cahiers — sa trace vit
- * dans la remarque de séance), élèves consignés avec compte, date modifiable
- * par la modale partagée, suppression confirmée par l'écran parent.
+ * dans la remarque de séance), élèves consignés avec compte, dates reçues du
+ * cahier et suppression confirmée par l'écran parent.
  */
 interface PedagogicalEventsSectionProps {
   events: PedagogicalEvent[];
   showHeader?: boolean;
-  onDateChange: (event: PedagogicalEvent, date: string, endDate?: string) => void;
   onDelete: (event: PedagogicalEvent) => void;
   onOpenDocument: (event: PedagogicalEvent) => void;
   onOpenStudents: (event: PedagogicalEvent) => void;
@@ -36,7 +33,6 @@ interface PedagogicalEventsSectionProps {
 export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   events,
   showHeader = true,
-  onDateChange,
   onDelete,
   onOpenDocument,
   onOpenStudents,
@@ -44,29 +40,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
 }) => {
   const { t, locale } = useLocale();
   const number = useMemo(() => numberFormat(locale), [locale]);
-  const [editingDateEvent, setEditingDateEvent] = useState<PedagogicalEvent | null>(null);
-
   if (events.length === 0) return null;
-
-  const formatDateBadge = (date: string, endDate: string | undefined): string => {
-    const formatFull = (iso: string) => {
-      const parts = iso.split('-');
-      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-      return iso;
-    };
-    if (endDate && endDate !== date) {
-      const partsStart = date.split('-');
-      const partsEnd = endDate.split('-');
-      const d1 = partsStart[2] || '';
-      const m1 = partsStart[1] || '';
-      const d2 = partsEnd[2] || '';
-      const m2 = partsEnd[1] || '';
-      const y2 = partsEnd[0] || '';
-      // Les dates restent de gauche à droite, la phrase suit la langue.
-      return t('evaluations.dateRange', { start: ltrIsolate(`${d1}/${m1}`), end: ltrIsolate(`${d2}/${m2}/${y2}`) });
-    }
-    return ltrIsolate(formatFull(date));
-  };
 
   return (
     <section className="space-y-2.5 font-sans">
@@ -125,24 +99,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                   {showType && <span className="tone-chip">{typeLabel}</span>}
                 </div>
 
-                <div className="ev-row__date">
-                  {event.date ? (
-                    <button
-                      type="button"
-                      onClick={() => setEditingDateEvent(event)}
-                      className="ev-date-trigger inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold text-foreground select-none cursor-pointer transition-all hover:text-primary hover:bg-muted/50 rounded-full active:scale-95 border border-border/40 shadow-xs"
-                      aria-label={t('evaluations.assessmentDateAria', { assessment: title })}
-                    >
-                      <CalendarSheetVisual iso={event.date} endDate={event.endDate} />
-                      <span className="ev-date-sr whitespace-nowrap tabular-nums text-[11px] font-bold">
-                        {formatDateBadge(event.date, event.endDate)}
-                      </span>
-                    </button>
-                  ) : (
-                    /* La date vient du tableau de l'éditeur : sans date, un simple constat, rien à cliquer. */
-                    <span className="ev-date-empty">{t('evaluations.noDateYet')}</span>
-                  )}
-                </div>
+                <div className="ev-row__date"><EvaluationDate date={event.date} endDate={event.endDate} /></div>
                 <div className="ev-row__actions flex items-center justify-end gap-1 flex-nowrap shrink-0">
                   {docIndicator !== 'none' && (
                     <button
@@ -190,13 +147,6 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
         </ul>
       </div>
 
-      <EventDateModal
-        isOpen={Boolean(editingDateEvent)}
-        onClose={() => setEditingDateEvent(null)}
-        event={editingDateEvent}
-        title={editingDateEvent ? localizedActivityTitle(editingDateEvent.title, editingDateEvent.type, locale) : undefined}
-        onSave={onDateChange}
-      />
     </section>
   );
 };

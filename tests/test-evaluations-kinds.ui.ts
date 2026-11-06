@@ -123,7 +123,7 @@ test('la modale capture et affiche : plus d’assistant de création, la classe 
     assert.doesNotMatch(view, /ClassChooser|classChoices|chooseClass/, 'aucune étape de classe');
     assert.doesNotMatch(view, /<StepTrail|<KindChooser|<KindHeader|<ProgrammedList/, 'plus d’assistant de nature');
     assert.match(view, /useEvaluationModals\(\)/, 'les fenêtres restent gérées par le hook commun');
-    assert.match(view, /\{selectedClass && \(\s*<p[\s\S]{0,120}\{selectedClassDisplayName\}/, 'le nom de la classe coiffe la fenêtre');
+    assert.match(view, /<h2 id="evaluations-class-context"[\s\S]{0,160}\{selectedClassDisplayName\}/, 'le nom de la classe reste le contexte accessible de la fenêtre');
 });
 
 
@@ -177,10 +177,10 @@ test('un devoir programmé s’ouvre depuis la liste, la création libre reste e
     assert.match(empty, /Aucun devoir de ce type/, 'état vide expliqué');
 });
 
-test('les devoirs viennent du tableau ; seule la MODIFICATION manuelle reste ouverte', () => {
+test('les devoirs viennent du tableau ; plus de formulaire manuel dans la fenêtre', () => {
     const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/DevoirsModals.tsx', 'utf8');
     assert.doesNotMatch(view, /manualFormOpen \? |<ProgrammedList|programmedFor\(chosenKind/, 'plus de liste programmée ni de création libre');
-    assert.match(view, /initial=\{editingAssessment\}/, 'l’éditeur manuel ne s’ouvre qu’en MODIFICATION');
+    assert.doesNotMatch(view, /ManualAssessmentEditor|initial=\{editingAssessment\}/, 'plus de formulaire manuel');
     const modals = readFileSync('src/features/evaluations/hooks/useEvaluationModals.ts', 'utf8');
     assert.doesNotMatch(modals, /openKindChooser|close\('create'\)/, 'aucun état de création dans le hook');
 });

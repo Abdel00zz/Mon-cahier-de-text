@@ -1,0 +1,20 @@
+// Traductions en — classRoster.
+export const messages: Record<string, string> = {
+  'classRoster.title': "Class students",
+  'classRoster.identity': "Information",
+  'classRoster.manage': "Add or manage students",
+  'classRoster.help': "One list for assessments, activities and administration. Previously recorded observations are preserved.",
+  'classRoster.label': "Full names",
+  'classRoster.format': "Separate names with “؛” or a new line.",
+  'classRoster.placeholder': "أحمد العلوي ؛ سلمى الفاسي ؛ يوسف أمين",
+  'classRoster.count': "{count} / 200 students · duplicates removed",
+  'classRoster.empty': "The roster is empty. Add students in class settings.",
+  'classRoster.selection': "Select the students concerned.",
+  'classRoster.discard': "Leave without saving?",
+  'classRoster.discardBody': "Changes to the student roster have not been saved.",
+  'classRoster.leave': "Leave",
+  'classRoster.changed': "The roster was updated. Your changes will be merged when saving.",
+  'classRoster.saved': "Class roster saved",
+  'classRoster.history': "Students from existing records",
+  'classRoster.import': "Use these names",
+};

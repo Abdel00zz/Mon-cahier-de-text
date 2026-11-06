@@ -47,6 +47,15 @@ test('display projection preserves hierarchy, indices, numbering and source orde
     for (const row of display) if ('kind' in row) assert.ok(!('indices' in row));
 });
 
+test('la projection avec absences est partagée par l’éditeur et le tableau', () => {
+    // Les deux surfaces demandent le même groupement au même rendu : la seconde
+    // demande doit réutiliser l'objet au lieu de reprojeter tout le cahier.
+    const source = buildLessonRows(lessons);
+    const sessions = buildAbsenceSessions(config, 'A', lessons);
+    const first = groupRowsWithAbsences(source, sessions);
+    assert.equal(groupRowsWithAbsences(source, sessions), first);
+});
+
 test('print dates, filtered jobs and new-content detection include independent absences', () => {
     const sessions = buildAbsenceSessions(config, 'A', lessons);
     assert.deepEqual(collectSessionDates(lessons, sessions), ['2026-09-07', '2026-09-14', '2026-09-21']);

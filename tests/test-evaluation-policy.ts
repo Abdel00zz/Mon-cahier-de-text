@@ -294,7 +294,10 @@ test('l’administration propose la politique : général et par compte', () => 
   assert.match(app, /onManageEvaluationPolicy=\{\(\) => go\(\{ name: 'evaluationPolicy', phone: view\.phone \}\)\}/);
   const detail = read('src/admin/components/TeacherDetail.tsx');
   assert.match(detail, /Personnaliser le contrôle continu/);
-  const manager = read('src/admin/components/EvaluationPolicyManager.tsx');
+  const manager = [
+    'src/admin/components/EvaluationPolicyManager.tsx',
+    'src/admin/components/evaluationPolicyModel.ts',
+  ].map(read).join('\n');
   for (const label of ['Transmis à la feuille', 'Contrôle continu', 'Liste d’élèves', 'Retours par élève', 'Notes /20', 'Absents', 'Correction du devoir', 'Contenu (sujet, corrigé)']) {
     assert.ok(manager.includes(label), label);
   }
@@ -353,7 +356,10 @@ test('le serveur accepte le réglage « correction » et refuse un type incorrec
 });
 
 test('l’administration ne propose la correction que là où elle existe', () => {
-  const manager = read('src/admin/components/EvaluationPolicyManager.tsx');
+  const manager = [
+    'src/admin/components/EvaluationPolicyManager.tsx',
+    'src/admin/components/evaluationPolicyModel.ts',
+  ].map(read).join('\n');
   assert.match(manager, /support\.correction && \(\s*<Toggle\s+label="Correction du devoir"/);
   assert.match(manager, /disabled=\{locked \|\| !policy\.transmit\}/, 'suit la transmission du devoir');
   assert.match(manager, /'correction'\] as const/, 'compté parmi les réglages modifiés');

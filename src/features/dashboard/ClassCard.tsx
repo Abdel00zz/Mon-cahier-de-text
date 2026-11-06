@@ -127,20 +127,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                         />
                     </div>
                 </div>
-
-                {isActiveSession && (
-                    <div className="class-card__footer">
-                        <span className="class-card__live">
-                            {!isRtl && <span className="class-card__live-dot" aria-hidden="true" />}
-                            <span>{t('dashboard.welcome.nowTitle')}</span>
-                            {scheduleStatus?.remainingMinutes && (
-                                <span className="class-card__live-remaining">
-                                    {locale === 'ar' ? `${scheduleStatus.remainingMinutes} د` : `· ${scheduleStatus.remainingMinutes} min`}
-                                </span>
-                            )}
-                        </span>
-                    </div>
-                )}
             </article>
         </div>
     );

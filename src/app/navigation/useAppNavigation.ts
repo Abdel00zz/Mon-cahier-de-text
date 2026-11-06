@@ -5,14 +5,14 @@ import { classRoute, DASHBOARD_HASH, DASHBOARD_ROUTE, HELP_HASH, readAppRoute, s
 
 const isOverlayView = (view: string) => view === 'settings' || view === 'help';
 
-/** Routes, settings/help overlay history and scroll restoration share one owner. */
+/** Page and desktop overlay navigation share their history and scroll ownership. */
 export function useAppNavigation(updateClass: (id: string, patch: Partial<ClassInfo>) => boolean,
-  markSessionHandled: (id: string | undefined) => void, enabled = true) {
+  markSessionHandled: (id: string | undefined) => void, enabled = true, overlayWorkspaceViews = true) {
   const [initial] = useState(readAppRoute);
   const [route, setRoute] = useState(initial);
   const [settingsOrigin, setSettingsOrigin] = useState(() => isOverlayView(initial.view) ? DASHBOARD_ROUTE : initial);
   const positions = useRef<Record<string, number>>({});
-  const backgroundRoute = isOverlayView(route.view) ? settingsOrigin : route;
+  const backgroundRoute = overlayWorkspaceViews && isOverlayView(route.view) ? settingsOrigin : route;
   const saveScroll = useCallback(() => { positions.current[scrollKey(backgroundRoute)] = window.scrollY; }, [backgroundRoute]);
 
   const resetNavigation = useCallback(() => {
@@ -56,8 +56,7 @@ export function useAppNavigation(updateClass: (id: string, patch: Partial<ClassI
   }, [route, saveScroll]);
 
   const handleBackFromSettings = useCallback(() => {
-    if (window.history.state?.route === 'settings' && window.history.state?.settingsSubView) window.history.go(-2);
-    else if (window.history.state?.route === 'settings') window.history.back();
+    if (window.history.state?.route === 'settings') window.history.back();
     else if (settingsOrigin.view === 'editor' && settingsOrigin.activeClass) {
       setRoute(settingsOrigin);
       window.history.replaceState({ route: 'editor', classId: settingsOrigin.activeClass.id }, '', classRoute(settingsOrigin.activeClass.id));
@@ -120,12 +119,16 @@ export function useAppNavigation(updateClass: (id: string, patch: Partial<ClassI
     if (!enabled) return;
     if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
     const remembered = positions.current[scrollKey(backgroundRoute)];
-    const restore = () => window.scrollTo(0, remembered ?? 0);
+    const restore = () => {
+      // A contextual destination positions itself once its lazy content is ready.
+      if (!overlayWorkspaceViews && document.querySelector('[data-route-focus="true"]')) return;
+      window.scrollTo(0, remembered ?? 0);
+    };
     const frame = window.requestAnimationFrame(restore);
     // A newly opened notebook positions itself at its latest dated content.
     const timer = backgroundRoute.view === 'editor' && remembered === undefined ? undefined : window.setTimeout(restore, 220);
     return () => { window.cancelAnimationFrame(frame); if (timer !== undefined) window.clearTimeout(timer); };
-  }, [enabled, backgroundRoute]);
+  }, [enabled, backgroundRoute, overlayWorkspaceViews]);
 
   return { ...route, backgroundRoute, initialView: initial.view, resetNavigation,
     handleSelectClass, handleBackToDashboard, handleOpenSettings, handleBackFromSettings, handleOpenHelp, handleBackFromHelp };

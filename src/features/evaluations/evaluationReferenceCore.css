@@ -1,0 +1,288 @@
+
+.dark .evaluation-reference .eval-subject-tilted-tag {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--hero-ink);
+}
+
+.evaluation-reference .modal-header [data-ui-title] p,
+.evaluation-reference .modal-header [data-description] {
+  display: none !important;
+}
+
+.evaluation-reference .modal-body {
+  padding: 0.3rem var(--pad, 1.15rem) 1.5rem;
+  background: transparent;
+}
+
+/* Titre de famille (.sl : « الفروض والتقويمات ») */
+.evaluation-reference .evaluations-category-title {
+  font: 500 0.84rem/1.4 "Readex Pro", var(--font-sans);
+  color: var(--text-secondary);
+  margin: 0 0.25rem 0.3rem;
+  padding: 0;
+}
+
+.evaluation-reference .kind-group {
+  margin-bottom: 0.5rem;
+}
+
+/* ── Familles : accordéons pastel (.ac) avec icône ronde (.ci) et compteur (.cnt) ── */
+.evaluation-reference .ev-accordion {
+  --panel-bg: #fdeede;
+  --panel-border: #f6d9bd;
+  --panel-ink: #6b3a12;
+  --panel-secondary: #a8642a;
+
+  background: color-mix(in srgb, var(--panel-bg) 70%, var(--eval-card));
+  border: 0;
+  border-radius: 1rem;
+  margin-bottom: 0.55rem;
+  overflow: hidden;
+  box-shadow: none;
+  transition: background-color 0.2s ease;
+}
+
+.evaluation-reference .ev-accordion[data-panel-tone='peach'] {
+  --panel-bg: oklch(0.96 0.04 65);
+  --panel-border: oklch(0.85 0.08 65);
+  --panel-ink: oklch(0.35 0.12 65);
+  --panel-secondary: oklch(0.48 0.14 65);
+}
+
+.evaluation-reference .ev-accordion[data-panel-tone='lavender'] {
+  --panel-bg: oklch(0.97 0.03 285);
+  --panel-border: oklch(0.88 0.08 285);
+  --panel-ink: oklch(0.32 0.14 285);
+  --panel-secondary: oklch(0.48 0.16 285);
+}
+
+.evaluation-reference .ev-accordion[data-panel-tone='green'] {
+  --panel-bg: oklch(0.96 0.04 155);
+  --panel-border: oklch(0.85 0.08 155);
+  --panel-ink: oklch(0.35 0.12 155);
+  --panel-secondary: oklch(0.48 0.14 155);
+}
+
+.evaluation-reference .ev-accordion[data-panel-tone='blue'] {
+  --panel-bg: oklch(0.96 0.04 245);
+  --panel-border: oklch(0.85 0.08 245);
+  --panel-ink: oklch(0.35 0.12 245);
+  --panel-secondary: oklch(0.48 0.14 245);
+}
+
+.dark .evaluation-reference .ev-accordion[data-panel-tone='peach'] {
+  --panel-bg: oklch(0.25 0.04 65);
+  --panel-border: oklch(0.38 0.08 65);
+  --panel-ink: oklch(0.88 0.08 65);
+  --panel-secondary: oklch(0.72 0.12 65);
+}
+.dark .evaluation-reference .ev-accordion[data-panel-tone='lavender'] {
+  --panel-bg: oklch(0.24 0.05 285);
+  --panel-border: oklch(0.36 0.09 285);
+  --panel-ink: oklch(0.90 0.08 285);
+  --panel-secondary: oklch(0.74 0.14 285);
+}
+.dark .evaluation-reference .ev-accordion[data-panel-tone='green'] {
+  --panel-bg: oklch(0.25 0.04 155);
+  --panel-border: oklch(0.38 0.08 155);
+  --panel-ink: oklch(0.88 0.08 155);
+  --panel-secondary: oklch(0.72 0.12 155);
+}
+.dark .evaluation-reference .ev-accordion[data-panel-tone='blue'] {
+  --panel-bg: oklch(0.25 0.04 245);
+  --panel-border: oklch(0.38 0.08 245);
+  --panel-ink: oklch(0.88 0.08 245);
+  --panel-secondary: oklch(0.72 0.12 245);
+}
+
+.evaluation-reference .ev-accordion__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.32rem 0.75rem 0.32rem 0.42rem;
+  cursor: pointer;
+  user-select: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  min-height: 44px;
+  color: var(--panel-ink);
+  transition: background-color 0.15s ease;
+}
+
+/* Pictogramme de nature, contenu dans un carré arrondi */
+.evaluation-reference .ev-panel-glyph,
+.ev-panel-glyph {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  flex: 0 0 2.2rem;
+  border-radius: .65rem;
+  background: #ffffffcc;
+  color: var(--panel-secondary);
+  border: 0;
+  box-shadow: none;
+  transition: background-color 180ms ease;
+}
+
+.dark .evaluation-reference .ev-panel-glyph,
+.dark .ev-panel-glyph {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.evaluation-reference .ev-panel-glyph svg,
+.ev-panel-glyph svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  max-width: 1.1rem;
+  max-height: 1.1rem;
+}
+
+.evaluation-reference .ev-accordion__label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--panel-ink);
+  min-width: 0;
+  flex: 1;
+}
+
+.evaluation-reference .ev-accordion__label-text {
+  font: 600 0.9rem/1.35 "Readex Pro", var(--font-sans);
+  color: var(--panel-ink);
+  text-align: start;
+}
+
+/* Compteur du panneau (.cnt) */
+.evaluation-reference .ev-accordion__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.35rem;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--panel-secondary) 16%, transparent);
+  color: var(--panel-ink);
+  border: 0;
+  font: 600 0.7rem/1.4rem "Readex Pro", var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Bouton chevron (.chv) */
+.evaluation-reference .ev-accordion__toggle-icon {
+  width: max(44px, 2.75rem);
+  height: max(44px, 2.75rem);
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  display: grid;
+  place-items: center;
+  color: var(--panel-ink);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 180ms ease, background-color 0.2s ease;
+}
+
+.evaluation-reference .ev-accordion[data-open='true'] .ev-accordion__toggle-icon {
+  background: #ffffffa6;
+}
+
+.dark .evaluation-reference .ev-accordion[data-open='true'] .ev-accordion__toggle-icon {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Corps du panneau déplié (.ac-b / .rs) : liste de tickets blancs */
+.evaluation-reference .ev-accordion__body {
+  padding: 0 0.5rem 0.55rem;
+  background: transparent;
+  border-top: 0;
+}
+
+.evaluation-reference .ev-board {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.evaluation-reference .ev-board__head {
+  display: none !important;
+}
+
+.evaluation-reference .ev-board__rows {
+  display: grid;
+  gap: 0.4rem;
+  padding-top: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* ── Chaque évaluation est un TICKET blanc épuré sans filet interne (.tk) ── */
+.evaluation-reference .ev-board__rows > .ev-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(4.75rem, max-content) auto;
+  grid-template-areas: 'id date actions';
+  align-items: center;
+  column-gap: 0.5rem;
+  row-gap: 0.25rem;
+  padding: .4rem .6rem;
+  border-radius: .75rem;
+  border: 0 !important;
+  background: var(--eval-card);
+  box-shadow: none;
+  transition: transform 0.15s ease;
+}
+
+.evaluation-reference .ev-board__rows > .ev-row::after {
+  display: none !important;
+}
+
+/* Titre (.as-t) et échéance (.due) */
+.evaluation-reference .ev-row__id {
+  grid-area: id;
+  align-self: center;
+  justify-self: start;
+  width: 100%;
+  min-width: 0;
+  text-align: start;
+  padding-inline-start: 0;
+}
+
+.evaluation-reference .ev-row__id > button,
+.evaluation-reference .ev-row__id > span,
+.evaluation-reference .ev-row__id h4 {
+  font-family: "Readex Pro", var(--eval-font-row), var(--font-sans);
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  line-height: 1.45;
+  color: var(--text-dark);
+  text-align: start;
+  justify-content: flex-start;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+
+.evaluation-reference .ev-row__id .tone-chip {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 3px;
+  padding: 1px 8px;
+  border-radius: 99px;
+  font-size: 10.5px;
+  font-weight: 500;
+  background: color-mix(in srgb, var(--panel-secondary) 12%, transparent);
+  color: var(--panel-ink);
+  transform: none;
+}

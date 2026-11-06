@@ -1,0 +1,23 @@
+// Traductions ar — editContent.
+export const messages: Record<string, string> = {
+  'editContent.title': 'تعديل العنصر',
+  'editContent.titleOnlyTitle': 'تعديل العنوان',
+  'editContent.sharedDescription': 'الحصص المرتبطة بهذا المحتوى: {count}. تُطبّق التعديلات عليها جميعًا مع الاحتفاظ بتواريخها وملاحظاتها.',
+  'editContent.reset': 'إلغاء التعديلات',
+  'editContent.preview': 'معاينة المحتوى',
+  'editContent.formatSelection': 'تنسيق النص المحدد',
+  'editContent.formatBold': 'عريض',
+  'editContent.formatItalic': 'مائل',
+  'editContent.formatUnderline': 'مسطر',
+  'editContent.formatBullets': 'لائحة نقطية',
+  'editContent.formatNumbered': 'لائحة مرقمة',
+  'editContent.formatMath': 'صيغة TeX',
+  'editContent.formatColor': 'لون النص',
+  'editContent.formatHighlight': 'تمييز باللون الأصفر',
+  'editContent.colorRed': 'أحمر (مهم)',
+  'editContent.colorBlue': 'أزرق (معلومة)',
+  'editContent.colorGreen': 'أخضر (تأكيد)',
+  'editContent.colorAmber': 'كهرماني (تنبيه)',
+  'editContent.colorPurple': 'بنفسجي (طريقة)',
+  'editContent.colorClear': 'إزالة اللون',
+};

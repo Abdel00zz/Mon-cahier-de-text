@@ -28,10 +28,9 @@ test('les modales Paramètres et Aide sont des dialogues liquides à taille flex
   assert.match(settings, /liquid-modal/, 'la coque des paramètres est en verre');
   const guide = readFileSync('src/features/guide/GuideModal.tsx', 'utf8');
   assert.match(guide, /mobilePresentation="dialog"/, 'l’aide n’est plus une feuille');
-  assert.match(guide, /hideClose/, 'l’aide garde son en-tête sans croix');
+  assert.match(guide, /learning-guide-modal/, 'la coque de l’aide garde son identité');
   assert.match(guide, /guide-title/, 'le titre reste visible dans la barre du haut');
   assert.match(guide, /bottomNavigation=\{mobileNavigation\}/, 'la navigation mobile est intégrée à la fenêtre');
-  assert.match(guide, /liquid-modal/, 'la coque de l’aide est en verre');
   const settingsCss = readFileSync('src/features/settings/settingsModal.css', 'utf8');
   assert.match(settingsCss, /\.settings-modal-frame\.modal-motion-surface \.modal-pro-header \{[^}]*border-bottom:\s*0;/,
     'le filet sous l’en-tête des paramètres est supprimé');
@@ -41,8 +40,19 @@ test('les modales Paramètres et Aide sont des dialogues liquides à taille flex
   const css = readFileSync('src/components/ui/modal-motion.css', 'utf8');
   assert.match(css, /\.modal-motion-surface\.liquid-modal/);
   assert.match(css, /height:\s*fit-content/, 'la hauteur suit le contenu');
-  assert.match(css, /backdrop-filter:\s*blur\(20px\)\s*saturate\(140%\)/, 'le verre reste subtil pour limiter le coût de composition');
+  assert.match(css, /background-color:\s*hsl\(var\(--card\)\)/, 'surface opaque, sans couche de verre');
+  assert.doesNotMatch(css, /backdrop-filter:\s*blur/, 'aucun flou de fond persistant');
   assert.match(css, /prefers-reduced-transparency: reduce/, 'le verre s’efface si l’utilisateur refuse la transparence');
+});
+
+test('le liseré liquid reste décoratif et s’efface en transparence réduite', () => {
+  const liquid = readFileSync('src/components/ui/liquid-modal.css', 'utf8');
+  assert.match(liquid, /liquid-rim-spin/, 'le liseré irisé tourne');
+  assert.match(liquid, /liquid-sheen-drift/, 'le reflet respire');
+  assert.match(liquid, /@supports not \(\(backdrop-filter: blur\(1px\)\)/, 'repli opaque sans backdrop-filter');
+  assert.match(liquid, /@media \(prefers-reduced-transparency: reduce\)/, 'la transparence réduite coupe le verre');
+  assert.match(liquid, /::before[\s\S]*?pointer-events: none/, 'le liseré ne capte aucun clic');
+  assert.match(liquid, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?animation: none/, 'le mouvement réduit coupe le liseré');
 });
 
 test('les modales partagent un socle unique et les overlays spécialisés rejoignent la pile commune', () => {

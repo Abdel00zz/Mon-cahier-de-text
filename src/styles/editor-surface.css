@@ -49,7 +49,7 @@
   }
   /*
    * Titre d'un DEVOIR (maison / contrôle continu) : rouge profond, dans la voix
-   * éditoriale des titres de l'application (Roboto Slab en latin, KOMission en
+   * éditoriale des titres de l’application (Readex Pro).
    * arabe). C'est un repère de l'année, pas une action : la couleur situe le
    * devoir dans le cahier, elle ne remplace aucune sémantique (le rouge d'alerte
    * et de destruction vit ailleurs). Interligne plus ample que les autres blocs,
@@ -505,32 +505,12 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
    Police locale "maghribi-font 3" (المغربي المبسوط) disponible dans /public
 
    Deux polices embarquées, aucune dépendance distante :
-   · Arabswell 3      (/arabswell-3.ttf)      → texte arabe
-   · Maghribi Font 3  (/maghribi-font-3.ttf)  → titres arabes
-   Les polices latines sont également embarquées (styles/fonts.css).
+         Les polices latines sont également embarquées (styles/fonts.css).
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* Déclaration @font-face pour la police locale Maghribi Font 3 */
-@font-face {
-  font-family: 'Maghribi Font 3';
-  src: url('/maghribi-font-3.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-  /* Les glyphes latins ne sont pas composés par cette fonte : le navigateur
-     les prend dans DM Sans (séparation par écriture, pas par classe). */
-  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F, U+061F, U+0660-0669, U+06D4;
-}
 
 /* Déclaration @font-face pour la police locale Arabswell 3 */
-@font-face {
-  font-family: 'Arabswell 3';
-  src: url('/arabswell-3.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F, U+061F, U+0660-0669, U+06D4;
-}
 
 /* Une ligne libre n'appartient PAS à la structure du cours : encadré en
    pointillés, fond très légèrement teinté, sans couleur d'accent ni filet

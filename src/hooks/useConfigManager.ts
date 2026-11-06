@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useImmer } from 'use-immer';
+import { dequal } from 'dequal';
 import { AppConfig, AppLocale, NotificationSettings } from '../types';
 import { logger } from '../lib/logger';
 import { DEFAULT_TIMETABLE_CLOCK, effectiveSchedules, normalizeTimetableClock } from '../domain/calendar/timetable';
@@ -184,6 +185,10 @@ export const useConfigManager = () => {
             const storedConfig = localStorage.getItem(CONFIG_STORAGE_KEY);
             if (storedConfig) {
                 const loaded = parseStoredConfig(storedConfig);
+                // Le rendu initial a déjà lu et normalisé la même valeur. Reposer
+                // un objet neuf ici provoquait un second rendu complet au montage
+                // de chaque surface (App, tableau de bord, éditeur) sans rien changer.
+                if (dequal(loaded, configRef.current)) return;
                 configRef.current = loaded;
                 setConfig(loaded);
             }

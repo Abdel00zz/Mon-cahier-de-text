@@ -16,7 +16,7 @@ button.auth-brand { cursor: pointer; }
 .auth-field { height: 52px; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; padding: 0 14px; font-size: 16px; color: hsl(var(--foreground)); }
 .auth-field:focus-visible { border-color: hsl(var(--primary)); outline: 2px solid hsl(var(--primary) / .3); outline-offset: 2px; }
 .auth-field.auth-password { padding-inline-end: 48px; }
-.auth-field.auth-phone { padding-right: 44px; }
+.auth-field.auth-phone { padding-inline-end: 44px; }
 .auth-password-toggle { position: absolute; inset-block: 0; inset-inline-end: 0; display: grid; place-items: center; width: 48px; color: hsl(var(--muted-foreground)); border-radius: 10px; cursor: pointer; }
 .auth-submit { min-height: 52px; width: 100%; margin-top: 8px; border-radius: 14px; font-size: 14px; font-weight: 650; }
 .auth-page-shell :is(button, input):focus-visible { outline-color: hsl(var(--primary)); }

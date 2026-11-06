@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
-import { GUIDE_FR, GUIDE_AR, normalizeGuideSearch, searchGuide } from '../src/constants/guides';
+import { GUIDE_FR, GUIDE_AR, normalizeGuideSearch, searchGuide, createGuideSearch } from '../src/constants/guides';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { GuideFigure } from '../src/features/guide/GuideFigure';
@@ -8,6 +8,16 @@ import { GuideText } from '../src/features/guide/GuideText';
 
 assert.deepEqual(GUIDE_FR.map(entry => entry.id), GUIDE_AR.map(entry => entry.id), 'Same chapters and order in FR/AR');
 const ids = new Set(GUIDE_FR.map(entry => entry.id));
+const { GUIDE_GROUPS } = await import('../src/constants/guide/groups');
+const grouped = GUIDE_GROUPS.flatMap(group => group.chapters);
+assert.equal(new Set(grouped).size, grouped.length, 'Each help chapter belongs to exactly one group');
+assert.deepEqual(new Set(grouped), ids, 'All help chapters remain available');
+for (const entries of [GUIDE_FR, GUIDE_AR]) {
+  const find = createGuideSearch(entries);
+  for (const query of ['', 'date séance', 'élèves', 'اشعارات', 'xyz-no-such-action-987']) {
+    assert.deepEqual(find(query), searchGuide(entries, query), 'Prepared search preserves bilingual matching');
+  }
+}
 assert.equal(ids.size, GUIDE_FR.length, 'Unique chapter IDs');
 assert.ok(ids.size >= 18);
 const assets = new Set<string>();
@@ -59,7 +69,7 @@ assert.ok(richText.includes('<strong>Paramètres → Profil</strong>'));
 assert.ok(richText.includes('<strong>الإعدادات</strong>'));
 assert.ok(richText.includes('<code dir="ltr">$x^2$</code>'));
 assert.ok(!richText.includes('<script>'), 'Guide text never injects HTML');
-const modal = await readFile(new URL('../src/features/guide/GuideModal.tsx', import.meta.url), 'utf8');
+const modal = await readFile(new URL('../src/features/guide/GuideContent.tsx', import.meta.url), 'utf8');
 assert.ok(!modal.includes('<GuideFigure') && modal.includes('<GuideText'), 'Modal uses emphasis renderer without images');
 assert.ok(modal.includes('BOUDOUH ABDELMALEK') && modal.includes('بدوح عبد المالك'), 'Bilingual author credit');
 assert.doesNotMatch(modal, /CircleHelp/, 'The guide heading has no duplicate question-mark icon');

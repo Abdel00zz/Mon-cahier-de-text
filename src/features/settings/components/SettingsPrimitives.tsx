@@ -49,7 +49,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
         {action && <div className="shrink-0">{action}</div>}
       </header>
     )}
-    <div className={separators ? "settings-section__body divide-y divide-border/45" : "space-y-3.5 sm:space-y-4"}>
+    <div className={cn('settings-section__body', separators ? 'divide-y divide-border/45' : 'space-y-3.5 sm:space-y-4')}>
       {children}
     </div>
   </section>

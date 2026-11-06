@@ -1,603 +1,3 @@
-@import './evaluationTypography.css';
-
-/* ══════════════════════════════════════════════════════════════
-   Fiche classe (« Contrôle continu et activités ») — Espace de travail serein :
-   - Bandeau héros en dégradé pastel vertical doux (.hero), titre Readex Pro 600
-   - Nom du cours dans une pastille teintée plate (.stk) sous le titre
-   - 4 sections en accordéons pastel asymétriques (.ac : 1.4rem / .5rem) + icône ronde blanche (.ci) + compteur (.cnt)
-   - Chaque évaluation est un ticket blanc épuré (.tk : 1.1rem / .4rem) : titre à droite, date sur pastille (.lf), actions dessous séparées par un trait fin plein (#f0ebe3)
-   - Correction du devoir reliée au devoir par un connecteur coudé arrondi continu (.tk.ch::before)
-   - Mobile : feuille quasi pleine hauteur ; Grand écran : modale centrée 44rem avec rayon asymétrique (2rem / .6rem)
-   - Cibles tactiles ≥ 44px
-   ══════════════════════════════════════════════════════════════ */
-
-.evaluation-reference {
-  --bg-page: color-mix(in srgb, var(--hero-border, #f6d9bd) 10%, #fffdfa);
-  --text-dark: #2f2822;
-  --text-secondary: #7a7169;
-  --text-muted: #7a7169;
-  --color-terracotta: #7a5a49;
-  --pad: clamp(1rem, 4.6cqi, 1.9rem);
-
-  /* Tons du bandeau héros par défaut (pêche PAL) */
-  --hero-bg: #fdeede;
-  --hero-border: #f6d9bd;
-  --hero-ink: #6b3a12;
-  --hero-secondary: #a8642a;
-
-  /* Tons sémantiques des actions (.ab) */
-  --badge-green-bg: #e2f3e7;
-  --badge-green-text: #2f7a4d;
-  --icon-blue-bg: #ece9f7;
-  --icon-blue-fg: #5d55a3;
-  --icon-gray-bg: #f0ebe3;
-  --icon-gray-fg: #3b2f28;
-  --danger-bg: #fde4ea;
-  --danger-border: #f1d3d9;
-  --danger-text: #c2255c;
-
-  --border-card: #ebe5dc;
-  --border-subtle: #f0ebe3;
-  --header-row-bg: #f0ebe3;
-
-  --radius-card: 1.8rem;
-  --radius-item: 1.2rem;
-  --eval-card: #ffffff;
-
-  font-family: "Readex Pro", var(--font-sans);
-  line-height: 1.55;
-  color: var(--text-dark);
-}
-
-/* Variantes de couleur du bandeau héros (PAL) */
-.evaluation-reference.eval-hero-tone-peach,
-.evaluation-reference .eval-hero-tone-peach {
-  --hero-bg: #fdeede;
-  --hero-border: #f6d9bd;
-  --hero-ink: #6b3a12;
-  --hero-secondary: #a8642a;
-}
-.evaluation-reference.eval-hero-tone-lavender,
-.evaluation-reference .eval-hero-tone-lavender {
-  --hero-bg: #ece9f7;
-  --hero-border: #d9d4ee;
-  --hero-ink: #2e2766;
-  --hero-secondary: #5d55a3;
-}
-.evaluation-reference.eval-hero-tone-green,
-.evaluation-reference .eval-hero-tone-green {
-  --hero-bg: #e6f3e9;
-  --hero-border: #cfe6d5;
-  --hero-ink: #14503a;
-  --hero-secondary: #3f7f63;
-}
-.evaluation-reference.eval-hero-tone-sky,
-.evaluation-reference .eval-hero-tone-sky {
-  --hero-bg: #e0eefa;
-  --hero-border: #c6dff2;
-  --hero-ink: #0f3f6b;
-  --hero-secondary: #3a78a8;
-}
-.evaluation-reference.eval-hero-tone-sand,
-.evaluation-reference .eval-hero-tone-sand {
-  --hero-bg: #f7f0d4;
-  --hero-border: #ebe0ad;
-  --hero-ink: #5c4a05;
-  --hero-secondary: #8f7a1c;
-}
-.evaluation-reference.eval-hero-tone-rose,
-.evaluation-reference .eval-hero-tone-rose {
-  --hero-bg: #fbe6ee;
-  --hero-border: #f2cddb;
-  --hero-ink: #6e1c3e;
-  --hero-secondary: #a8486f;
-}
-
-.dark .evaluation-reference {
-  --bg-page: color-mix(in srgb, hsl(var(--background)) 92%, hsl(224 28% 15%));
-  --text-dark: hsl(var(--foreground));
-  --text-secondary: hsl(var(--muted-foreground));
-  --text-muted: hsl(var(--muted-foreground));
-  --eval-card: color-mix(in srgb, hsl(var(--card)) 95%, hsl(224 25% 20%));
-  --border-card: rgba(255, 255, 255, 0.12);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --icon-gray-bg: rgba(255, 255, 255, 0.08);
-  --icon-gray-fg: hsl(var(--foreground) / 0.9);
-  --danger-bg: rgba(244, 63, 94, 0.16);
-  --danger-border: rgba(244, 63, 94, 0.34);
-  --danger-text: #fda4af;
-}
-
-.dark .evaluation-reference.eval-hero-tone-peach,
-.dark .evaluation-reference .eval-hero-tone-peach {
-  --hero-bg: #362419;
-  --hero-border: #593a27;
-  --hero-ink: #fce8d5;
-  --hero-secondary: #e7bfa0;
-}
-.dark .evaluation-reference.eval-hero-tone-lavender,
-.dark .evaluation-reference .eval-hero-tone-lavender {
-  --hero-bg: #26223e;
-  --hero-border: #433b6b;
-  --hero-ink: #eae6fc;
-  --hero-secondary: #c5bdf0;
-}
-.dark .evaluation-reference.eval-hero-tone-green,
-.dark .evaluation-reference .eval-hero-tone-green {
-  --hero-bg: #183124;
-  --hero-border: #2a543e;
-  --hero-ink: #dcf5e6;
-  --hero-secondary: #a8dec0;
-}
-.dark .evaluation-reference.eval-hero-tone-sky,
-.dark .evaluation-reference .eval-hero-tone-sky {
-  --hero-bg: #182d3f;
-  --hero-border: #2b4e6b;
-  --hero-ink: #ddeefb;
-  --hero-secondary: #abd1ee;
-}
-.dark .evaluation-reference.eval-hero-tone-sand,
-.dark .evaluation-reference .eval-hero-tone-sand {
-  --hero-bg: #332915;
-  --hero-border: #544423;
-  --hero-ink: #f7ecd2;
-  --hero-secondary: #dec99a;
-}
-.dark .evaluation-reference.eval-hero-tone-rose,
-.dark .evaluation-reference .eval-hero-tone-rose {
-  --hero-bg: #381c26;
-  --hero-border: #5c2f3f;
-  --hero-ink: #fbe3ea;
-  --hero-secondary: #e5b5c4;
-}
-
-/* ── Dimensions fluides de la Fiche classe (.pgs) ── */
-.evaluation-reference.modal-motion-surface {
-  container: pgs / inline-size;
-  border-radius: 1.8rem 1.8rem 0 0;
-  border: 0 !important;
-  background-color: var(--bg-page) !important;
-  background-image: none !important;
-  overflow: hidden;
-  box-shadow: 0 -12px 60px #2f282233 !important;
-}
-
-@media (min-width: 720px) {
-  .evaluation-reference.modal-motion-surface {
-    max-width: min(100%, clamp(26rem, 64vw, 56rem)) !important;
-    width: min(100%, clamp(26rem, 64vw, 56rem)) !important;
-    border-radius: 2rem !important;
-    border-end-start-radius: 0.6rem !important;
-  }
-}
-
-@media (max-width: 719px) {
-  .evaluation-reference.modal-motion-surface {
-    max-height: 96dvh !important;
-    min-height: 92dvh;
-    border-top-left-radius: 1.8rem !important;
-    border-top-right-radius: 1.8rem !important;
-  }
-}
-
-/* ── Bandeau Héros en dégradé doux (.hero) ── */
-.evaluation-reference .modal-header {
-  position: relative;
-  overflow: hidden;
-  padding-block: 14px;
-  padding-inline-start: 20px;
-  padding-inline-end: 64px;
-  border-bottom: 0 !important;
-  background: hsl(var(--card)) !important;
-  color: hsl(var(--foreground)) !important;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-
-.evaluation-reference .modal-drag-indicator {
-  width: 2.4rem !important;
-  height: 0.28rem !important;
-  border-radius: 4px !important;
-  background-color: color-mix(in srgb, var(--hero-secondary) 30%, transparent) !important;
-}
-
-.evaluation-reference .dialog-close {
-  width: max(44px, 2.75rem) !important;
-  height: max(44px, 2.75rem) !important;
-  min-width: 44px !important;
-  min-height: 44px !important;
-  border-radius: 50% !important;
-  background: hsl(var(--muted)) !important;
-  color: hsl(var(--foreground)) !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  transition: transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 0.15s ease;
-}
-
-.evaluation-reference .dialog-close:hover {
-  background: hsl(var(--muted) / .7) !important;
-}
-
-.evaluation-reference .dialog-close:active {
-  transform: scale(0.95);
-}
-
-.course-hero-shapes,
-.eval-hero-wave {
-  display: none !important;
-}
-
-.eval-hero-banner {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25rem;
-  width: 100%;
-}
-
-.eval-hero-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25rem;
-  max-width: 100%;
-}
-
-/* Titre Readex Pro 600 (.hero h1) — taille affinée proportionnellement */
-.evaluation-reference .main-title.eval-hero-title {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
-  font: 600 clamp(1.04rem, 2.9cqi + 0.48rem, 1.32rem)/1.36 "Readex Pro", var(--font-sans) !important;
-  letter-spacing: -0.01em !important;
-  color: var(--text-dark) !important;
-}
-
-.eval-hero-tags {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.3rem;
-  margin-top: 0.25rem;
-}
-
-/* Pastille teintée plate sous le titre (.stk) */
-.evaluation-reference .eval-course-white-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.12rem 0.68rem;
-  border-radius: 99px;
-  background: color-mix(in srgb, var(--hero-secondary) 12%, transparent) !important;
-  color: var(--hero-ink) !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  font: 500 0.75rem/1.4 "Readex Pro", var(--font-sans) !important;
-  transform: none !important;
-  margin-inline-start: 0 !important;
-}
-
-.dark .evaluation-reference .eval-course-white-tag {
-  background: color-mix(in srgb, var(--hero-secondary) 24%, transparent) !important;
-  color: var(--hero-ink) !important;
-}
-
-/* Pastille matière secondaire (.stk.alt) */
-.evaluation-reference .eval-subject-tilted-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.12rem 0.68rem;
-  border-radius: 99px;
-  background: #ffffffb3;
-  color: var(--hero-ink);
-  border: 0;
-  font: 500 0.75rem/1.4 "Readex Pro", var(--font-sans);
-  transform: none;
-}
-
-.dark .evaluation-reference .eval-subject-tilted-tag {
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--hero-ink);
-}
-
-.evaluation-reference .modal-header [data-ui-title] p,
-.evaluation-reference .modal-header [data-description] {
-  display: none !important;
-}
-
-.evaluation-reference .modal-body {
-  padding: 0.3rem var(--pad, 1.15rem) 1.5rem;
-  background: transparent;
-}
-
-/* Titre de famille (.sl : « الفروض والتقويمات ») */
-.evaluation-reference .evaluations-category-title {
-  font: 500 0.84rem/1.4 "Readex Pro", var(--font-sans);
-  color: var(--text-secondary);
-  margin: 0 0.25rem 0.3rem;
-  padding: 0;
-}
-
-.evaluation-reference .kind-group {
-  margin-bottom: 0.5rem;
-}
-
-/* ── Les 4 sections : accordéons colorés asymétriques (.ac) avec icône ronde (.ci) et compteur (.cnt) ── */
-.evaluation-reference .ev-accordion {
-  --panel-bg: #fdeede;
-  --panel-border: #f6d9bd;
-  --panel-ink: #6b3a12;
-  --panel-secondary: #a8642a;
-
-  background: var(--panel-bg);
-  border: 0;
-  border-radius: 1.12rem;
-  border-end-start-radius: 0.4rem;
-  margin-bottom: 0.55rem;
-  overflow: hidden;
-  box-shadow: none;
-  transition: background-color 0.2s ease;
-}
-
-.evaluation-reference .ev-accordion[data-panel-tone='peach'] {
-  --panel-bg: oklch(0.96 0.04 65);
-  --panel-border: oklch(0.85 0.08 65);
-  --panel-ink: oklch(0.35 0.12 65);
-  --panel-secondary: oklch(0.48 0.14 65);
-}
-
-.evaluation-reference .ev-accordion[data-panel-tone='lavender'] {
-  --panel-bg: oklch(0.97 0.03 285);
-  --panel-border: oklch(0.88 0.08 285);
-  --panel-ink: oklch(0.32 0.14 285);
-  --panel-secondary: oklch(0.48 0.16 285);
-}
-
-.evaluation-reference .ev-accordion[data-panel-tone='green'] {
-  --panel-bg: oklch(0.96 0.04 155);
-  --panel-border: oklch(0.85 0.08 155);
-  --panel-ink: oklch(0.35 0.12 155);
-  --panel-secondary: oklch(0.48 0.14 155);
-}
-
-.evaluation-reference .ev-accordion[data-panel-tone='blue'] {
-  --panel-bg: oklch(0.96 0.04 245);
-  --panel-border: oklch(0.85 0.08 245);
-  --panel-ink: oklch(0.35 0.12 245);
-  --panel-secondary: oklch(0.48 0.14 245);
-}
-
-.dark .evaluation-reference .ev-accordion[data-panel-tone='peach'] {
-  --panel-bg: oklch(0.25 0.04 65);
-  --panel-border: oklch(0.38 0.08 65);
-  --panel-ink: oklch(0.88 0.08 65);
-  --panel-secondary: oklch(0.72 0.12 65);
-}
-.dark .evaluation-reference .ev-accordion[data-panel-tone='lavender'] {
-  --panel-bg: oklch(0.24 0.05 285);
-  --panel-border: oklch(0.36 0.09 285);
-  --panel-ink: oklch(0.90 0.08 285);
-  --panel-secondary: oklch(0.74 0.14 285);
-}
-.dark .evaluation-reference .ev-accordion[data-panel-tone='green'] {
-  --panel-bg: oklch(0.25 0.04 155);
-  --panel-border: oklch(0.38 0.08 155);
-  --panel-ink: oklch(0.88 0.08 155);
-  --panel-secondary: oklch(0.72 0.12 155);
-}
-.dark .evaluation-reference .ev-accordion[data-panel-tone='blue'] {
-  --panel-bg: oklch(0.25 0.04 245);
-  --panel-border: oklch(0.38 0.08 245);
-  --panel-ink: oklch(0.88 0.08 245);
-  --panel-secondary: oklch(0.72 0.12 245);
-}
-
-.evaluation-reference .ev-accordion__toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.32rem 0.75rem 0.32rem 0.42rem;
-  cursor: pointer;
-  user-select: none;
-  background: transparent;
-  border: none;
-  width: 100%;
-  min-height: 3.35rem;
-  color: var(--panel-ink);
-  transition: background-color 0.15s ease;
-}
-
-/* Icône galet blanche du panneau (.ci) inspirée du style sérénité */
-.evaluation-reference .ev-panel-glyph,
-.ev-panel-glyph {
-  display: grid;
-  place-items: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  flex: 0 0 2.2rem;
-  border-radius: 62% 38% 55% 45% / 48% 58% 42% 52%;
-  background: #ffffffcc;
-  color: var(--panel-secondary);
-  border: 0;
-  box-shadow: none;
-  transition: border-radius 450ms cubic-bezier(.2, .8, .2, 1), transform 450ms cubic-bezier(.2, .8, .2, 1);
-}
-
-.evaluation-reference .ev-accordion__trigger:hover .ev-panel-glyph,
-.evaluation-reference .ev-accordion__trigger:active .ev-panel-glyph,
-.evaluation-reference .ev-accordion[data-state='open'] .ev-panel-glyph {
-  border-radius: 50%;
-  transform: rotate(90deg);
-}
-
-.dark .evaluation-reference .ev-panel-glyph,
-.dark .ev-panel-glyph {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.evaluation-reference .ev-panel-glyph svg,
-.ev-panel-glyph svg {
-  width: 1.1rem;
-  height: 1.1rem;
-  max-width: 1.1rem;
-  max-height: 1.1rem;
-}
-
-.evaluation-reference .ev-accordion__label {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--panel-ink);
-  min-width: 0;
-  flex: 1;
-}
-
-.evaluation-reference .ev-accordion__label-text {
-  font: 600 0.9rem/1.35 "Readex Pro", var(--font-sans);
-  color: var(--panel-ink);
-  text-align: start;
-}
-
-/* Compteur du panneau (.cnt) */
-.evaluation-reference .ev-accordion__count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.4rem;
-  height: 1.4rem;
-  padding: 0 0.35rem;
-  border-radius: 99px;
-  background: color-mix(in srgb, var(--panel-secondary) 16%, transparent);
-  color: var(--panel-ink);
-  border: 0;
-  font: 600 0.7rem/1.4rem "Readex Pro", var(--font-sans);
-  font-variant-numeric: tabular-nums;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Bouton chevron (.chv) */
-.evaluation-reference .ev-accordion__toggle-icon {
-  width: max(44px, 2.75rem);
-  height: max(44px, 2.75rem);
-  border-radius: 50%;
-  background: transparent;
-  border: none;
-  display: grid;
-  place-items: center;
-  color: var(--panel-ink);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: transform 0.45s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 0.2s ease;
-}
-
-.evaluation-reference .ev-accordion[data-open='true'] .ev-accordion__toggle-icon {
-  background: #ffffffa6;
-}
-
-.dark .evaluation-reference .ev-accordion[data-open='true'] .ev-accordion__toggle-icon {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-/* Corps du panneau déplié (.ac-b / .rs) : liste de tickets blancs */
-.evaluation-reference .ev-accordion__body {
-  padding: 0 0.5rem 0.55rem;
-  background: transparent;
-  border-top: 0;
-}
-
-.evaluation-reference .ev-board {
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  overflow: visible;
-}
-
-.evaluation-reference .ev-board__head {
-  display: none !important;
-}
-
-.evaluation-reference .ev-board__rows {
-  display: grid;
-  gap: 0.4rem;
-  padding-top: 0;
-  margin: 0;
-  list-style: none;
-}
-
-/* ── Chaque évaluation est un TICKET blanc épuré sans filet interne (.tk) ── */
-.evaluation-reference .ev-board__rows > .ev-row {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas:
-    'id id'
-    'date actions';
-  align-items: center;
-  column-gap: 0.5rem;
-  row-gap: 0.48rem;
-  padding: 0.68rem 0.65rem 0.62rem 0.85rem;
-  border-radius: 1.02rem;
-  border-end-start-radius: 0.38rem;
-  border: 0 !important;
-  background: var(--eval-card);
-  box-shadow: none;
-  transition: transform 0.15s ease;
-}
-
-.evaluation-reference .ev-board__rows > .ev-row::after {
-  display: none !important;
-}
-
-/* Titre (.as-t) et échéance (.due) */
-.evaluation-reference .ev-row__id {
-  grid-area: id;
-  align-self: center;
-  justify-self: start;
-  width: 100%;
-  min-width: 0;
-  text-align: start;
-  padding-inline-start: 0;
-}
-
-.evaluation-reference .ev-row__id > button,
-.evaluation-reference .ev-row__id > span,
-.evaluation-reference .ev-row__id h4 {
-  font-family: "Readex Pro", var(--eval-font-row), var(--font-sans);
-  min-height: 0 !important;
-  height: auto !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  font-size: 0.88rem !important;
-  font-weight: 500 !important;
-  line-height: 1.45;
-  color: var(--text-dark);
-  text-align: start;
-  justify-content: flex-start;
-  white-space: normal !important;
-  overflow: visible !important;
-}
-
-.evaluation-reference .ev-row__id .tone-chip {
-  display: inline-flex;
-  align-items: center;
-  margin-top: 3px;
-  padding: 1px 8px;
-  border-radius: 99px;
-  font-size: 10.5px;
-  font-weight: 500;
-  background: color-mix(in srgb, var(--panel-secondary) 12%, transparent);
-  color: var(--panel-ink);
-  transform: none;
-}
 
 .evaluation-reference .ev-row__meta {
   font-family: "Readex Pro", var(--eval-font-secondary), var(--font-sans);
@@ -614,112 +14,25 @@
   color: var(--text-secondary);
 }
 
-/* ── Badge Date rectifié : feuille de calendrier nette et structurée (.lf) ── */
+/* Dates received from the editor: centered, neutral and never interactive. */
 .evaluation-reference .ev-row__date {
   grid-area: date;
   align-self: center;
-  justify-self: start;
+  justify-self: center;
+  min-width: 0;
+  max-width: 6rem;
   text-align: center;
 }
-
-.evaluation-reference .ev-row__date .ev-date-trigger {
-  position: relative;
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  min-width: 3.7rem !important;
-  min-height: 44px !important;
-  height: auto !important;
-  padding: 0.25rem 0.65rem !important;
-  border-radius: 0.82rem !important;
-  border: 1px solid color-mix(in srgb, var(--panel-secondary, #a8642a) 22%, transparent) !important;
-  background: color-mix(in srgb, var(--panel-secondary, #a8642a) 10%, #ffffff) !important;
-  color: var(--panel-ink, var(--text-dark)) !important;
-  box-shadow: 0 1px 2px rgba(47, 40, 34, 0.04) !important;
-  overflow: hidden;
-  transition: transform 0.16s ease, background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.dark .evaluation-reference .ev-row__date .ev-date-trigger {
-  background: color-mix(in srgb, var(--panel-secondary) 20%, rgba(255, 255, 255, 0.04)) !important;
-  border-color: color-mix(in srgb, var(--panel-secondary) 32%, transparent) !important;
-  color: var(--panel-ink) !important;
-}
-
-.evaluation-reference .ev-row__date .ev-date-trigger:not(:has(.ev-cal-sheet)) {
-  padding: 0.28rem 0.65rem !important;
-  font-size: 0.72rem !important;
-  font-weight: 500 !important;
-  align-items: center;
-}
-
-.evaluation-reference .ev-row__date .ev-date-trigger:hover {
-  transform: translateY(-1px);
-  background: color-mix(in srgb, var(--panel-secondary, #a8642a) 16%, #ffffff) !important;
-  border-color: color-mix(in srgb, var(--panel-secondary, #a8642a) 35%, transparent) !important;
-}
-
-.evaluation-reference .ev-cal-sheet {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.08rem;
-  width: auto;
-  padding: 0.05rem 0;
-  position: relative;
-  direction: ltr;
-  line-height: 1;
-}
-
-.evaluation-reference .ev-cal-sheet::before {
-  display: none !important;
-}
-
-.evaluation-reference .ev-cal-sheet__day {
-  font: 700 0.96rem/1 "Readex Pro", var(--font-sans) !important;
-  color: var(--panel-ink, var(--text-dark));
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
-.evaluation-reference .ev-cal-sheet__my {
-  margin-top: 0;
-  font: 600 0.64rem/1.05 "Readex Pro", var(--font-sans) !important;
-  color: var(--panel-secondary, var(--text-secondary));
-  opacity: 0.9;
+.evaluation-reference .ev-date-text {
+  display: inline;
+  font-size: .6875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #73716e;
   font-variant-numeric: tabular-nums;
 }
-
-/* Cache le texte brut redondant quand la feuille de calendrier est affichée */
-.evaluation-reference .ev-date-sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.evaluation-reference .ev-row__date .ev-date-empty {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: #f4efe8;
-  border: 1px dashed color-mix(in srgb, var(--text-muted) 25%, transparent);
-  padding: 0.28rem 0.65rem;
-  border-radius: 0.82rem;
-  min-height: 44px;
-  white-space: nowrap;
-}
+.dark .evaluation-reference .ev-date-text { color: #b4b3af; }
+.evaluation-reference .ev-date-text time { display: inline-block; }
 
 /* ── Les actions sur la même ligne que la date, sans filet (.acts, .ab) ── */
 .evaluation-reference .ev-row__actions {
@@ -744,8 +57,8 @@
   min-width: 44px !important;
   flex: 0 0 2.75rem !important;
   padding: 0 !important;
-  border-radius: 0.82rem !important;
-  background: var(--icon-gray-bg);
+  border-radius: 0.65rem !important;
+  background: transparent;
   border: 0 !important;
   display: inline-grid;
   place-items: center;
@@ -753,7 +66,7 @@
   cursor: pointer;
   touch-action: manipulation;
   box-shadow: none !important;
-  transition: transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 0.15s ease, color 0.15s ease;
+  transition: transform 180ms ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 .evaluation-reference .ev-action > span:not(.ev-action__count) {
@@ -771,7 +84,7 @@
   padding: 0 0.22rem;
   border: 0;
   border-radius: 99px;
-  background: #c2255c;
+  background: var(--panel-ink);
   color: #ffffff;
   font: 600 0.62rem/1.1rem "Readex Pro", var(--font-sans);
   font-variant-numeric: tabular-nums;
@@ -796,7 +109,7 @@
 .evaluation-reference .ev-action:active,
 .evaluation-reference .ev-icon-btn:active,
 .evaluation-reference .del-btn:active {
-  transform: scale(0.86);
+  transform: scale(0.94);
 }
 
 /* États sémantiques des boutons d'actions (.ab.gn, .ab.pk, .ab.rd) */
@@ -808,19 +121,23 @@
   color: #4ade80;
   background: rgba(74, 222, 128, 0.16);
 }
-.evaluation-reference .ev-action[data-filled='missing'],
 .evaluation-reference .ev-action[data-filled='danger'] {
   color: #c2255c;
   background: #fde4ea;
 }
-.dark .evaluation-reference .ev-action[data-filled='missing'],
 .dark .evaluation-reference .ev-action[data-filled='danger'] {
   color: #fda4af;
   background: rgba(244, 63, 94, 0.18);
 }
+.evaluation-reference .ev-action[data-filled='missing'] {
+  color: #805720; background: #f6eddf;
+}
+.dark .evaluation-reference .ev-action[data-filled='missing'] {
+  color: #dcc398; background: #3c3427;
+}
 .evaluation-reference .ev-action[data-filled='tone'] {
-  color: #5d55a3;
-  background: #ece9f7;
+  color: var(--panel-ink);
+  background: color-mix(in srgb, var(--panel-secondary) 12%, var(--eval-card));
 }
 .evaluation-reference .ev-icon-btn[data-danger='true'],
 .evaluation-reference .del-btn {
@@ -839,62 +156,30 @@
   background: #fdeede;
 }
 
-/* ── Correction du devoir (.tk.ch) : reliée au devoir par un connecteur coudé arrondi continu ── */
+/* La correction reste sous son devoir ; le retrait suffit à exprimer le lien. */
 .evaluation-reference .ev-board__rows > .ev-row.ev-row--correction {
   position: relative;
-  margin-inline-start: 28px;
+  margin-inline-start: 12px;
   margin-top: 0;
   border: 0;
   background: var(--eval-card);
 }
 
-.evaluation-reference .ev-correction-connector {
-  position: absolute;
-  inset-inline-start: -0.95rem;
-  top: -0.5rem;
-  width: 0.75rem;
-  height: 1.65rem;
-  border-inline-start: 1.5px solid color-mix(in srgb, var(--panel-secondary, #3f7f63) 32%, transparent);
-  border-bottom: 1.5px solid color-mix(in srgb, var(--panel-secondary, #3f7f63) 32%, transparent);
-  border-end-start-radius: 0.6rem;
-  pointer-events: none;
-}
-
-/* ── Taille fluide : chaque composant s'adapte à la largeur de SA modale (@container pgs) ── */
-@container pgs (min-width: 36rem) {
-  .evaluation-reference .ev-board__rows > .ev-row {
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    grid-template-areas: 'id date actions';
-    align-items: center;
-    gap: 0.2rem 0.9rem;
-    padding: 0.62rem 0.7rem 0.62rem 0.95rem;
-  }
-  .evaluation-reference .ev-row__date {
-    justify-self: center;
-  }
-  .evaluation-reference .ev-accordion__toggle {
-    min-height: 3.6rem;
-  }
-}
-
+/* Les cibles restent à 44 px ; le titre et les plages de dates peuvent se replier. */
 @container pgs (max-width: 24rem) {
-  .evaluation-reference .ev-action,
-  .evaluation-reference .ev-icon-btn,
-  .evaluation-reference .del-btn {
-    width: 2.75rem !important;
-    height: 2.75rem !important;
-    flex: 0 0 2.75rem !important;
+  .evaluation-reference .ev-board__rows > .ev-row {
+    grid-template-columns: minmax(0, 1fr) 4.75rem auto;
+    gap: .25rem;
+    padding: .35rem;
   }
-  .evaluation-reference .ev-row__date .ev-date-trigger {
-    padding: 0.25rem 0.55rem !important;
-  }
-  .evaluation-reference .ev-row__actions {
-    gap: 0.22rem;
-  }
+  .evaluation-reference .ev-row__actions { gap: 0; }
+  .evaluation-reference .ev-row__id > button,
+  .evaluation-reference .ev-row__id > span,
+  .evaluation-reference .ev-row__id h4 { font-size: .78rem !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .evaluation-reference :is(.ev-action, .ev-icon-btn, .ev-date-trigger, .ev-accordion__toggle-icon, .ev-action__icon, .ev-accordion) {
+  .evaluation-reference :is(.ev-action, .ev-icon-btn, .ev-accordion__toggle-icon, .ev-action__icon, .ev-accordion) {
     transition: none;
     animation: none;
     transform: none !important;
@@ -903,5 +188,6 @@
 
 .evaluation-reference .ev-row__id h4 { min-height: 0; }
 .evaluation-reference .ev-action > .sr-only { overflow: hidden; }
+
 
 

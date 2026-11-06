@@ -13,6 +13,7 @@
   "description": "دفتر النصوص الرقمي للأستاذ — مطابق للتوجيهات التربوية الرسمية.",
   "start_url": "/",
   "scope": "/",
+  "handle_links": "preferred",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "any",

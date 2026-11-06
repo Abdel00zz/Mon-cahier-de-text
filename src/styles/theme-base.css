@@ -1,0 +1,352 @@
+@layer base {
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background-image: none;
+    min-width: 0;
+    min-height: 100dvh;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* Les familles sont définies par rôle dans typography.css. */
+  html[lang="fr"] body {
+    font-family: var(--font-sans);
+    font-variant-numeric: proportional-nums;
+  }
+  html:not([lang="ar"]) :is(h1, h2, h3, .keep-class-title, [data-ui-title]) {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-feature-settings: 'opsz' 36, 'liga', 'kern';
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  html:not([lang="ar"]) :is(h4, h5, h6) {
+    font-family: var(--font-display);
+  }
+  html:not([lang="ar"]) :is(button, [role="button"], .workspace-nav-label) {
+    font-family: var(--font-sans);
+  }
+  html[lang="fr"] .workspace-nav,
+  html[lang="fr"] .dashboard-artisan-nav,
+  html[lang="fr"] .onboarding-artisan-shell,
+  html[lang="fr"] [role="dialog"] {
+    font-family: var(--font-sans);
+  }
+  html:not([lang="ar"]) [role="dialog"] :is(h1, h2, h3, [data-ui-title]) {
+    font-family: var(--font-display);
+  }
+  html:not([lang="ar"]) [role="dialog"] :is(h4, h5, h6) {
+    font-family: var(--font-display);
+  }
+  html:not([lang="ar"]) [role="dialog"] :is(button, [role="button"]) {
+    font-family: var(--font-sans);
+  }
+
+  /* Détails de finition : paragraphes sans ligne orpheline, sélection et
+     curseur à la couleur de l'accent, comme dans les interfaces d'Anthropic. */
+  p { text-wrap: pretty; }
+  ::selection { background: hsl(var(--primary) / 0.22); color: inherit; }
+  input, textarea, [contenteditable="true"] { caret-color: hsl(var(--primary)); }
+
+  /* Les contrôles de l'interface héritent de la langue locale, sans écraser les rôles du tableau éditeur. */
+  html[lang="ar"] body,
+  html[lang="ar"] button:not(.editor-document-highlight, [data-editor-table] *),
+  html[lang="ar"] input:not([data-editor-table] *),
+  html[lang="ar"] textarea:not([data-editor-table] *),
+  html[lang="ar"] select:not([data-editor-table] *) {
+    font-family: var(--font-sans);
+    letter-spacing: normal;
+  }
+
+  /* Modales en version arabe : augmentation de taille (+15%) pour une lisibilité optimale */
+  html[lang="ar"] [role="dialog"],
+  html[lang="ar"] [data-sheet-detent],
+  html[lang="ar"] .modal-body,
+  html[lang="ar"] .modal-header,
+  html[lang="ar"] .modal-footer {
+    --modal-text-scale: 1.15;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-xs, .text-\[10px\], .text-\[11px\], [data-slot="description"], .form-hint) {
+    font-size: calc(0.75rem * 1.15 * var(--app-text-scale, 1));
+    line-height: 1.45;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-sm, label, input, select, textarea) {
+    font-size: calc(0.875rem * 1.15 * var(--app-text-scale, 1));
+    line-height: 1.5;
+  }
+
+  html[lang="ar"] [role="dialog"] button:not(.dialog-close) {
+    font-size: calc(0.875rem * 1.15 * var(--app-text-scale, 1));
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-base) {
+    font-size: calc(1rem * 1.15 * var(--app-text-scale, 1));
+    line-height: 1.5;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-lg, h3) {
+    font-size: calc(1.125rem * 1.15 * var(--app-text-scale, 1));
+    line-height: 1.4;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-xl, h2, [data-ui-title]) {
+    font-size: calc(1.25rem * 1.15 * var(--app-text-scale, 1));
+    line-height: 1.35;
+  }
+
+  /* Navigation & Barre latérale / mobile en version arabe (+15%) */
+  /* Libellés de la barre d'onglets mobile : la taille suit la largeur réelle
+     de l'écran, afin de ne jamais tronquer « Évaluations » sur un écran de
+     320px tout en restant généreuse sur les grands téléphones. Le sélecteur
+     vise uniquement le libellé (`> span`), jamais la pastille de notification
+     imbriquée dans le conteneur d'icône. */
+  .mobile-tab-bar .mobile-tab-label,
+  html[lang="ar"] .mobile-tab-bar .mobile-tab-label {
+    font-size: 12px;
+    line-height: 1.2;
+    letter-spacing: normal;
+  }
+
+  html[lang="ar"] .font-serif,
+  html[lang="ar"] [data-ui-title],
+  html[lang="ar"] [data-dashboard-main] h1,
+  html[lang="ar"] [data-dashboard-main] h2,
+  html[lang="ar"] [data-dashboard-main] h3,
+  html[lang="ar"] [data-settings-ui] h2,
+  html[lang="ar"] [data-settings-ui] h3,
+  html[lang="ar"] [data-dashboard-root] h1,
+  html[lang="ar"] [data-dashboard-root] h2,
+  html[lang="ar"] .modal-header h2,
+  html[lang="ar"] .modal-header h3 {
+    font-family: var(--font-display);
+    letter-spacing: normal;
+    line-height: 1.35;
+  }
+
+  /* Titres de classe : police d'affichage de la langue courante. */
+  .keep-class-title {
+    font-family: var(--font-display);
+    font-size: 1.25em;
+    line-height: 1.22;
+  }
+
+  html[lang="ar"] .keep-class-title {
+    font-family: var(--font-display);
+    font-size: 1.3em;
+    line-height: 1.25;
+    font-weight: 600;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.42) transparent;
+    scrollbar-width: thin;
+  }
+
+  /* Scrollbars discrètes et cohérentes pour les pages, listes et modales. */
+  * {
+    scrollbar-color: hsl(var(--muted-foreground) / 0.4) transparent;
+    scrollbar-width: thin;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    min-height: 2.5rem;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: hsl(var(--muted-foreground) / 0.42);
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.58);
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Safe Area Utility Classes for Mobile & Tablet Landscape (iPhone Notch/Island, Samsung & Pixel) */
+  .pl-safe { padding-left: max(0.75rem, env(safe-area-inset-left, 0px)); }
+  .pr-safe { padding-right: max(0.75rem, env(safe-area-inset-right, 0px)); }
+  /* High DPI Image & SVG rendering */
+  img, svg {
+    image-rendering: -webkit-optimize-contrast;
+  }
+
+  .auth-page-shell {
+    background-color: hsl(var(--background));
+    font-family: var(--font-sans);
+  }
+
+  [data-dashboard-root] {
+    font-family: var(--font-sans);
+  }
+
+  [data-dashboard-root] h1,
+  [data-dashboard-root] h2,
+  [data-dashboard-root] h3,
+  .auth-page-shell h1,
+  .auth-page-shell h2,
+  .auth-page-shell h3 {
+    font-family: var(--font-display);
+  }
+
+  /* Cadre extérieur bien visible du tableau du cahier de textes */
+  [data-editor-table] {
+    border: 2px solid hsl(var(--border) / 0.95) !important;
+  }
+
+  /* A lighter paper surface shared by content, dates and remarks. Keep the
+     surrounding workspace warm and let the dark theme retain its own surfaces. */
+  html:not(.dark) [data-editor-table] {
+    --card: 45 16% 99%;
+    --muted: 45 12% 96%;
+  }
+
+  [data-content-direction="ltr"] [data-row-content="true"],
+  .content-font-latin {
+    font-family: var(--content-font-latin), var(--content-font-arabic), sans-serif;
+  }
+
+  [data-content-direction="rtl"] [data-row-content="true"],
+  .content-font-arabic {
+    font-family: var(--content-font-arabic), var(--content-font-latin), sans-serif;
+  }
+
+  /* Éditeur : polices système fluides pour éviter les blocages de chargement */
+  .font-editor-system {
+    font-family: var(--font-content);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .editor-table-content {
+    color: hsl(var(--foreground));
+  }
+
+  /* Métriques propres au moteur (KaTeX) : aucune police imposée, aucun italique global. */
+  .math-text { min-width: 0; }
+
+  /* Une seule grille par liste : la colonne des marqueurs se règle sur le
+     plus large d'entre eux, donc puces, numéros et libellés de longueurs
+     différentes laissent leur texte démarrer exactement sur la même
+     verticale (aucune largeur devinée). */
+  .editor-list {
+    display: grid;
+    /* Colonne des marqueurs PLAFONNÉE à 45 % : un libellé long se replie
+       dans sa colonne au lieu de ramener celle du texte à zéro (mesuré :
+       291 px contre 0 px, texte illisible une lettre par ligne). En deçà du
+       plafond, la colonne garde la largeur du plus large marqueur : c’est ce
+       qui aligne tous les textes sur la même verticale. */
+    grid-template-columns: fit-content(45%) minmax(0, 1fr);
+    align-items: baseline;
+    column-gap: 0.375rem;
+    padding-inline-start: 0.25rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .editor-item-body {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Marqueur aligné vers le texte, dans le sens d'écriture courant. */
+  .editor-item-marker {
+    text-align: end;
+    user-select: none;
+    font-weight: 600;
+    color: hsl(var(--primary));
+    white-space: nowrap;
+  }
+
+  /* Libellé de \item[terme] : seule cellule autorisée à se replier. Sa
+     largeur minimale (le mot le plus long) ne doit pas dépasser le plafond
+     de 45 %, sinon la colonne de texte tombe à zéro (mesuré sur téléphone :
+     173 lignes d'une seule lettre). */
+  .editor-item-marker-label {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+
+  .dark .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .dark .katex .mord,
+  .dark .katex .mbin,
+  .dark .katex .mrel,
+  .dark .katex .mopen,
+  .dark .katex .mclose,
+  .dark .katex .mpunct {
+    color: inherit !important;
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 0.22);
+    color: hsl(var(--foreground));
+    text-shadow: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* L’arabe ne se compose pas avec l’espacement latin des capitales ;
+     un bloc explicitement français (dir="ltr") conserve son approche latine. */
+  [dir='rtl'] :is(.tracking-wider, .tracking-tight, .tracking-\[0\.09em\]):not([dir='ltr'], [dir='ltr'] *) {
+    letter-spacing: normal;
+  }
+
+  button, a, input, select, textarea, [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* Qualité optique : sur les écrans qui demandent plus de contraste, les
+     filets et l'encre secondaire se raffermissent sans changer la palette. */
+  @media (prefers-contrast: more) {
+    :root {
+      --border: 35 18% 64%;
+      --muted-foreground: 27 26% 26%;
+      --ring: 26 40% 24%;
+    }
+    .dark {
+      --border: 30 8% 38%;
+      --muted-foreground: 40 10% 80%;
+      --ring: 15 62% 70%;
+    }
+  }
+
+  /* Le verre redevient une surface opaque quand la transparence est refusée. */
+  @media (prefers-reduced-transparency: reduce) {
+    :root {
+      --ui-glass-bg: hsl(var(--card));
+      --ui-glass-border: hsl(var(--border));
+      --ui-glass-filter: none;
+    }
+  }
+}

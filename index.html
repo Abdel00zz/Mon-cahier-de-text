@@ -85,12 +85,13 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png" />
   <link rel="shortcut icon" href="/icons/favicon.ico" />
 
-  <!-- Google Fonts: Barlow, Open Sans, Roboto, Readex Pro, IBM Plex Sans Arabic, Noto Naskh Arabic -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;1,400&family=Open+Sans:ital,wght@0,400;1,400&family=Roboto:ital,wght@0,300;0,400;1,400&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" />
-
-  <!-- Fonts are also bundled locally in styles/fonts.css, including Android/offline. -->
+  <!--
+    Aucune feuille de style distante : les familles utilisées par l'interface
+    (Readex Pro, Latin Modern, source documentaire, polices arabes) sont
+    embarquées dans src/styles/fonts.css. Charger Google Fonts ici ajoutait
+    deux connexions tierces et une requête bloquante pour des familles
+    (Barlow, Open Sans, IBM Plex, Noto Naskh) qu'aucune règle n'utilise.
+  -->
 </head>
 <body>
   <div id="root"></div>

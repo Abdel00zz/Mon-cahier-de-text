@@ -32,7 +32,7 @@
   /* ── Palette neutre (une surface, un filet, un verre) ──────────────────── */
   --modal-surface-bg: hsl(var(--card));
   /* Voile de lumière discret, sans motif ni vignette colorée. */
-  --modal-surface-tint: linear-gradient(180deg, rgb(255 255 255 / 0.55), transparent 34%);
+  --modal-surface-tint: none;
   --modal-header-bg: hsl(var(--card));
   --modal-footer-bg: hsl(var(--card));
   --modal-border-artistic: hsl(var(--border));
@@ -66,7 +66,7 @@
 
   /* ── Dark neutral surfaces ───────────────────────────────────────────── */
   --modal-surface-bg: hsl(var(--card));
-  --modal-surface-tint: linear-gradient(180deg, rgb(255 255 255 / 0.05), transparent 34%);
+  --modal-surface-tint: none;
   --modal-header-bg: hsl(var(--card));
   --modal-footer-bg: hsl(var(--card));
   --modal-border-artistic: hsl(var(--border));

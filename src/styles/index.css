@@ -9,6 +9,7 @@
 
 /* Shared controls and modal surfaces. */
 @import "../components/ui/modal-motion.css";
+@import "../components/ui/liquid-modal.css";
 @import "../components/ui/paper-controls.css";
 @import "../components/ui/action-tile.css";
 @import "../components/ui/icons.css";
@@ -16,18 +17,24 @@
 @import "../components/ui/AnimatedTrashButton.css";
 
 /* Feature surfaces. */
+@import "../features/dashboard/classCardsBase.css";
 @import "../features/dashboard/classCards.css";
 @import "../features/dashboard/dashboardCanvas.css";
 @import "../features/evaluations/evaluationsBoard.css";
+@import "../features/evaluations/evaluationsBoardAccordion.css";
 @import "./mobile-performance.css";
 @import "./onboarding.css";
 @import "./elastic-morph.css";
+@import "./claude-sheetBase.css";
 @import "./claude-sheet.css";
 @import "./codex-modal.css";
 
 /* Recoverable, focused modules: no duplicate monolithic declarations. */
 @import "./theme-tokens.css";
+@import "./theme-palette.css";
+@import "./theme-base.css";
 @import "./workspace-shell.css";
+@import "./settings-hubShell.css";
 @import "./settings-hub.css";
 @import "./class-tones.css";
 @import "./editor-surface.css";

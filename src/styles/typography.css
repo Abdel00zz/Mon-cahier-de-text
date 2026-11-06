@@ -18,6 +18,16 @@
 /* Arabic labels preserve connected letterforms even in tracked Latin controls. */
 .paper-button:lang(ar), .settings-choice:lang(ar) { letter-spacing: normal; }
 
+/* Les marques, ligatures et attaches arabes restent explicites : sans cela,
+   certains navigateurs coupent les signes diacritiques ou les ligatures
+   contextuelles aux petites tailles. */
+html[lang='ar'] body,
+[dir='rtl'] {
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1, 'mark' 1, 'mkmk' 1;
+  font-variant-ligatures: common-ligatures contextual;
+  letter-spacing: normal;
+}
+
 /* Short operational messages and printed remarks use the shared feedback role. */
 [data-sonner-toaster]:lang(ar),
 [data-sonner-toast]:lang(ar),

@@ -1,0 +1,89 @@
+/* ── Liquid futuriste : un liseré irisé qui tourne, un reflet qui respire.
+   Le flou n'est animé par aucune keyframe ; seuls le rim et le reflet bougent. */
+@property --liquid-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes liquid-rim-spin {
+  to { --liquid-angle: 360deg; }
+}
+
+@keyframes liquid-sheen-drift {
+  0% { transform: translate3d(-14%, -10%, 0) rotate(-4deg); opacity: .38; }
+  50% { transform: translate3d(10%, 6%, 0) rotate(3deg); opacity: .62; }
+  100% { transform: translate3d(-6%, 12%, 0) rotate(-2deg); opacity: .42; }
+}
+
+.modal-motion-surface[data-mobile-presentation]:not([data-modal-alert]) {
+  isolation: isolate;
+}
+
+.modal-motion-surface[data-mobile-presentation="dialog"]:not([data-modal-alert]) {
+  background-color: color-mix(in srgb, hsl(var(--card)) 88%, transparent) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.45);
+  backdrop-filter: blur(24px) saturate(1.45);
+}
+
+.modal-motion-surface[data-mobile-presentation]:not([data-modal-alert])::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--liquid-angle),
+    transparent 0 52%,
+    color-mix(in srgb, hsl(var(--primary)) 58%, transparent) 63%,
+    rgb(255 255 255 / .72) 69%,
+    color-mix(in srgb, hsl(var(--primary)) 34%, transparent) 75%,
+    transparent 84%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: .72;
+  pointer-events: none;
+  animation: liquid-rim-spin 12s linear infinite;
+}
+
+.modal-motion-surface[data-mobile-presentation]:not([data-modal-alert])::after {
+  content: '';
+  position: absolute;
+  inset: -45%;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 32% 26%, rgb(255 255 255 / .5), transparent 46%),
+    radial-gradient(circle at 72% 74%, color-mix(in srgb, hsl(var(--primary)) 22%, transparent), transparent 54%);
+  filter: blur(22px);
+  opacity: .5;
+  pointer-events: none;
+  animation: liquid-sheen-drift 14s ease-in-out infinite alternate;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .modal-motion-surface[data-mobile-presentation="dialog"]:not([data-modal-alert]) {
+    background-color: hsl(var(--card)) !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .modal-motion-surface[data-mobile-presentation="dialog"]:not([data-modal-alert]) {
+    background-color: hsl(var(--card)) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .modal-motion-surface[data-mobile-presentation]:not([data-modal-alert])::before,
+  .modal-motion-surface[data-mobile-presentation]:not([data-modal-alert])::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-motion-surface[data-mobile-presentation]::before,
+  .modal-motion-surface[data-mobile-presentation]::after { animation: none; }
+}

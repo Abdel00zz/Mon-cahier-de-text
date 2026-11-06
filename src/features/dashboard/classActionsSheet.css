@@ -1,67 +1,165 @@
+/* Actions d'une classe : une feuille courte, une liste lisible, aucun vide.
+   Chaque action est une ligne de 52 px ; la suppression reste séparée et rouge. */
+
 .class-quick-sheet.modal-motion-surface {
   background: hsl(var(--card)) !important;
   border: 1px solid hsl(var(--border));
-  border-radius: 32px 32px 0 0 !important;
-  backdrop-filter: blur(20px) saturate(1.3) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(1.3) !important;
-  box-shadow:
-    inset 0 1px 0 hsl(var(--foreground) / .04),
-    0 -12px 38px hsl(var(--foreground) / .1);
+  border-radius: 1.5rem !important;
+  box-shadow: 0 -1px 0 hsl(var(--foreground) / .03), 0 -18px 44px -28px hsl(var(--foreground) / .28);
 }
 
 .dark .class-quick-sheet.modal-motion-surface {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .08),
-    0 -14px 42px rgba(0, 0, 0, .55);
+  box-shadow: 0 -1px 0 rgb(255 255 255 / .06), 0 -18px 44px -24px rgb(0 0 0 / .6);
 }
 
 .class-quick-sheet .class-quick-sheet__header {
   border: 0;
-  padding-bottom: 8px;
+  padding: .8rem 1rem .35rem;
 }
 
 .class-quick-sheet .class-quick-sheet__header [data-ui-title] {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.class-quick-sheet__title {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: .15rem .45rem;
+  min-width: 0;
+}
+
+.class-quick-sheet__class {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: hsl(var(--muted-foreground));
+  font-size: .78rem;
+  font-weight: 450;
+  letter-spacing: 0;
 }
 
 .class-quick-sheet .class-quick-sheet__body {
-  padding: 4px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: .25rem .9rem calc(.9rem + env(safe-area-inset-bottom, 0px));
 }
 
 .class-quick-sheet__actions {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.6rem;
+  display: grid;
+  gap: .15rem;
 }
 
 .class-quick-sheet__action {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: .7rem;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: .35rem .45rem;
+  border: 0;
+  border-radius: .8rem;
+  background: transparent;
+  color: hsl(var(--foreground));
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 120ms ease;
+}
+
+.class-quick-sheet__action:hover {
+  background: hsl(var(--muted) / .72);
+}
+
+.class-quick-sheet__action:active {
+  transform: scale(.985);
+  background: hsl(var(--muted));
+}
+
+.class-quick-sheet__action:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.class-quick-sheet__icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: .75rem;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+}
+
+.class-quick-sheet__icon > svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  stroke-width: 1.9;
+}
+
+.class-quick-sheet__icon[data-tone='violet'] {
+  background: color-mix(in srgb, #7c3aed 11%, hsl(var(--card)));
+  color: #6d28d9;
+}
+
+.class-quick-sheet__icon[data-tone='blue'] {
+  background: color-mix(in srgb, #2563eb 11%, hsl(var(--card)));
+  color: #1d4ed8;
+}
+
+.class-quick-sheet__icon[data-tone='rose'] {
+  background: color-mix(in srgb, hsl(var(--destructive)) 10%, hsl(var(--card)));
+  color: hsl(var(--destructive));
+}
+
+.dark .class-quick-sheet__icon[data-tone='violet'] { color: #c4b5fd; }
+.dark .class-quick-sheet__icon[data-tone='blue'] { color: #93c5fd; }
+
+.class-quick-sheet__label {
   min-width: 0;
-  min-height: clamp(5rem, 16dvh, 8rem);
-  padding: 1.1rem 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .9rem;
+  font-weight: 550;
+  line-height: 1.35;
 }
 
-.class-quick-sheet__action .hub-card__icon > svg {
-  width: 2.25rem;
-  height: 2.25rem;
-  stroke-width: 1.75;
+.class-quick-sheet__action[data-danger='true'] {
+  margin-block-start: .25rem;
+  color: hsl(var(--destructive));
 }
 
-/* Actions de classe : feuille ajustée au contenu, plafonnée par le viewport.
-   Le corps devient défilable seulement si les tuiles ne tiennent plus. */
+.class-quick-sheet__action[data-danger='true'] .class-quick-sheet__label {
+  font-weight: 600;
+}
+
+/* Feuille flottante : jamais plus large que le téléphone, jamais collée aux bords. */
 @media (max-width: 767px) {
-  .modal-sheet-viewport .modal-motion-surface.class-quick-sheet[data-sheet-library] {
+  .class-quick-sheet.modal-motion-surface {
     width: min(calc(100vw - 24px), 30rem) !important;
     max-width: min(calc(100vw - 24px), 30rem) !important;
     height: fit-content !important;
-    max-height: min(calc(var(--modal-visible-height) * var(--sheet-max-height, .72)), calc(var(--modal-visible-height) - max(12px, env(safe-area-inset-top, 0px)))) !important;
-    border-radius: 28px 28px 0 0 !important;
+    max-height: min(calc(var(--modal-visible-height, 100dvh) * 0.56), calc(var(--modal-visible-height, 100dvh) - 16px));
+    margin-inline: auto;
+    margin-block-end: max(8px, env(safe-area-inset-bottom, 0px));
   }
-  .class-quick-sheet .class-quick-sheet__action.hub-card[data-layout='tile'] {
-    min-height: clamp(5rem, 16dvh, 8rem);
-    padding-block: clamp(0.55rem, 2.4dvh, 1rem);
+}
+
+/* Sur grand écran, la même feuille reste compacte et centrée. */
+@media (min-width: 768px) {
+  .class-quick-sheet.modal-motion-surface {
+    border-radius: 1.4rem !important;
+    max-height: min(70dvh, 26rem);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .class-quick-sheet__action { transition: none; }
+  .class-quick-sheet__action {
+    transition: none;
+  }
+  .class-quick-sheet__action:active {
+    transform: none;
+  }
 }

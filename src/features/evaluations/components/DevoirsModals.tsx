@@ -3,29 +3,24 @@ import { useClassManager } from '@/hooks/useClassManager';
 import { classRosterPatch, historicalStudentNames } from '@/domain/evaluations/classRosterSync';
 import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import type { AppConfig, AppLocale, ClassInfo, DevoirType, ManualAssessment } from '@/types';
+import type { AppLocale } from '@/types';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
 import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
 import { retainHomeworkOutcomes } from '@/domain/evaluations/homeworkSubmissions';
 import { homeworkCorrectionDocumentId } from '@/domain/evaluations/homeworkIds';
-import type { AssessmentLink } from '@/domain/evaluations/assessmentSync';
 import { retainOralGrades, retainOralOutcomes } from '@/domain/evaluations/studentRoster';
 import { numberFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { bidiIsolate, textDirectionAttribute } from '@/lib/text/textDirection';
 import { translateLocaleMessage } from '@/i18n/messages';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { detectDocumentContentDirection } from '@/domain/evaluations/documentSheet';
 import { ContentDocumentModal } from './ContentDocumentModal';
-import { EventDateModal } from './EventDateModal';
 import { StudentNamesEditor } from './StudentNamesEditor';
 import { StudentReviewDialog } from './StudentReviewDialog';
-import { ManualAssessmentEditor } from './ManualAssessmentEditor';
-import type { useEvaluationActions } from '../hooks/useEvaluationActions';
-import type { useEvaluationModals } from '../hooks/useEvaluationModals';
+import { formatLongDate, type DevoirsModalsProps } from './devoirsModalsModel';
 
 /*
  * LA PILE DE FENÊTRES DE L'ÉCRAN DES ÉVALUATIONS.
@@ -35,54 +30,18 @@ import type { useEvaluationModals } from '../hooks/useEvaluationModals';
  * suivis d'élèves, documents, dates et confirmations. Le contrat est simple :
  * l'état vient du hook `useEvaluationModals` (une seule fenêtre active à la
  * fois), les écritures viennent de `useEvaluationActions`, et la vue fournit
- * les fonctions déjà câblées au cahier (`saveAssessment`, `setAssessmentDate`…)
+ * les fonctions déjà câblées au cahier (documents, élèves et suppressions)
  * pour que la matérialisation garde UNE seule implémentation.
  */
 
-const formatLongDate = (iso: string, locale: AppLocale): string => {
-  if (!iso) return '—';
-  try {
-    const [y, m, d] = iso.split('-').map(Number);
-    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    });
-  } catch {
-    return iso;
-  }
-};
-
-interface DevoirsModalsProps {
-  classInfo: ClassInfo;
-  classDisplayName: string;
-  config: AppConfig;
-  onConfigChange: (patch: Partial<AppConfig>) => void;
-  today: string;
-  assessments: { id: string; type: DevoirType; num?: number; semestre?: 1 | 2 }[];
-  modals: ReturnType<typeof useEvaluationModals>;
-  actions: ReturnType<typeof useEvaluationActions>;
-  saveAssessment: (manual: ManualAssessment) => void;
-  setAssessmentDate: (id: string, dateISO: string) => void;
-  /** Date limite de rendu ou séance de correction d'un devoir maison (chaîne vide = effacer). */
-  setHomeworkDate: (id: string, field: 'due' | 'correction', dateISO: string) => void;
-  deletePedagogicalEvent: (id: string) => void;
-  deleteAssessment: (id: string) => void;
-  deleteHomeworkCorrection: (link: AssessmentLink) => void;
-}
 
 export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
   classInfo,
   classDisplayName,
   config,
   onConfigChange,
-  today,
-  assessments,
   modals,
   actions,
-  saveAssessment,
-  setAssessmentDate,
-  setHomeworkDate,
   deletePedagogicalEvent,
   deleteAssessment,
   deleteHomeworkCorrection,
@@ -96,11 +55,9 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
   const selectedClassDisplayName = classDisplayName;
   const {
     absencesFor, oralFor, submissionsFor, documentFor, studentsFor,
-    editingAssessment, manualEditorOpen,
-    deletingAssessment, deletingEvent, editingDateAssessment, deletingCorrection,
+    deletingAssessment, deletingEvent, deletingCorrection,
     setAbsencesFor, setOralFor, setSubmissionsFor, setDocumentFor, setStudentsFor,
-    setEditingAssessment, setManualEditorOpen,
-    setDeletingAssessment, setDeletingEvent, setEditingDateAssessment, setDeletingCorrection,
+    setDeletingAssessment, setDeletingEvent, setDeletingCorrection,
   } = modals;
 
   const pedagogicalEvents = useMemo(
@@ -167,36 +124,6 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
 
   return (
     <>
-      {/* 2. Modal Ajout / Modification manuelle d'un devoir */}
-      <Modal
-        isOpen={manualEditorOpen}
-        onClose={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
-        maxWidth="md"
-        className="evaluation-modal sm:rounded-xl"
-        headerClassName="border-b-0 bg-background"
-        bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-        footerClassName="border-t-0 bg-background"
-        title={
-          <div className="min-w-0">
-            <span className="block text-[15px] font-semibold leading-tight tracking-normal text-foreground sm:text-[16px]">
-              {editingAssessment ? t('evaluations.editDevoir') : t('evaluations.addDevoir')}
-            </span>
-            {selectedClass && (
-              <p className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground sm:text-xs" dir="auto">{selectedClassDisplayName}</p>
-            )}
-          </div>
-        }
-      >
-        <ManualAssessmentEditor
-          cycle={classInfo.cycle}
-          today={today}
-          initial={editingAssessment}
-          assessments={assessments}
-          onCancel={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
-          onSave={saveAssessment}
-        />
-      </Modal>
-
       {/* 3. Modal Absences */}
       <StudentReviewDialog
         isOpen={absencesFor !== null}
@@ -384,23 +311,6 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         }}
       />
 
-      {/* 9. Dialogue de sélection de date moderne pour un devoir */}
-      <EventDateModal
-        isOpen={Boolean(editingDateAssessment)}
-        onClose={() => setEditingDateAssessment(null)}
-        title={editingDateAssessment?.field === 'due'
-          ? t('evaluations.homework.dueTitle', { name: editingDateAssessment.name })
-          : editingDateAssessment?.name}
-        initialDate={editingDateAssessment?.date}
-        allowRange={false}
-        onApplyDate={(date) => {
-          if (editingDateAssessment) {
-            if (editingDateAssessment.field) setHomeworkDate(editingDateAssessment.id, editingDateAssessment.field, date);
-            else setAssessmentDate(editingDateAssessment.id, date);
-            setEditingDateAssessment(null);
-          }
-        }}
-      />
       {/* 10. Corbeille de « Correction du devoir maison » : la correction seule, jamais le devoir */}
       <ConfirmDialog
         open={Boolean(deletingCorrection)}

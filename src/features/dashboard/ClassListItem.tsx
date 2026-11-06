@@ -12,7 +12,6 @@ import { cn } from '@/lib/utils';
 import { useClassPress } from '@/features/dashboard/hooks/useClassPress';
 import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
 import { useDevice } from '@/hooks/useDevice';
-import type { SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -22,7 +21,6 @@ interface ClassListItemProps {
     onDelete?: () => void;
     onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
     isActiveSession?: boolean;
-    scheduleStatus?: SessionScheduleStatus;
 }
 
 const ClassListItemComponent: FC<ClassListItemProps> = ({
@@ -32,7 +30,6 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
     onDelete,
     onOpenEvaluations,
     isActiveSession,
-    scheduleStatus,
 }) => {
     const { locale, t, isRtl } = useLocale();
     const { impact } = useHapticFeedback();
@@ -84,25 +81,11 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                                 {label.group && <>{'\u00a0'}<bdi className="class-list-item__group" dir="ltr">{label.group}</bdi></>}
                             </span>
                     </h3>
-                    {(isActiveSession || (showsSubjectLabels && classInfo.subject)) && (
+                    {showsSubjectLabels && classInfo.subject && (
                         <div className="mt-1 flex flex-wrap items-center gap-2 text-muted-foreground">
-                            {isActiveSession ? (
-                                <span className="class-card__live">
-                                    {!isRtl && <span className="class-card__live-dot" aria-hidden="true" />}
-                                    <span>{t('dashboard.welcome.nowTitle')}</span>
-                                    {scheduleStatus?.remainingMinutes ? (
-                                        <span className="class-card__live-remaining">
-                                            {locale !== 'ar' && ' · '}
-                                            {locale === 'ar' ? `متبقي ${scheduleStatus.remainingMinutes} د` : `reste ${scheduleStatus.remainingMinutes} min`}
-                                        </span>
-                                    ) : null}
-                                </span>
-                            ) : null}
-                            {showsSubjectLabels && classInfo.subject && (
-                                <span className="truncate text-xs font-medium" title={formatLocalizedSubjectDisplayName(classInfo.subject, locale)}>
-                                    {formatLocalizedSubjectDisplayName(classInfo.subject, locale)}
-                                </span>
-                            )}
+                            <span className="truncate text-xs font-medium" title={formatLocalizedSubjectDisplayName(classInfo.subject, locale)}>
+                                {formatLocalizedSubjectDisplayName(classInfo.subject, locale)}
+                            </span>
                         </div>
                     )}
                 </div>
@@ -134,9 +117,9 @@ const areEqual = (previous: ClassListItemProps, next: ClassListItemProps) =>
     && previous.classInfo.name === next.classInfo.name
     && previous.classInfo.subject === next.classInfo.subject
     && Boolean(previous.onOpenEvaluations) === Boolean(next.onOpenEvaluations)
-    && previous.isActiveSession === next.isActiveSession
-    && previous.scheduleStatus === next.scheduleStatus;
+    && previous.isActiveSession === next.isActiveSession;
 
 ClassListItemComponent.displayName = 'ClassListItem';
 
 export const ClassListItem = memo(ClassListItemComponent, areEqual);
+

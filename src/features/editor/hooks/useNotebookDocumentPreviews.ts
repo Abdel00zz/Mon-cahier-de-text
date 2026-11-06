@@ -61,9 +61,12 @@ export const useNotebookDocumentPreviews = (
     const events = config.pedagogicalEvents?.[classInfo.id];
     const { assessments } = useClassAssessments(classInfo, config);
     const today = useMoroccoToday();
+    // Le parcours des lignes ne dépend que du cahier : le refaire à chaque
+    // sélection ou ouverture de modale parcourait tout le plan pour rien.
+    const hasInlineDocuments = useMemo(() => hasInlineAssessmentContent(lessonsData), [lessonsData]);
     const hasDocuments = (!!documents && Object.keys(documents).length > 0)
         || events?.some(event => event.document?.source?.trim())
-        || hasInlineAssessmentContent(lessonsData);
+        || hasInlineDocuments;
 
     return useMemo(() => {
         if (!hasDocuments || lessonsData.length === 0) return NO_PREVIEWS;

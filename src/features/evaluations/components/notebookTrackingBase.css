@@ -1,0 +1,298 @@
+/* ══════════════════════════════════════════════════════════════
+   Suivi des cahiers, oraux et devoirs – Design System Épuré
+   Inspiré du prototype HTML/CSS ultra-clean
+   ══════════════════════════════════════════════════════════════ */
+
+.notebook-tracker,
+.tracking-dialog,
+.notebook-tracker-standalone {
+    --bg-page: hsl(var(--card));
+    --card-bg: hsl(var(--card));
+    --surface-subtle: #f6f5f0;
+    --surface-subtle-hover: #eeede6;
+    --border-card: #e5e3dd;
+    --border-subtle: #eae8e1;
+    --border-subtle-hover: #dedad0;
+    --border-focus: #c29180;
+    --focus-ring: rgba(204, 151, 133, 0.22);
+    
+    --text-dark: #1f201d;
+    --text-regular: #444540;
+    --text-sub: #767771;
+    --text-muted: #73746f;
+    --text-placeholder: hsl(var(--muted-foreground));
+    
+    /* Tons Terracotta / Pêche terre cuite */
+    --btn-add-bg: hsl(var(--primary));
+    --btn-add-hover: hsl(var(--primary) / .9);
+    --btn-save-bg: hsl(var(--primary));
+    --btn-save-hover: hsl(var(--primary) / .9);
+    
+    /* États d'acquisition (Oral / Suivi des élèves) */
+    --acquis-bg: #e1f4ea;
+    --acquis-text: #166b44;
+    --cours-bg: #fdf3e7;
+    --cours-text: #b16518;
+    --accompagner-bg: #eaf0fc;
+    --accompagner-text: #325bbd;
+
+    /* Tons Devoir Maison (Rendu & Non rendu) */
+    --rendu-bg: #e1f4ea;
+    --rendu-text: #166b44;
+    --non-rendu-bg: #f5f4ef;
+    --non-rendu-text: #6b6d65;
+    --non-rendu-active-bg: #faece7;
+    --non-rendu-active-text: #b34a2e;
+
+    /* Couleurs secondaires */
+    --danger-color: #c45555;
+    --danger-soft: #c86c6c;
+    --danger-soft-hover: #b45757;
+
+    --radius-card: 16px;
+    --radius-box: 16px;
+    --radius-btn: 12px;
+    --radius-element: 12px;
+    --transition: 0.18s cubic-bezier(0.2, 0.9, 0.4, 1);
+
+    /* États du suivi des cahiers */
+    --notebook-good: #137333;
+    --notebook-average: #185abc;
+    --notebook-needs-work: #995300;
+    --notebook-missing: #b3261e;
+}
+
+.dark .notebook-tracker,
+.dark .tracking-dialog,
+.dark .notebook-tracker-standalone {
+    --bg-page: #1a1b18;
+    --card-bg: #22231f;
+    --surface-subtle: #252622;
+    --surface-subtle-hover: #2e302b;
+    --border-card: #383934;
+    --border-subtle: #363732;
+    --border-subtle-hover: #454740;
+    --border-focus: #d08770;
+    --focus-ring: rgba(208, 135, 112, 0.25);
+
+    --text-dark: #f2f1eb;
+    --text-regular: #dedcd5;
+    --text-sub: #9b9a93;
+    --text-muted: #9b9a93;
+    --text-placeholder: hsl(var(--muted-foreground));
+
+    --btn-add-bg: hsl(var(--primary));
+    --btn-add-hover: hsl(var(--primary) / .9);
+    --btn-save-bg: hsl(var(--primary));
+    --btn-save-hover: hsl(var(--primary) / .9);
+
+    --danger-color: #e07676;
+    --danger-soft: #e07676;
+    --danger-soft-hover: #ec8787;
+
+    --acquis-bg: rgba(22, 107, 68, 0.28);
+    --acquis-text: #85e0b0;
+    --cours-bg: rgba(177, 101, 24, 0.28);
+    --cours-text: #f5be7e;
+    --accompagner-bg: rgba(50, 91, 189, 0.28);
+    --accompagner-text: #a5c2f8;
+
+    --rendu-bg: rgba(22, 107, 68, 0.28);
+    --rendu-text: #85e0b0;
+    --non-rendu-bg: #252622;
+    --non-rendu-text: #9b9a93;
+    --non-rendu-active-bg: rgba(179, 74, 46, 0.25);
+    --non-rendu-active-text: #fca5a5;
+
+    --notebook-good: #88d5a0;
+    --notebook-average: #9bbcf5;
+    --notebook-needs-work: #e5bb79;
+    --notebook-missing: #f1a29e;
+}
+
+/* Modale et conteneur principal */
+.notebook-tracking-modal .notebook-tracking-body.modal-body {
+    display: flex;
+    padding: 0;
+    overflow: hidden;
+    background: var(--bg-page);
+}
+
+.notebook-tracker {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    max-height: min(72dvh, 640px);
+    color: var(--text-dark);
+    background: var(--bg-page);
+}
+
+.notebook-tracker [data-condition='good'] { --notebook-state: var(--notebook-good); }
+.notebook-tracker [data-condition='average'] { --notebook-state: var(--notebook-average); }
+.notebook-tracker [data-condition='needs_work'] { --notebook-state: var(--notebook-needs-work); }
+.notebook-tracker [data-condition='missing'] { --notebook-state: var(--notebook-missing); }
+.notebook-tracker [data-condition='mastered'] { --notebook-state: var(--notebook-good); }
+.notebook-tracker [data-condition='developing'] { --notebook-state: var(--notebook-average); }
+.notebook-tracker [data-condition='needs_support'] { --notebook-state: var(--notebook-needs-work); }
+
+.notebook-tracker__scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 24px;
+}
+
+/* 2. Champs de saisie & Filtres */
+.notebook-tracker__controls { flex: none; display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 8px; padding: 14px 24px 10px; border-bottom: 1px solid var(--border-subtle); }
+
+.student-roster-source { color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+
+/* Bloc Rechercher / Filtrer / Ajouter unifié */
+.student-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+    width: 100%;
+}
+
+.student-search-bar__input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 0 12px;
+    min-height: 44px;
+    transition: border-color 140ms ease;
+    position: relative;
+}
+
+.student-search-bar > .choice-trigger--filter { flex: 0 1 170px; min-height: 44px; border-radius: 10px; background: transparent; font-weight: 500; }
+
+.student-search-bar__input:focus-within {
+    border-color: color-mix(in srgb, var(--color-terracotta, #a24726) 50%, var(--border-subtle));
+}
+
+.student-search-bar__icon {
+    color: var(--text-muted);
+    transition: color 140ms ease;
+}
+
+.student-search-bar__input:focus-within .student-search-bar__icon {
+    color: var(--color-terracotta, #a24726);
+}
+
+.student-search-bar input {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 13.5px;
+    font-weight: 450;
+    color: var(--text-dark);
+}
+
+.student-search-bar input::placeholder {
+    color: var(--text-placeholder);
+    font-size: 13px;
+}
+
+.student-search-bar input::-webkit-search-cancel-button {
+    display: none;
+}
+
+/* Shortcut badge "/" innovant */
+.student-search-bar__shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--border-subtle);
+    border-radius: 5px;
+    padding: 1px 6px;
+    line-height: 1.2;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+}
+
+.dark .student-search-bar__shortcut {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.student-search-bar__input:focus-within .student-search-bar__shortcut {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Clear button */
+.student-search-bar__clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    padding: 0;
+}
+
+.student-search-bar__clear:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.07);
+    color: var(--text-dark);
+}
+
+.student-search-bar__clear:active:not(:disabled) {
+    transform: scale(0.94);
+}
+
+.student-search-bar__clear:disabled {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .student-search-bar {
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+    .student-search-bar__input {
+        max-width: 100%;
+    }
+    .student-search-bar__input:focus-within {
+    border-color: color-mix(in srgb, var(--color-terracotta, #a24726) 50%, var(--border-subtle));
+}
+
+}
+
+.notebook-filter-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}

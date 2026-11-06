@@ -147,7 +147,11 @@ test('ClassEvaluationsSheet et composants garantissent la sécurité visuelle', 
   assert.ok(badgeSrc.includes('size-[38px]'), 'Le conteneur de glyph doit avoir une taille bornée');
   assert.ok(badgeSrc.includes('size-[18px]'), 'Le SVG doit avoir une taille bornée 18px');
 
-  const cssPath = resolve(rootDir, 'src/features/evaluations/evaluationReference.css');
-  const cssSrc = readFileSync(cssPath, 'utf8');
+  const cssSrc = [
+    'src/features/evaluations/evaluationReferenceBase.css',
+    'src/features/evaluations/evaluationReferenceCore.css',
+    'src/features/evaluations/evaluationReference.css',
+  ].map(path => readFileSync(resolve(rootDir, path), 'utf8')).join('\n');
   assert.ok(cssSrc.includes('.ev-panel-glyph svg'), 'Le CSS doit borner le SVG .ev-panel-glyph');
 });
+

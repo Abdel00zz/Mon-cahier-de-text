@@ -152,7 +152,12 @@ Les projections de séance consommées par les cartes et les notifications parte
 
 Les alertes, le modal d’évaluations et les rappels d’absences consomment la même liste résolue. `src/domain/evaluations/assessmentSync.ts` rapproche ensuite chaque devoir avec un bloc du cahier par type, numéro et proximité de date, sans réutiliser le même bloc. L’API valide les structures d’évaluation avant de les enregistrer dans le stockage cloud configuré.
 
-Le **contrat de flux** entre le tableau et la modale « Contrôle continu et activités » — porte de création unique dans la modale, capture du tableau, matérialisation des blocs et des annotations — est décrit dans [`workflow-evaluations.md`](./workflow-evaluations.md) : document vivant, mis à jour dans le même lot que le code.
+Le tableau saisit les évaluations et activités par bloc ou remarque. La
+modale « Contrôle continu et activités » reçoit les éléments capturés et
+permet leur suivi. Le [contrat de capture](workflow-evaluations.md) décrit
+la détection et les retours vers le tableau. La
+[référence du Table Editor](../specs/tabel.md) décrit la projection des lignes,
+la fusion des séances, le réordonnancement et les repères visuels.
 
 ### Date
 
@@ -205,18 +210,22 @@ npm run check:unused
 npm run check:headers
 npm run build
 npm run check:bundle
+npm run quality
 npm audit --omit=dev
 ```
 
-Le contrôle `check:unused` connaît explicitement les entrées serverless et administration grâce à `knip.json`. `check:headers` vérifie que `vercel.json` conserve HSTS, CSP et les autres en-têtes de sécurité. Toutes ces commandes, plus `npm test`, sont rejouées par l’intégration continue : voir [Infrastructure](infrastructure.md).
+Le contrôle `check:unused` connaît explicitement les entrées serverless et administration grâce à `knip.json`. `check:headers` vérifie que `vercel.json` conserve HSTS, CSP et les autres en-têtes de sécurité. `npm run quality` applique le cliquet des 400 lignes, les cycles d’imports et le code mort (voir [Workflow qualité](../quality/workflow.md)). Toutes ces commandes, plus `npm test`, sont rejouées par l’intégration continue : voir [Infrastructure](infrastructure.md).
 
 ## Politique de nettoyage
 
+- Aucun fichier de code ne doit dépasser **400 lignes** ; la baseline de qualité gèle temporairement la dette historique et ne peut que rétrécir.
 - Supprimer uniquement après preuve d’absence d’import et compilation réussie.
 - Ne jamais versionner `tmp/`, `dist/`, logs, captures de travail ou scripts ponctuels.
 - Supprimer les anciens exports au lieu de maintenir une API interne fantôme.
 - Ne pas conserver une primitive UI « au cas où ».
 - Après un déplacement, utiliser `@/` pour les dépendances transversales et valider immédiatement TypeScript.
+- Les tables i18n vivent par langue et par domaine sous `src/i18n/messages/` ; le fichier `messages.ts` reste un barrel.
+- Un type partagé vit dans `src/types/<domaine>.ts` ; `src/types.ts` reste un barrel.
 
 ## Circuit de rendu de l’éditeur
 
@@ -224,7 +233,10 @@ Le contrôle `check:unused` connaît explicitement les entrées serverless et ad
 
 Le virtualiseur utilise l’intersection réelle avec la fenêtre, des mesures indexées par identité et des positions arrondies au pixel. Les groupes sont bornés à 24 entrées. Les corrections de hauteur au-dessus de la fenêtre préservent la position de lecture.
 
-`splitMathText` protège les délimiteurs avant la mise en forme des listes ou le surlignage. KaTeX ne scanne pas globalement le DOM React : chaque MathText possède son rendu. Les badges occupent une colonne de grille centrée sur la ligne du titre ; les descriptions occupent les lignes suivantes.
+`splitMathText` protège les délimiteurs avant la mise en forme des listes ou le
+surlignage. Chaque `MathText` compose ses formules. Les badges occupent une
+colonne dédiée et s’alignent sur la ligne de base du titre. Les descriptions
+se calent sous le titre.
 
 Les écarts horaires et les classes sans créneau passent par le flux de notifications vers les repères du Centre de pilotage. Le panneau d’avertissements redondant des paramètres a été retiré.
 

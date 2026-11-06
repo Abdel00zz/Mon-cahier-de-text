@@ -1,0 +1,20 @@
+// Traductions ar — classRoster.
+export const messages: Record<string, string> = {
+  'classRoster.title': "تلاميذ القسم",
+  'classRoster.identity': "المعلومات",
+  'classRoster.manage': "إضافة التلاميذ أو إدارة اللائحة",
+  'classRoster.help': "لائحة موحّدة للتقويم والأنشطة والإدارة. تُحفظ الملاحظات المسجّلة سابقاً.",
+  'classRoster.label': "الأسماء الكاملة",
+  'classRoster.format': "افصل بين الأسماء بعلامة « ؛ » أو بسطر جديد.",
+  'classRoster.placeholder': "أحمد العلوي ؛ سلمى الفاسي ؛ يوسف أمين",
+  'classRoster.count': "{count} / 200 تلميذ · تُحذف الأسماء المكررة",
+  'classRoster.empty': "لائحة القسم فارغة. أضف التلاميذ من إعدادات القسم.",
+  'classRoster.selection': "اختر التلاميذ المعنيين.",
+  'classRoster.discard': "الخروج دون حفظ؟",
+  'classRoster.discardBody': "لم تُحفظ تعديلات لائحة التلاميذ بعد.",
+  'classRoster.leave': "خروج",
+  'classRoster.changed': "تم تحديث اللائحة. ستُدمج تعديلاتك عند الحفظ.",
+  'classRoster.saved': "تم حفظ لائحة التلاميذ",
+  'classRoster.history': "تلاميذ من التتبعات السابقة",
+  'classRoster.import': "استيراد هذه الأسماء",
+};

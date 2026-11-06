@@ -13,6 +13,7 @@
   "description": "Cahier de textes numérique de l'enseignant — دفتر النصوص الرقمي للأستاذ. Conforme aux orientations pédagogiques officielles.",
   "start_url": "/",
   "scope": "/",
+  "handle_links": "preferred",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "any",

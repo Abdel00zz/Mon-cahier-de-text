@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import type { AppConfig, ClassInfo } from '@/types';
+import type { AppConfig } from '@/types';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import './absencesTab.css';
 import { X, FileSignature } from '@/components/ui/icons';
@@ -12,10 +12,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 
 interface AbsencesTabProps {
     config: AppConfig;
-    classes: ClassInfo[];
     onConfigChange: (patch: Partial<AppConfig>) => void;
-    /** La rubrique est-elle réellement affichée ? (elle reste montée, masquée en CSS) */
-    visible: boolean;
 }
 
 /** Absences administratives : config.absences est la source unique, hors du plan pédagogique. */

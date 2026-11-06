@@ -1,0 +1,22 @@
+// Traductions en — sync.
+export const messages: Record<string, string> = {
+  'sync.accountChanged': 'The active account or app version has changed. Reload the page before syncing.',
+  'sync.synced': 'Cloud up to date',
+  'sync.syncing': 'Syncing',
+  'sync.pending': 'Pending',
+  'sync.offline': 'Offline',
+  'sync.error': 'Error',
+  'sync.syncNow': 'Sync now',
+  'sync.statusAria': 'Sync status: {status}',
+  'sync.sessionExpired': 'Session expired. Sign in again to resume syncing.',
+  'sync.tooLarge': 'A notebook exceeds the maximum sync size (~950 KB).',
+  'sync.classTooLarge': 'The notebook “{name}” is too large to reach the cloud. Its copy stays on this device: split its content across several classes to sync it.',
+  'sync.localDataUnreadable': 'The local copy cannot be read. Sync is paused to protect your data. Restore a backup from settings.',
+  'sync.localStorageFull': 'This device is out of storage. Free up space or export a backup before continuing.',
+  'sync.failedWithMessage': 'Unable to sync: {message}',
+  'sync.failed': 'Unable to sync. Another attempt will run automatically in one minute.',
+  'sync.localNotLinked': '{count} notebook(s) on this device are not linked to your account yet.',
+  'sync.linkAction': 'Link',
+  'sync.conflictOne': '“{name}” was edited on another device. The newest version was kept; the other is archived here.',
+  'sync.conflictMany': '{count} notebooks were edited on another device ({names}). The newest versions were kept; the others are archived.',
+};

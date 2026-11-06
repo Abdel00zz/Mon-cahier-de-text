@@ -1,1152 +1,328 @@
-/* ══════════════════════════════════════════════════════════════
-   Assistant d'ajout (#wz) & Modale de modification (#ed) — Espace de travail serein :
-   - Bandeau héros en dégradé pastel vertical doux (.hero), icône asymétrique (.wi), titre Readex Pro 600
-   - 3 étapes en trois pastilles rondes (.steps) reliées par un trait fin plein ; la pastille en cours prend le brun serein (#7a5a49) et grossit
-   - Niveaux et filières en tuiles pastel asymétriques (.tile : 1.3rem / 0.45rem) avec badge flèche rond (.ar)
-   - À l'étape 3, le bandeau et la carte du bas (.c3 : 1.4rem / 0.5rem) prennent la couleur choisie ; numéro de fournée en grand (.sp) avec boutons − et + blancs
-   - Hauteur maximale 43rem avec pied de page fixe ; cibles tactiles ≥ 44px
-   ══════════════════════════════════════════════════════════════ */
+/* Assistant de classe — surface unique, cadre net, aucune couche décorative.
+   Les primitives `claude-*` gardent leur comportement ; ce fichier ne pose que
+   la géométrie, les états et la hiérarchie visuelle de la fenêtre. */
 
 .class-create-modal {
   --create-surface: color-mix(in srgb, hsl(38 34% 96.5%) 2%, hsl(var(--card)) 98%);
-  --create-field: #FAFAFD;
-  --create-edge: rgba(45, 35, 75, 0.08);
-  --pad: clamp(1.2rem, 5cqi, 1.95rem);
-
-  /* Couleur dynamique du héros et de la carte du bas (Voile irisé moderne, tendant vers le blanc pur) */
-  --hero-bg: #F8F6FD;
-  --hero-border: #E8E2FA;
-  --hero-ink: #221D38;
-  --hero-secondary: #5A4DB8;
-
-  background-color: var(--modal-surface-bg, var(--create-surface));
-  background-image: var(--modal-surface-tint);
+  --create-field: hsl(var(--card));
+  --create-edge: hsl(var(--border));
+  --create-muted: hsl(var(--muted-foreground));
+  --create-accent: hsl(var(--primary));
+  --create-accent-ink: hsl(var(--primary-foreground));
+  background: var(--create-surface);
+  color: hsl(var(--foreground));
   font-family: "Readex Pro", var(--font-sans);
-  color: #221D38;
 }
 
 .dark .class-create-modal {
-  --create-surface: color-mix(in srgb, hsl(var(--card)) 94%, hsl(250 14% 14%) 6%);
+  --create-surface: hsl(var(--card));
   --create-field: hsl(var(--card));
-  --create-edge: color-mix(in srgb, hsl(var(--border)) 88%, hsl(250 14% 28%) 12%);
-  background-color: var(--modal-surface-bg, var(--create-surface));
-  color: hsl(var(--foreground));
+  --create-edge: hsl(var(--border));
+  --create-muted: hsl(var(--muted-foreground));
+  --create-accent: hsl(var(--primary));
+  --create-accent-ink: hsl(var(--primary-foreground));
 }
 
-/* Hauteur fluide et respiration aérée avec pied de page fixe (.sheet) */
+/* Cadre : un seul rayon, une seule ombre, aucun liseré irisé. */
 .class-create-modal.modal-motion-surface {
-  container: sheet / inline-size;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--hero-border, #e4d4c3) 65%, #e5ddd2) !important;
-  box-shadow: 0 -10px 44px rgba(46, 32, 22, 0.14), 0 24px 56px rgba(46, 32, 22, 0.14) !important;
+  border: 1px solid var(--create-edge) !important;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.04), 0 18px 44px -30px hsl(var(--foreground) / 0.28) !important;
 }
 
 @media (min-width: 720px) {
   .class-create-modal.modal-motion-surface {
-    max-width: min(100%, clamp(28rem, 54vw, 39.5rem)) !important;
-    width: min(100%, clamp(28rem, 54vw, 39.5rem));
-    border-radius: 1.85rem !important;
-    border-end-start-radius: 0.65rem !important;
+    width: min(100%, 36rem);
+    max-width: min(100%, 36rem) !important;
+    border-radius: 1.5rem !important;
   }
 }
 
-/* Tons dynamiques harmonisés avec le fond papier d'argile (#faf7f2) */
-.create-hero-tone-coral,
-.class-create-summary[data-color-tone='coral'] {
-  --hero-bg: #f6ede2;
-  --hero-border: #e4d3c1;
-  --hero-ink: #2e2016;
-  --hero-secondary: #6b4c35;
-}
-.create-hero-tone-sand,
-.class-create-summary[data-color-tone='sand'] {
-  --hero-bg: #f6eed8;
-  --hero-border: #e5d7b2;
-  --hero-ink: #47360f;
-  --hero-secondary: #7c5e1b;
-}
-.create-hero-tone-mint,
-.class-create-summary[data-color-tone='mint'] {
-  --hero-bg: #e9f3ec;
-  --hero-border: #cbe0d2;
-  --hero-ink: #1a3f2d;
-  --hero-secondary: #2e6b4e;
-}
-.create-hero-tone-sky,
-.class-create-summary[data-color-tone='sky'] {
-  --hero-bg: #eaf1f8;
-  --hero-border: #ccdbe9;
-  --hero-ink: #1c3954;
-  --hero-secondary: #36638c;
-}
-.create-hero-tone-lavender,
-.class-create-summary[data-color-tone='lavender'] {
-  --hero-bg: #f4effd;
-  --hero-border: #ded3fc;
-  --hero-ink: #221a4f;
-  --hero-secondary: #5a3fbf;
-}
-.create-hero-tone-rose,
-.class-create-summary[data-color-tone='rose'] {
-  --hero-bg: #f8eaef;
-  --hero-border: #e8cdd7;
-  --hero-ink: #542033;
-  --hero-secondary: #8f3b5b;
+.class-create-modal .modal-body {
+  padding: 0.25rem 1.25rem 1rem;
 }
 
-.dark .create-hero-tone-coral,
-.dark .class-create-summary[data-color-tone='coral'] {
-  --hero-bg: #362419;
-  --hero-border: #593a27;
-  --hero-ink: #fce8d5;
-  --hero-secondary: #e7bfa0;
-}
-.dark .create-hero-tone-lavender,
-.dark .class-create-summary[data-color-tone='lavender'] {
-  --hero-bg: #221c3b;
-  --hero-border: #3d3266;
-  --hero-ink: #f0ecfd;
-  --hero-secondary: #c4b5ff;
-}
-.dark .create-hero-tone-mint,
-.dark .class-create-summary[data-color-tone='mint'] {
-  --hero-bg: #183124;
-  --hero-border: #2a543e;
-  --hero-ink: #dcf5e6;
-  --hero-secondary: #a8dec0;
-}
-.dark .create-hero-tone-sky,
-.dark .class-create-summary[data-color-tone='sky'] {
-  --hero-bg: #182d3f;
-  --hero-border: #2b4e6b;
-  --hero-ink: #ddeefb;
-  --hero-secondary: #abd1ee;
-}
-.dark .create-hero-tone-sand,
-.dark .class-create-summary[data-color-tone='sand'] {
-  --hero-bg: #332915;
-  --hero-border: #544423;
-  --hero-ink: #f7ecd2;
-  --hero-secondary: #dec99a;
-}
-.dark .create-hero-tone-rose,
-.dark .class-create-summary[data-color-tone='rose'] {
-  --hero-bg: #381c26;
-  --hero-border: #5c2f3f;
-  --hero-ink: #fbe3ea;
-  --hero-secondary: #e5b5c4;
+.class-create-modal .claude-sheet-header {
+  padding: 0;
 }
 
-/* Bandeau Héros aéré en dégradé chaud (.hero) */
-.class-create-modal .class-create-header {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--hero-bg) 82%, #fffdf9) 0%, transparent 100%) !important;
-  color: var(--hero-ink) !important;
-  border-bottom: 0 !important;
-  padding: 1.15rem var(--pad, 1.5rem) 0.7rem;
-  transition: background 220ms ease, color 220ms ease;
-}
-
-.dark .class-create-modal .class-create-header {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--hero-bg) 60%, var(--create-surface)), transparent) !important;
-}
-
-@media (max-width: 639px) {
-  .class-create-modal .class-create-header {
-    padding: 1.65rem var(--pad, 1.35rem) 0.7rem;
-  }
-}
-
-.class-create-modal .dialog-close {
-  width: max(44px, 2.65rem) !important;
-  height: max(44px, 2.65rem) !important;
-  min-width: 44px !important;
-  min-height: 44px !important;
-  border-radius: 9999px !important;
-  background: transparent;
-  color: hsl(var(--muted-foreground));
-  border: 1px solid transparent;
-  transition: transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 0.15s ease;
-}
-
-.class-create-modal .dialog-close:hover {
-  background: #ffffff !important;
-}
-
-.class-create-modal .dialog-close:active {
-  transform: scale(0.88);
-}
-
-.dark .class-create-modal .dialog-close {
-  background: color-mix(in srgb, #ffffff 14%, var(--hero-bg)) !important;
-  color: hsl(var(--foreground)) !important;
-}
-
-.class-create-modal .class-create-body {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding: 0.45rem var(--pad, 1.5rem) 1.15rem;
-  background: transparent;
-}
-
-/* Pied de page minimaliste et aéré (.wf / .mf) */
-.class-create-modal .class-create-actions {
-  flex-shrink: 0;
-  position: sticky;
-  bottom: 0;
-  z-index: 15;
-  background: transparent !important;
-  border-top: 0 !important;
-  box-shadow: none !important;
-  padding: 0.5rem var(--pad, 1.5rem) 1.1rem;
-}
-
-.class-create-heading {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-/* Badge icône asymétrique (.wi) */
-.class-create-heading-icon {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 0.95rem;
-  border-end-start-radius: 0.42rem;
-  background: #fffdf9f2;
-  color: var(--hero-secondary);
-  border: 1px solid color-mix(in srgb, var(--hero-border) 70%, #e5ddd2);
-  box-shadow: 0 3px 10px rgba(46, 32, 22, 0.05);
-  transform: none;
-}
-
-.dark .class-create-heading-icon {
-  background: color-mix(in srgb, #ffffff 14%, var(--hero-bg));
-}
-
-.class-create-heading-icon svg {
-  width: 1.22rem;
-  height: 1.22rem;
-  stroke-width: 2.1;
-}
-
-.class-create-heading-copy {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.class-create-title-wrap {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-/* Titre Readex Pro 700 (.hero h2) */
-.class-create-title {
+.class-create-modal .claude-sheet-title {
   display: block;
-  font: 700 clamp(1.2rem, 3.4cqi + 0.55rem, 1.44rem)/1.35 "Readex Pro", var(--font-sans);
-  letter-spacing: -0.01em;
-  color: #2e2016;
-  text-wrap: balance;
-}
-
-.dark .class-create-title {
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
   color: hsl(var(--foreground));
 }
 
-.class-create-wave {
-  display: none !important;
+.class-create-modal .claude-sheet-subtitle {
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--create-muted);
 }
 
-/* ── Circuit d'étapes épuré sans zone cadre (.class-create-progress) ── */
-.class-create-progress {
-  position: relative;
-  padding: 0.35rem 0.25rem 0.2rem;
-  border-radius: 0;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-}
-
-.dark .class-create-progress {
-  background: transparent;
-  border-color: transparent;
-}
-
-.class-create-progress ol {
-  position: relative;
+/* Onglets d’édition : une seule pastille active, sans soulignement. */
+.class-create-modal .claude-tabs {
   display: grid;
-  align-items: start;
-  gap: 0.35rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem;
+  margin: 0 0 0.85rem;
+  padding: 0.25rem;
+  border: 1px solid var(--create-edge);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, hsl(var(--muted)) 62%, var(--create-surface));
 }
 
-/* Ligne de circuit continue en arrière-plan */
-.class-create-progress ol::before {
-  content: '';
-  position: absolute;
-  top: 0.85rem;
-  inset-inline: 18%;
-  height: 1.5px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--hero-border, #e4d3c1) 75%, #e5ddd2);
-  z-index: 0;
-}
-
-.dark .class-create-progress ol::before {
-  background: hsl(var(--border));
-}
-
-/* Segment actif du circuit qui progresse d'une étape à l'autre */
-.class-create-progress ol::after {
-  content: '';
-  position: absolute;
-  top: 0.85rem;
-  inset-inline-start: 18%;
-  width: calc(64% * var(--step-progress, 0));
-  height: 2px;
-  border-radius: 999px;
-  background: var(--hero-secondary, #6b4c35);
-  z-index: 0;
-  transition: width 360ms cubic-bezier(0.22, 1, 0.36, 1), background-color 250ms ease;
-}
-
-.class-create-progress li {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-  display: flex;
+.class-create-modal .claude-tab-btn {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-}
-
-.class-create-progress li::after {
-  display: none;
-}
-
-.class-create-progress button,
-.class-create-progress-item {
-  display: grid;
-  justify-items: center;
-  align-content: start;
-  gap: 0.28rem;
-  min-height: max(44px, 2.65rem);
-  width: 100%;
-  padding: 0;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.7rem;
   border: 0;
+  border-radius: 0.65rem;
   background: transparent;
-  color: #7a6858;
-  box-shadow: none;
-}
-
-.class-create-progress button {
+  color: var(--create-muted);
+  font: 600 0.82rem/1.3 var(--font-sans);
   cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }
 
-/* Numéro d'étape libre sans cadre ni boîte englobante */
-.class-create-progress-number {
+.class-create-modal .claude-tab-btn[data-active='true'],
+.class-create-modal .claude-tab-btn[data-state='active'] {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.06);
+}
+
+.class-create-modal .claude-tab-badge {
   display: inline-grid;
   place-items: center;
-  flex-shrink: 0;
-  min-width: 1.7rem;
-  height: 1.7rem;
-  padding: 0 0.35rem;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding-inline: 0.3rem;
   border-radius: 999px;
-  background: var(--create-surface, #ffffff);
-  color: #8a7766;
-  border: 0;
-  font: 700 0.92rem/1 "Readex Pro", var(--font-sans);
-  font-variant-numeric: tabular-nums;
-  box-shadow: none;
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s ease;
-}
-
-.dark .class-create-progress-number {
-  background: var(--create-surface);
-  color: hsl(var(--muted-foreground));
-  border: 0;
-}
-
-.class-create-progress-number svg {
-  width: 0.95rem;
-  height: 0.95rem;
-  stroke-width: 2.8;
-}
-
-/* Étape validée : coche nette sans cadre */
-[data-state='complete'] .class-create-progress-number {
-  background: var(--create-surface, #ffffff);
-  color: var(--hero-secondary, #6b4c35);
-  border: 0;
-  box-shadow: none;
-}
-
-.dark [data-state='complete'] .class-create-progress-number {
-  background: var(--create-surface);
+  background: hsl(var(--primary) / 0.12);
   color: hsl(var(--primary));
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Étape active : numéro mis en valeur sans boîte encadrée */
-[data-state='current'] > .class-create-progress-item .class-create-progress-number {
-  background: var(--create-surface, #ffffff);
-  color: var(--hero-secondary, #6b4c35);
-  border: 0;
-  font-size: 1.08rem;
-  font-weight: 800;
-  transform: scale(1.1);
-  box-shadow: none;
-}
-
-[data-state='upcoming'] .class-create-progress-item {
-  opacity: 0.72;
-}
-
-.class-create-progress-label {
-  font: 500 0.75rem/1.3 "Readex Pro", var(--font-sans);
-  color: #7a6858;
-  text-align: center;
-  overflow-wrap: anywhere;
-}
-
-[data-state='current'] .class-create-progress-label {
-  color: var(--hero-ink, #2e2016);
-  font-weight: 700;
-}
-
-[data-state='complete'] .class-create-progress-label {
-  color: #3d2c1e;
-  font-weight: 600;
-}
-
-.dark [data-state='current'] .class-create-progress-label {
-  color: hsl(var(--foreground));
-}
-
-.class-create-stage h3 {
-  font: 700 0.94rem/1.4 "Readex Pro", var(--font-sans);
-  color: #2e2016;
-}
-
-.dark .class-create-stage h3 {
-  color: hsl(var(--foreground));
-}
-
-/* Bouton « مستوى مخصص » / « Autre niveau » en pilule chaude cohérente */
-.class-create-custom-pill {
-  background: #f5efe6;
-  color: #6b4c35;
-  border: 1px solid #e4d8c8;
-}
-
-.class-create-custom-pill:hover {
-  background: #efe5d8;
-  color: #2e2016;
-}
-
-/* Sélecteur rapide « سلك آخر » aéré et unifié avec le fond */
-.class-create-cycle-switch {
-  background: #f5efe6;
-  color: #5c4938;
-  border: 1px solid #e5ddd2;
-  text-align: center;
-}
-
-.class-create-cycle-switch:hover {
-  background: #fffdf9;
-  color: #2e2016;
-  border-color: #d4c4b0;
-}
-
-.dark .class-create-cycle-switch {
-  background: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
-  border-color: hsl(var(--border));
-}
-
-/* Barre segmentée des cycles (.seg) */
-.class-create-seg {
-  background: #f2ece2;
-  padding: 0.3rem;
-  border-radius: 1.15rem;
-}
-
-.dark .class-create-seg {
-  background: hsl(var(--muted));
-}
-
-/* ── Cartes de niveaux et filières épurées et modernes sans flèche (.class-create-option) ── */
-.class-create-option {
-  --tile-bg: #f6ede2;
-  --tile-border: #e4d4c3;
-  --tile-ink: #2e2016;
-  --tile-secondary: #6b4c35;
-
+/* Choix : une tuile, un état, une coche. */
+.class-create-modal .claude-choice-card,
+.class-create-modal .class-create-option {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.65rem;
+  gap: 0.75rem;
   width: 100%;
-  min-height: 48px;
-  padding: 0.82rem 1.15rem;
-  border: 1px solid color-mix(in srgb, var(--tile-border) 62%, #e5ddd2);
-  border-radius: 1.15rem;
-  border-end-start-radius: 0.45rem;
-  background: linear-gradient(135deg, #fffdf9 0%, color-mix(in srgb, var(--tile-bg) 48%, #fffdf9) 100%);
-  color: var(--tile-ink);
-  text-align: start;
-  font: 600 0.94rem/1.4 "Readex Pro", var(--font-sans);
-  cursor: pointer;
-  touch-action: manipulation;
-  box-shadow: 0 2px 10px rgba(46, 32, 22, 0.035);
-  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), background 180ms ease, border-color 180ms ease, box-shadow 200ms ease;
-}
-
-/* Palette terre & argile douce : 100% cohérente avec le fond #faf7f2 */
-.class-create-option:nth-child(4n + 1) {
-  --tile-bg: #f7ece0;
-  --tile-border: #e5d2be;
-  --tile-ink: #3d2514;
-  --tile-secondary: #7a5235;
-}
-.class-create-option:nth-child(4n + 2) {
-  --tile-bg: #f5efe0;
-  --tile-border: #e2d5b7;
-  --tile-ink: #3f3112;
-  --tile-secondary: #7d6225;
-}
-.class-create-option:nth-child(4n + 3) {
-  --tile-bg: #ebf3ed;
-  --tile-border: #cde0d1;
-  --tile-ink: #1b3d2b;
-  --tile-secondary: #35694d;
-}
-.class-create-option:nth-child(4n + 4) {
-  --tile-bg: #f3ece8;
-  --tile-border: #dfd2cb;
-  --tile-ink: #382722;
-  --tile-secondary: #6e4e44;
-}
-
-.dark .class-create-option {
-  background: hsl(var(--card));
+  min-height: 3rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--create-edge);
+  border-radius: 0.9rem;
+  background: var(--create-field);
   color: hsl(var(--foreground));
-  border-color: hsl(var(--border));
+  text-align: start;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
 }
 
-.class-create-option:hover {
-  border-color: color-mix(in srgb, var(--tile-secondary) 65%, #d5c7b8);
-  background: linear-gradient(135deg, #ffffff 0%, color-mix(in srgb, var(--tile-bg) 68%, #fffdf9) 100%);
-  box-shadow: 0 5px 16px rgba(46, 32, 22, 0.065);
+.class-create-modal .claude-choice-card:hover,
+.class-create-modal .class-create-option:hover {
+  border-color: color-mix(in srgb, var(--create-accent) 32%, var(--create-edge));
+  background: color-mix(in srgb, var(--create-accent) 4%, var(--create-field));
 }
 
-.class-create-option[data-selected='true'] {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--tile-bg) 82%, #fffdf9) 0%, var(--tile-bg) 100%);
-  border-color: var(--tile-secondary);
-  color: var(--tile-ink);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tile-secondary) 22%, transparent);
+.class-create-modal .claude-choice-card[data-selected='true'],
+.class-create-modal .class-create-option[data-selected='true'] {
+  border-color: color-mix(in srgb, var(--create-accent) 55%, var(--create-edge));
+  background: color-mix(in srgb, var(--create-accent) 9%, var(--create-field));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--create-accent) 18%, transparent);
 }
 
-.class-create-option > span:first-child {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-/* Indicateur discret de sélection uniquement (sans flèche) */
-.class-create-option-mark {
-  display: grid;
+.class-create-modal .claude-choice-check {
+  display: inline-grid;
+  flex: 0 0 auto;
   place-items: center;
-  flex-shrink: 0;
-  width: 1.55rem;
-  height: 1.55rem;
-  color: #fffdf9;
-  background: var(--tile-secondary);
-  border-radius: 50%;
-  transition: transform 180ms ease;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 999px;
+  background: var(--create-accent);
+  color: var(--create-accent-ink);
 }
 
-.class-create-option-mark svg {
-  width: 0.85rem;
-  height: 0.85rem;
-  stroke-width: 2.5;
+/* Numéro de groupe : deux boutons, une valeur, aucun cadre superflu. */
+.class-create-modal .claude-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.2rem;
+  border: 1px solid var(--create-edge);
+  border-radius: 0.8rem;
+  background: var(--create-field);
 }
 
-/* ── Étape 3 : Carte du bas teintée sans filets internes (.c3) et stepper (.sp) ── */
-.class-create-modal .class-create-summary {
-  border: 1px solid color-mix(in srgb, var(--hero-border) 75%, #e5ddd2) !important;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--hero-bg) 70%, #fffdf9) 0%, var(--hero-bg) 100%) !important;
-  color: var(--hero-ink, hsl(var(--foreground))) !important;
-  border-radius: 1.35rem !important;
-  border-end-start-radius: 0.48rem !important;
-  padding: 1.2rem !important;
-  box-shadow: 0 5px 18px rgba(46, 32, 22, 0.045) !important;
-  transition: background 0.35s ease, color 0.25s ease, border-color 0.25s ease;
+.class-create-modal .claude-stepper-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 0.6rem;
+  background: transparent;
+  color: var(--create-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
 }
 
-.class-create-summary > div:first-child > p:first-child {
-  font: 500 0.78rem/1.4 "Readex Pro", var(--font-sans);
-  text-transform: none;
-  letter-spacing: normal;
-  color: var(--hero-secondary, #4e46b4);
+.class-create-modal .claude-stepper-btn:hover:not(:disabled) {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
 }
 
-.class-create-summary > div:first-child > p:last-child {
-  font: 700 1.18rem/1.4 "Readex Pro", var(--font-sans);
-  color: var(--hero-ink, #26221e);
+.class-create-modal .claude-stepper-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
-.class-create-summary label {
-  font: 600 0.85rem/1.4 "Readex Pro", var(--font-sans);
-  color: var(--hero-ink, #26221e);
+.class-create-modal .claude-stepper-value {
+  width: 2.75rem;
+  min-height: 2.75rem;
+  color: hsl(var(--foreground));
+  font: 650 1rem/1 var(--font-sans);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Contrôle du numéro de fournée (.sp) */
-.class-create-modal .class-create-stepper {
-  width: 100%;
-  margin-inline: auto;
-  background: #ffffffcc;
-  border: 1px solid color-mix(in srgb, var(--hero-border) 60%, transparent);
-  border-radius: 1.2rem;
-  padding: 0.3rem;
+/* Couleur : dernière section du formulaire, sans filet de séparation. */
+.class-color-field {
+  margin-block-start: 1rem;
+  padding-block-start: .9rem;
+}
+
+.class-color-field__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-block-end: .6rem;
+}
+
+.class-color-field__label {
+  color: hsl(var(--foreground));
+  font-size: .78rem;
+  font-weight: 600;
+}
+
+.class-color-field__value {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--create-muted);
+  font-size: .72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Groupe de couleurs : cibles compactes mais lisibles, sans halo. */
+.class-create-modal .claude-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.class-create-modal .claude-swatch {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 2px hsl(var(--card));
+  cursor: pointer;
+  transition: transform 150ms ease, border-color 150ms ease;
+}
+
+.class-create-modal .claude-swatch[data-selected='true'] {
+  border-color: hsl(var(--foreground));
+  transform: scale(1.06);
+}
+
+.class-create-modal .claude-swatch:active {
+  transform: scale(0.94);
+}
+
+/* Champs : une hauteur commune, un seul rayon. */
+.class-create-modal :is(input, [role='combobox']) {
+  min-height: 2.75rem;
+  border-radius: 0.8rem;
+  border-color: var(--create-edge);
+  background: var(--create-field);
+}
+
+.class-create-modal :is(input, [role='combobox']):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--create-accent) 42%, transparent);
+  outline-offset: 1px;
+}
+
+/* Actions : une primaire pleine, une secondaire discrète, une danger lisible. */
+.class-create-modal :is(.claude-btn-primary, .claude-btn-secondary, .claude-btn-danger) {
+  min-height: 2.75rem;
+  border-radius: 0.8rem;
+  font-weight: 600;
   box-shadow: none;
 }
 
-.dark .class-create-modal .class-create-stepper {
-  background: color-mix(in srgb, #ffffff 10%, var(--hero-bg));
+.class-create-modal .claude-btn-primary {
+  background: var(--create-accent);
+  color: var(--create-accent-ink);
 }
 
-.class-create-modal .class-create-step {
-  width: max(44px, 2.75rem) !important;
-  height: max(44px, 2.75rem) !important;
-  min-width: 44px !important;
-  min-height: 44px !important;
-  border-radius: 0.95rem !important;
-  background: #ffffff;
-  color: var(--hero-ink);
-  border: 1px solid color-mix(in srgb, var(--hero-border) 55%, transparent);
-  box-shadow: 0 1px 3px rgba(38, 34, 30, 0.05);
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.15s ease;
-}
-
-.dark .class-create-modal .class-create-step {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.class-create-modal .class-create-step:active:not(:disabled) {
-  transform: scale(0.88);
-}
-
-/* Numéro de fournée en Readex Pro 600 (.sp output) */
-.class-create-modal .class-create-group-input {
-  font: 700 1.55rem/1 "Readex Pro", var(--font-sans) !important;
-  color: var(--hero-ink) !important;
-}
-
-/* Avoid mobile focus zoom without changing the surrounding type scale. */
-.class-create-modal input,
-.class-create-modal [role='combobox'] {
-  font-size: 1rem;
-}
-
-/* Boutons du pied de page (.pri, .gh, .bk, .dl) */
-.class-create-modal .class-create-primary {
-  background: var(--hero-secondary, #4e46b4) !important;
-  color: #ffffff !important;
-  min-height: 3rem;
-  border: 0 !important;
-  border-radius: 1.05rem !important;
-  font: 600 0.9rem/1.4 "Readex Pro", var(--font-sans);
-  box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--hero-secondary, #4e46b4) 38%, transparent) !important;
-  transition: opacity 0.25s ease, filter 0.2s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.class-create-modal .class-create-primary:hover:not(:disabled) {
+.class-create-modal .claude-btn-primary:hover:not(:disabled) {
   filter: brightness(1.06);
 }
 
-.class-create-modal .class-create-primary:disabled {
-  opacity: 0.38 !important;
-  box-shadow: none !important;
+.class-create-modal .claude-btn-secondary {
+  border: 1px solid var(--create-edge);
+  background: transparent;
+  color: hsl(var(--foreground));
 }
 
-.class-create-modal .class-create-back,
-.class-create-modal .class-create-cancel {
-  background: transparent !important;
-  color: #6e665e !important;
-  border: 0 !important;
-  border-radius: 1.05rem !important;
-  min-height: 3rem;
-  font: 600 0.86rem/1.4 "Readex Pro", var(--font-sans);
-  box-shadow: none !important;
-}
-
-.class-create-modal .class-create-back:hover,
-.class-create-modal .class-create-cancel:hover {
-  background: color-mix(in srgb, var(--hero-bg, #f0ebe3) 65%, transparent) !important;
-  color: #26221e !important;
-}
-
-.dark .class-create-modal .class-create-back,
-.dark .class-create-modal .class-create-cancel {
-  background: transparent !important;
-  color: hsl(var(--muted-foreground)) !important;
-}
-
-.class-create-modal .class-edit-delete {
-  background: #fbe9ec !important;
-  color: #c2455c !important;
-  border: 0 !important;
-  border-radius: 1.1rem !important;
-  min-height: 3.1rem;
-  box-shadow: none !important;
-}
-
-.dark .class-create-modal .class-edit-delete {
-  background: rgba(244, 63, 94, 0.16) !important;
-  color: #fda4af !important;
-}
-
-.class-create-footer {
-  flex-wrap: wrap;
-}
-.class-create-footer > button {
-  touch-action: manipulation;
-  min-height: 44px;
-}
-.class-create-footer > button:only-child {
-  margin-inline-start: auto;
-}
-
-.class-create-error {
-  padding: 0.75rem 1rem;
-  border: 1px solid hsl(var(--destructive) / 0.25);
-  background: hsl(var(--destructive) / 0.06);
+.class-create-modal .claude-btn-danger {
+  border: 1px solid color-mix(in srgb, hsl(var(--destructive)) 28%, transparent);
+  background: color-mix(in srgb, hsl(var(--destructive)) 8%, transparent);
   color: hsl(var(--destructive));
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  line-height: 1.6;
 }
 
-.class-create-option:focus-visible,
-.class-create-progress button:focus-visible,
-.class-create-step:focus-visible,
-.class-create-choice:focus-visible {
-  outline: 2px solid color-mix(in srgb, #7a5a49 70%, transparent);
+.class-create-modal :is(.claude-btn-primary, .claude-btn-secondary, .claude-btn-danger):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--create-accent) 55%, transparent);
   outline-offset: 2px;
 }
 
-@media (hover: hover) {
-  .class-create-option:hover {
-    transform: translateY(-2px);
-  }
+/* RTL : les composants utilisent déjà start/end ; on garde l’icône de retour
+   dans le sens de lecture. */
+.class-create-modal[dir='rtl'] .claude-stepper {
+  direction: ltr;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .class-create-stage {
-    animation: class-create-enter 320ms cubic-bezier(0.22, 0.9, 0.3, 1) both;
-  }
-  .class-create-option:active {
-    transform: scale(0.97);
-  }
-}
-
-@keyframes class-create-enter {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@media (max-width: 479px) {
-  .class-create-modal .class-create-body {
-    padding-inline: 1rem;
-    padding-bottom: 1rem;
-  }
-  .class-create-modal .class-create-actions {
+@media (max-width: 639px) {
+  .class-create-modal .modal-body {
     padding-inline: 1rem;
   }
-  .class-create-option {
-    min-height: 54px;
-  }
-  .class-create-footer {
-    gap: 0.375rem;
-  }
-  .class-create-footer > button {
-    padding-inline: 0.625rem;
-  }
-  .class-create-modal .class-create-primary {
-    flex: 1 1 9rem;
+
+  .class-create-modal .claude-choice-card,
+  .class-create-modal .class-create-option {
+    min-height: 3.25rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .class-create-stage,
-  .class-create-option,
-  .class-create-step,
-  .class-create-choice,
-  .class-create-progress button,
-  .class-create-progress-item {
-    animation: none !important;
+  .class-create-modal *,
+  .class-create-modal *::before,
+  .class-create-modal *::after {
     transition: none !important;
-    transform: none !important;
+    animation: none !important;
   }
 }
-
-/* ── Dock de couleurs minimaliste (.dock / .sw / .dotc) ── */
-.class-create-colors {
-  min-width: 0;
-  border: 0;
-  padding: 0;
-  margin: 0;
-}
-.class-create-colors__dock {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.2rem 0.6rem;
-}
-.class-create-colors__label {
-  font: 500 0.82rem/1.5 "Readex Pro", var(--font-sans);
-  color: #7a7169;
-}
-.dark .class-create-colors__label {
-  color: hsl(var(--muted-foreground));
-}
-.class-create-colors__options {
-  display: flex;
-  align-items: center;
-}
-.class-create-colors__options label {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: max(44px, 2.75rem);
-  height: max(44px, 2.75rem);
-  border-radius: 50%;
-  cursor: pointer;
-}
-.class-create-colors__options label:has(input:focus-visible) {
-  outline: 2px solid color-mix(in srgb, #7a5a49 70%, transparent);
-  outline-offset: 2px;
-}
-.class-create-colors__options label > span {
-  display: grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  border: 0;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 28%, transparent);
-  transition: transform 0.35s cubic-bezier(0.3, 1.35, 0.5, 1), box-shadow 0.2s ease;
-}
-.class-create-colors__options label:has(input:checked) > span {
-  transform: scale(1.1);
-  box-shadow: 0 0 0 2px #fffdfa, 0 0 0 3.5px currentColor;
-}
-.dark .class-create-colors__options label:has(input:checked) > span {
-  box-shadow: 0 0 0 2px hsl(var(--card)), 0 0 0 3.5px currentColor;
-}
-.class-create-colors__options svg {
-  width: 14px;
-  height: 14px;
-  stroke-width: 2.6;
-}
-
-/* ══ Modale 4 : Modification de la classe (.tabs, .fld, .inp, .stp, .names) ══ */
-.class-edit-tabs {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  padding: 0.25rem;
-  border-radius: 1.1rem;
-  background: color-mix(in srgb, var(--hero-border, #f6d9bd) 22%, #f0ebe3);
-}
-.dark .class-edit-tabs {
-  background: hsl(var(--muted));
-}
-.class-edit-tabs > i {
-  position: absolute;
-  top: 0.25rem;
-  bottom: 0.25rem;
-  inset-inline-start: 0.25rem;
-  width: calc(50% - 0.25rem);
-  border-radius: 0.85rem;
-  background: #ffffff;
-  box-shadow: 0 1px 4px #2f282214;
-  transition: transform 0.45s cubic-bezier(0.3, 1.35, 0.5, 1);
-  pointer-events: none;
-}
-.dark .class-edit-tabs > i {
-  background: hsl(var(--card));
-}
-[dir='rtl'] .class-edit-tabs[data-tab='1'] > i {
-  transform: translateX(-100%);
-}
-[dir='ltr'] .class-edit-tabs[data-tab='1'] > i {
-  transform: translateX(100%);
-}
-.class-edit-tab-btn {
-  position: relative;
-  z-index: 1;
-  min-height: max(44px, 2.75rem);
-  border-radius: 0.85rem;
-  border: 0;
-  background: transparent;
-  font: 500 0.9rem/1 "Readex Pro", var(--font-sans);
-  color: #7a7169;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  cursor: pointer;
-  transition: color 0.25s ease;
-}
-.class-edit-tab-btn[aria-pressed='true'] {
-  color: #2f2822;
-  font-weight: 600;
-}
-.dark .class-edit-tab-btn[aria-pressed='true'] {
-  color: hsl(var(--foreground));
-}
-.class-edit-tab-btn em {
-  font-style: normal;
-  font-size: 0.76rem;
-  padding: 0;
-  background: transparent;
-  color: var(--hero-secondary, #7a7169);
-}
-
-/* Champs calmes sans boîtes englobantes (.fld, .fl-h, .inp) */
-.class-edit-fcard {
-  background: transparent;
-  border-radius: 0;
-  padding: 0;
-  margin-bottom: 1.1rem;
-}
-.class-edit-fcard--row {
-  display: block;
-}
-.class-edit-fl {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 1.8rem;
-  margin-bottom: 0.3rem;
-  font-size: 0.86rem;
-  font-weight: 500;
-  color: #7a7169;
-}
-.class-edit-custom-link {
-  border: 0;
-  background: transparent;
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: #7a5a49;
-  min-height: 44px;
-  padding: 0 0.3rem;
-  cursor: pointer;
-}
-.class-edit-row-label {
-  display: block;
-  font-size: 0.86rem;
-  font-weight: 500;
-  color: #7a7169;
-  margin-bottom: 0.35rem;
-}
-.class-edit-select,
-.class-edit-input {
-  width: 100%;
-  height: 3.1rem !important;
-  border-radius: 1rem !important;
-  border: 0 !important;
-  background: #ffffffd9 !important;
-  padding-inline: 1.1rem !important;
-  font: 500 1rem/1.4 "Readex Pro", var(--font-sans) !important;
-  color: #2f2822 !important;
-  box-shadow: none !important;
-  transition: box-shadow 0.2s ease, background-color 0.2s ease;
-}
-.class-edit-select:focus,
-.class-edit-input:focus {
-  background: #ffffff !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, #7a5a49 22%, transparent) !important;
-}
-.dark .class-edit-select,
-.dark .class-edit-input {
-  background: hsl(var(--card)) !important;
-  color: hsl(var(--foreground)) !important;
-}
-
-/* Stepper compact du groupe en mode édition (.stp) */
-.class-edit-inline-stp {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
-  background: #ffffffd9;
-  padding: 0.25rem;
-  border-radius: 1.1rem;
-  border: 0;
-}
-.dark .class-edit-inline-stp {
-  background: hsl(var(--card));
-}
-.class-edit-inline-stp > button {
-  width: max(44px, 2.75rem);
-  height: max(44px, 2.75rem);
-  border-radius: 0.85rem;
-  border: 0;
-  background: #f0ebe3;
-  color: #2f2822;
-  font: 600 1.15rem/1 "Readex Pro", var(--font-sans);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1);
-}
-.class-edit-inline-stp > button:active:not(:disabled) {
-  transform: scale(0.86);
-}
-.dark .class-edit-inline-stp > button {
-  background: hsl(var(--muted));
-  color: hsl(var(--foreground));
-}
-.class-edit-inline-stp > button:disabled {
-  opacity: 0.35;
-}
-.class-edit-stp-input {
-  min-width: 3.4rem !important;
-  width: 3.4rem !important;
-  height: 2.5rem !important;
-  border: 0 !important;
-  background: transparent !important;
-  text-align: center;
-  font: 600 1.15rem/1 "Readex Pro", var(--font-sans) !important;
-  font-variant-numeric: tabular-nums;
-  color: #2f2822 !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-}
-.dark .class-edit-stp-input {
-  color: hsl(var(--foreground)) !important;
-}
-
-/* Onglet 2 : Élèves (.cap, .bar, .mode, .names) */
-.class-roster-cap {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.8rem;
-  font-size: 0.82rem;
-  color: #7a7169;
-}
-.class-roster-cap b {
-  color: #2f2822;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-.dark .class-roster-cap b {
-  color: hsl(var(--foreground));
-}
-.class-roster-bar {
-  height: 0.3rem;
-  border-radius: 9px;
-  background: #f0ebe3;
-  overflow: hidden;
-}
-.dark .class-roster-bar {
-  background: hsl(var(--muted));
-}
-.class-roster-bar > i {
-  display: block;
-  height: 100%;
-  border-radius: 9px;
-  background: var(--hero-secondary, #7a5a49);
-  transition: width 0.5s cubic-bezier(0.22, 0.9, 0.3, 1);
-}
-.class-roster-mode {
-  display: inline-flex;
-  gap: 0.2rem;
-  background: #f0ebe3;
-  padding: 0.2rem;
-  border-radius: 0.95rem;
-}
-.dark .class-roster-mode {
-  background: hsl(var(--muted));
-}
-.class-roster-mode > button {
-  min-height: 2.4rem;
-  padding: 0 1.1rem;
-  border-radius: 0.75rem;
-  border: 0;
-  background: transparent;
-  font: 500 0.84rem/1.2 "Readex Pro", var(--font-sans);
-  color: #7a7169;
-  cursor: pointer;
-  transition: background-color 0.25s ease;
-}
-.class-roster-mode > button[data-on='1'] {
-  background: #ffffff;
-  color: #2f2822;
-  font-weight: 600;
-  box-shadow: 0 1px 4px #2f282214;
-}
-.dark .class-roster-mode > button[data-on='1'] {
-  background: hsl(var(--card));
-  color: hsl(var(--foreground));
-}
-
-.class-roster-names {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-  gap: 0.1rem 1rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.class-roster-name-item {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  padding: 0.5rem 0;
-  border-radius: 0;
-  background: transparent;
-  font-size: 0.92rem;
-  color: #2f2822;
-}
-.dark .class-roster-name-item {
-  background: transparent;
-  color: hsl(var(--foreground));
-}
-.class-roster-name-item > i {
-  font-style: normal;
-  min-width: 1.4rem;
-  height: auto;
-  border-radius: 0;
-  background: transparent;
-  color: #7a7169;
-  font-size: 0.78rem;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-}
-.dark .class-roster-name-item > i {
-  background: transparent;
-  color: hsl(var(--muted-foreground));
-}
-
-

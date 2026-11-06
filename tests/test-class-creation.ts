@@ -108,16 +108,21 @@ test('l’étape « cycle » ouverte à la demande ne se referme pas toute seule
 
 test('l’assistant et l’onboarding tirent leurs cycles de la MÊME politique', () => {
   const modal = readFileSync('src/features/dashboard/modals/CreateClassModal.tsx', 'utf8');
-  const onboarding = readFileSync('src/features/dashboard/onboarding/steps/ClassesStep.tsx', 'utf8');
+  const onboarding = [
+    'src/features/dashboard/onboarding/steps/ClassesStep.tsx',
+    'src/features/dashboard/onboarding/steps/classesStepModel.ts',
+  ].map(path => readFileSync(path, 'utf8')).join('\n');
   // Assistant : fenêtre « Autre cycle » quand le profil n'en liste qu'un.
   assert.match(modal, /const \[showAllCycles, setShowAllCycles\] = useState\(false\)/, 'l’étape reste atteignable');
   assert.match(modal, /const hasCycleChoice = cyclePolicy\.showChoice \|\| showAllCycles;/, 'profil ou demande explicite');
   assert.match(modal, /\{copy\.otherCycle\} · \{cycleOptions\.map\(item => copy\.cycleLabels\[item\]\)\.join\(' \/ '\)\}/, 'les cycles disponibles sont annoncés');
   assert.match(modal, /reconcileClassCycle\(teacherCycles, cycle, currentStep, Boolean\(editingClass\), hasCycleChoice\)/, 'la réconciliation connaît l’état réel de l’étape');
   assert.match(modal, /cycleLabels: \{ college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Classe préparatoire' \}/, 'libellé du cycle prépa (FR)');
-  // Onboarding : mêmes cycles, mêmes groupes de niveaux.
+  // Onboarding : mêmes cycles, mêmes groupes de niveaux, même sélection par défaut.
   assert.match(onboarding, /const cyclePolicy = useMemo\(\(\) => classCyclePolicy\(teacherCycles\), \[teacherCycles\]\)/, 'l’onboarding suit la même politique');
-  assert.match(onboarding, /\} else if \(selectedCycle === 'prepa'\) \{[\s\S]{0,60}setSelectedGroupKey\('prepaFirst'\)/, 'et connaît le cycle prépa');
+  assert.match(onboarding, /defaultSelectionForCycle.*classCreationFlow/, 'l’onboarding importe la sélection partagée');
+  const flow = readFileSync('src/features/dashboard/modals/classCreationFlow.ts', 'utf8');
+  assert.match(flow, /cycle === 'prepa'[\s\S]{0,80}groupKey: 'prepaFirst'/, 'et connaît le cycle prépa');
   assert.match(onboarding, /if \(level\.includes\('MPSI'\)\) return 'MPSI';/, 'sigles de filières prépa affichés');
 });
 
@@ -211,11 +216,21 @@ test('un changement de profil ne migre jamais automatiquement une classe existan
   assert.deepEqual(reconcileClassCycle(['college'], 'lycee', 'details', true), { cycle: 'lycee', step: 'details', resetLevel: false });
 });
 
+test('la couleur est la dernière section du formulaire et reste reliée à la sauvegarde', () => {
+  const modal = readFileSync('src/features/dashboard/modals/CreateClassModal.tsx', 'utf8');
+  const field = readFileSync('src/features/dashboard/modals/ClassColorField.tsx', 'utf8');
+  assert.ok(modal.indexOf('<ClassColorField') > modal.indexOf('{editConfiguration}'), 'la couleur vient après les champs identité');
+  assert.match(modal, /\.\.\.\(classColor \? \{ color: classColor \} : \{\}\)/, 'la couleur entre dans le payload de sauvegarde');
+  assert.match(field, /aria-pressed=\{value === option\.value\}/, 'la pastille sélectionnée est annoncée');
+  assert.match(field, /className="class-color-field__value">\{selected\?\.label\[locale\]\}/, 'le nom de la couleur est lisible');
+  assert.match(field, /data-selected=\{value === option\.value \? 'true' : 'false'\}/, 'la sélection visuelle reste branchée');
+});
+
 test('la fenêtre de création de classe utilise un fond beige discret, un format compact et conserve la saisie au retour', () => {
   const css = readFileSync('src/features/dashboard/modals/createClassModal.css', 'utf8');
   const modal = readFileSync('src/features/dashboard/modals/CreateClassModal.tsx', 'utf8');
   assert.match(css, /--create-surface:\s*color-mix\(in srgb,\s*hsl\(38 34% 96\.5%\)/, 'fond beige discret en mode clair');
-  assert.match(css, /\.class-create-option\s*\{[\s\S]*?min-height:\s*48px/, 'options compactes');
+  assert.match(css, /\.claude-choice-card[\s\S]*?min-height:\s*3rem/, 'options compactes');
   assert.match(modal, /className="class-create-modal sm:max-w-md sm:rounded-2xl"/, 'fenêtre compacte');
   assert.match(modal, /if \(!selected \|\| !selected\.levels\.includes\(level\)\) setLevel\(''\)/, 'le niveau compatible est conservé lors du retour sur le groupe');
   assert.doesNotMatch(modal, /setCustomMode\(value => !value\);\s*setLevel\(''\)/, 'basculer le mode personnalisé ne détruit pas la saisie');

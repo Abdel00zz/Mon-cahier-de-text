@@ -2,6 +2,7 @@ import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { readMessageSource } from './readMessages';
 
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
@@ -36,15 +37,15 @@ test('les écrans de chargement n’affichent plus de textes de détail sous le 
 });
 
 test('les paramètres comptent six rubriques et gardent les anciens liens directs', () => {
-  const modal = read('src/features/settings/ConfigModal.tsx');
+  const modal = read('src/features/settings/ConfigModal.tsx') + read('src/features/settings/settingsSections.ts');
   for (const id of ['emploi', 'absences', 'profil', 'apparence', 'notifications', 'compte']) {
     assert.match(modal, new RegExp(`id: '${id}'`));
   }
   assert.match(modal, /donnees: 'compte'/);
   assert.match(modal, /archives: 'compte'/);
   assert.ok(!/id: 'assistance'/.test(modal), 'l’aide est un lien, plus un onglet');
-  assert.match(modal, /footer=\{hasProfileChanges \? footer : undefined\}/);
-  const messages = read('src/i18n/messages.ts');
+  assert.match(modal, /footer=\{profile\.hasChanges \? footer : undefined\}/);
+  const messages = readMessageSource();
   assert.match(messages, /'settings\.item\.appearance':\s*'Apparence et langue'/, 'rubrique Apparence et langue en français');
   assert.match(messages, /'settings\.item\.appearance':\s*'Appearance & language'/, 'rubrique Appearance & language en anglais');
   assert.match(messages, /'settings\.item\.appearance':\s*'المظهر واللغة'/, 'rubrique المظهر واللغة en arabe');
@@ -57,36 +58,25 @@ test('déplacement : réordonnancement direct par glisser-déposer sur le tablea
   assert.match(engine, /planContentDrop/, 'déplacement de contenu par dépôt');
 });
 
-test('paramètres : grandes cartes colorées sur téléphone et tablette, menu latéral dès 1024 px', () => {
+test('paramètres mobiles : six rubriques visibles dans une page, bureau en fenêtre', () => {
+  const page = read('src/features/settings/SettingsOverview.tsx');
+  const app = read('src/app/App.tsx');
   const modal = read('src/features/settings/ConfigModal.tsx');
-  assert.ok(!modal.includes('FluidTabRail'), 'plus aucun onglet sur petit écran');
-  assert.match(modal, /className=\{cn\('settings-home lg:hidden', sectionOpen && 'hidden'\)\}/, 'la grille de cartes est réservée aux écrans sous 1024 px');
-  assert.match(modal, /settings-nav hidden lg:flex/, 'le menu latéral apparaît dès 1024 px');
-  assert.equal((modal.match(/data-tone=/g) ?? []).length, 2, 'cartes de rubriques et carte du guide portent une couleur');
-  for (const tone of ['blue', 'violet', 'pink', 'amber', 'green', 'teal']) assert.match(modal, new RegExp(`'${tone}'`));
-  assert.match(modal, /requestExit\('guide'\)/, 'le guide reste une carte-lien, jamais une rubrique');
-  assert.match(modal, /className="hub-back"[\s\S]{0,200}ChevronLeft/, 'le retour est un bouton dans l’en-tête de la fenêtre');
-  assert.ok(!modal.includes('settings-backbar'), 'plus de ligne « Paramètres » répétée dans le contenu');
-  assert.match(modal, /Object\.hasOwn\(TAB_ALIASES, requested\)/, 'les liens directs ne lisent que les identifiants connus');
-  assert.match(modal, /key !== 'Escape'[\s\S]{0,400}setSectionOpen\(false\)/, 'Échap / retour Android revient à la grille avant de fermer');
-  assert.match(modal, /listbox[\s\S]{0,80}menu/, 'un menu ouvert garde sa propre touche Échap');
+  assert.match(page, /<WorkspacePage/);
+  assert.match(page, /PAGE_SECTIONS.map/);
+  assert.match(page, /data-settings-section=/);
+  assert.doesNotMatch(page, /<Modal|role="tabpanel"|sectionOpen/);
+  assert.match(app, /asPage=\{useWorkspacePages\}/);
+  assert.match(page, /useSettingsProfile\(props.config, props.onChange, true\)/, 'le profil se sauvegarde automatiquement sur la page');
+  assert.match(modal, /settings-nav hidden lg:flex/, 'le menu du bureau est conservé');
   const css = readIndexCss();
   for (const tone of ['blue', 'violet', 'pink', 'amber', 'green', 'teal', 'rose']) {
-    // Une seule règle sert les deux familles de cartes (`:is(.hub-card, .evaluation-tone)`) :
-    // la teinte est écrite une fois, jamais recopiée pour chaque famille.
-    const owner = '(?:\\.hub-card|:is\\(\\.hub-card, \\.evaluation-tone\\))';
-    assert.match(css, new RegExp(`${owner}\\[data-tone='${tone}'\\]`));
-    assert.match(css, new RegExp(`\\.dark ${owner}\\[data-tone='${tone}'\\]`), `teinte ${tone} adaptée au mode sombre`);
+    assert.ok(css.includes(`[data-tone='${tone}']`), 'les teintes partagées restent disponibles');
   }
-  assert.match(css, /@media \(min-width: 1024px\)[\s\S]{0,300}\.settings-home \{ display: none; \}/, 'cartes masquées sur grand écran');
-  assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,200}\.hub-card/, 'mouvement réduit respecté');
-  // La carte-ligne System UI garde une cible confortable sans remplir la
-  // fenêtre : la hauteur minimale et le filet remplacent l'aplat coloré.
-  assert.match(css, /\.hub-card \{[\s\S]{0,900}min-height: 4\.75rem/, 'cartes compactes mais assez grandes pour le pouce');
 });
 
 test('absences justifiées : rubrique dédiée, injection automatique dans les cahiers concernés', () => {
-  const modal = read('src/features/settings/ConfigModal.tsx');
+  const modal = read('src/features/settings/settingsSections.ts');
   assert.match(
     modal,
     /id: 'absences', titleKey: 'settings\.item\.absences', hintKey: 'settings\.card\.absences', icon: FileSignature, tone: 'rose'/,

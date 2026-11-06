@@ -1,0 +1,137 @@
+@layer base {
+  /* ── Modern Sophisticated Light Theme ──────────────────────────────── */
+  :root {
+    /* Design Tokens · Cahier de textes */
+
+    /* Le thème est piloté par l'application. `only` empêche les navigateurs
+       mobiles de recolorer automatiquement les champs et les textes. */
+    color-scheme: only light;
+    /* System UI : papier albâtre chaud (charte §2.1) et une seule surface de
+       carte blanche, séparée par un filet d'un pixel — jamais par un
+       empilement d'aplats colorés. */
+    --background: 45 30% 94%;      /* papier albâtre #F4F2EB, un cran sous la carte */
+    --foreground: 25 35.29% 13.33%; /* #2e2016 */
+    --card: 45 22% 99.5%;          /* feuille chaude, jamais un blanc pur */
+    --card-foreground: 25 35.29% 13.33%;
+    --popover: 45 24% 99.7%;
+    --popover-foreground: 25 35.29% 13.33%;
+    --primary: 25.56 33.75% 31.37%; /* #6b4c35 */
+    --primary-foreground: 37.5 44.44% 96.47%;
+    --secondary: 35.29 22% 88.5%;
+    --secondary-foreground: 45 12% 16%;
+    --muted: 36 22% 90.5%;
+    --muted-foreground: 27.57 22% 34%; /* encre secondaire plus ferme, AA sur carte */
+    --accent: 18 44% 88.5%;          /* argile de survol */
+    --accent-foreground: 15 55% 25%;
+    --border: 35 16% 82%;          /* filet d'un pixel, jamais un cadre */
+    --input: 35 14% 78%;
+    --ring: 26 34% 31%;
+    --destructive: 4.62 56.52% 45.10%; /* #b43c32 */
+    --destructive-foreground: 45 40% 98%;
+    --success: 130 28% 26%;
+    --warning: 38 92% 45%;
+    --success-strong: 130 30% 21%;
+    --warning-strong: 36 88% 27%;
+    --destructive-strong: 352 58% 34%;
+    --alert: 352 66% 46%;
+    --alert-strong: 352 64% 36%;
+    --scheduled: 18 42% 90%;       /* argile très claire */
+    --scheduled-foreground: 15 55% 25%;
+    --badge-bg: 18 38% 90%;
+    --badge-border: 18 32% 76%;
+    --badge-text: 15 55% 25%;
+    --dock-shadow: 0 10px 30px rgba(47, 35, 24, 0.12);
+    --chart-1: 38 84% 44%;
+    --chart-2: 15 55% 47%;
+    --chart-3: 110 26% 36%;
+    --chart-4: 208 42% 46%;
+    --chart-5: 338 42% 48%;
+
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 24px;
+    --radius-3xl: 28px;
+    --radius: var(--radius-md);
+
+    /* Cibles tactiles : 44 px au pointeur fin, 48 px au doigt (Material 3).
+       Les composants qui doivent suivre le doigt lisent ces deux tokens. */
+    --touch-min: 44px;
+    --touch-gap: 8px;
+
+  }
+
+  /* Material 3 recommande 48 dp sur écran tactile ; le pointeur fin garde la
+     densité de l’interface (44 px reste le plancher absolu). */
+  @media (pointer: coarse) {
+    :root { --touch-min: 48px; }
+  }
+
+  .dark {
+    color-scheme: only dark;
+    /* Nuit carbone (charte §2.1) : fond #1a1817, carte #282624, surface
+       surélevée — un empilement de surfaces éclairées, jamais une
+       inversion. Les accents restent légèrement désaturés pour ne pas vibrer. */
+    --background: 30 6% 9.5%;       /* nuit carbone légèrement chaude, jamais #000 */
+    --foreground: 40 12% 91%;
+    --card: 30 5% 15%;              /* surface élevée, plus claire que le fond */
+    --card-foreground: 40 12% 91%;
+    --popover: 30 5% 17%;           /* surface surélevée */
+    --popover-foreground: 40 12% 91%;
+    --primary: 15 58% 62%;         /* terre cuite éclaircie, légèrement désaturée */
+    --primary-foreground: 30 12% 10%;
+    --secondary: 30 5% 19%;
+    --secondary-foreground: 40 12% 91%;
+    --muted: 30 5% 18%;
+    --muted-foreground: 40 7% 68%;
+    --accent: 18 20% 22%;
+    --accent-foreground: 18 58% 84%;
+    --border: 30 6% 19%;            /* filet chaud, ≥ 1,25:1 sur le fond */
+    --input: 30 6% 30%;
+    --ring: 15 58% 62%;
+    --destructive: 352 55% 70%; /* Rouge doux, encre sombre sur les actions. */
+    --destructive-foreground: 352 45% 12%;
+    --success: 128 26% 64%;
+    --warning: 38 88% 58%;
+    --success-strong: 128 28% 70%;
+    --warning-strong: 38 90% 62%;
+    --destructive-strong: 352 55% 72%;
+    --alert: 352 62% 68%;
+    --alert-strong: 352 70% 78%;
+    --scheduled: 18 20% 20%;
+    --scheduled-foreground: 18 55% 84%;
+    --badge-bg: 18 20% 20%;
+    --badge-border: 18 16% 30%;
+    --badge-text: 18 55% 83%;
+    --dock-shadow: 0 12px 36px rgba(8, 6, 4, 0.62);
+    --chart-1: 38 88% 62%;
+    --chart-2: 15 58% 64%;
+    --chart-3: 110 26% 62%;
+    --chart-4: 208 44% 66%;
+    --chart-5: 338 45% 68%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  /* Sureté tactile : supprime le délai de 300 ms du double-tap et le zoom
+     accidentel lors d'un appui répété sur un contrôle. Consolidé ici, sur les
+     éléments réellement interactifs, plutôt que répété dans chaque écran. */
+  button, a, label, select, summary, [role="button"], [role="menuitem"], [role="option"] {
+    touch-action: manipulation;
+  }
+
+  /* iOS / iPadOS : un champ sous 16px déclenche un zoom automatique du
+     viewport au focus. Le plancher n'est appliqué qu'au focus pour ne pas
+     modifier la densité des tableaux et des grilles au repos. */
+  @media (pointer: coarse) {
+    input:focus,
+    select:focus,
+    textarea:focus {
+      font-size: max(1rem, 1em);
+    }
+  }
+
+}

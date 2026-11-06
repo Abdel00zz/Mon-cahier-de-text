@@ -57,7 +57,7 @@ test('les couleurs choisies restent intactes même pour plusieurs classes', () =
 });
 
 test('les huit aplats du dashboard sont distincts et les textes conservent un contraste AA', () => {
-  const css = readFileSync(new URL('../src/features/dashboard/classCards.css', import.meta.url), 'utf8');
+  const css = [new URL('../src/features/dashboard/classCardsBase.css', import.meta.url), new URL('../src/features/dashboard/classCards.css', import.meta.url)].map(url => readFileSync(url, 'utf8')).join('\n');
   const rules = [...css.matchAll(/\.class-card\[data-keep-tone="([^"]+)"\]:not\(\[data-class-color\]\)\s*\{([^}]+)\}/g)];
   const token = (body: string, key: string) => body.match(new RegExp(`--class-${key}: (#[a-f0-9]{6})`))![1];
   const luminance = (hex: string) => {

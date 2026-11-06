@@ -22,7 +22,7 @@ import { ClassCard } from '../../src/features/dashboard/ClassCard';
 import { MainTable } from '../../src/features/editor/MainTable';
 import { ScheduleTab } from '../../src/features/settings/components/ScheduleTab';
 import { BookOpen, CalendarDays, LayoutGrid, Sparkles } from '../../src/components/ui/icons';
-import { MotionFilmCanvas } from '../../src/components/MotionFilmCanvas';
+import { MotionFilmCanvas } from './MotionFilmCanvas';
 import { assignClassColors } from '../../src/domain/classes/classColors';
 import { buildLessonRows } from '../../src/domain/notebook/lessonRows';
 import type { AppConfig, ClassInfo, ClassEvaluationEntry, LessonsData } from '../../src/types';
@@ -139,4 +139,5 @@ if (import.meta.env.DEV) {
  } else root.render(<Capture />);
  import.meta.hot?.dispose(() => root.unmount());
 }
+
 

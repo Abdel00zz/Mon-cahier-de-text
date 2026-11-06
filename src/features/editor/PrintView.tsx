@@ -1,113 +1,26 @@
 import { assessmentAbsencesByDate } from '@/domain/evaluations/assessmentAbsences';
 import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
-import { buildAbsenceSessions, withAbsenceRows, absenceRemarkGroups, type AbsenceSession } from '@/domain/notebook/absenceSessions';
+import { buildAbsenceSessions, withAbsenceRows, absenceRemarkGroups } from '@/domain/notebook/absenceSessions';
 import { normalizeDateForMerge } from '@/domain/notebook/classSessionDates';
 import React, { useMemo } from 'react';
 import './print.css';
+import './printRows.css';
 import { printLayoutStyle } from '@/infrastructure/printing/printLayout';
 import { collectSessionDates } from '@/infrastructure/printing/printMeta';
 import { visibleNotebookRows } from '@/domain/evaluations/homeworkPlacement';
 import { ContentRenderer } from './ContentRenderer';
 import { buildContentNumbers } from '@/domain/notebook/contentNumbering';
 import { indicesKey } from '@/domain/notebook/lessonRows';
-import {
-    LessonsData,
-    ClassInfo,
-    TopLevelItem,
-    Section,
-    SubSection,
-    SubSubSection,
-    LessonItem,
-    Indices,
-    ElementType,
-    AppConfig,
-    ContentDirection
-} from '@/types';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import { buildSessionActivityRemarks, remarksForSessionDates } from '@/domain/evaluations/sessionActivityRemarks';
 import { translateLocaleMessage } from '@/i18n/messages';
-import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 import { getAcademyById } from '@/domain/classes/moroccoEducation';
 import { isArabicText, renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { formatLocalizedClassDisplayName } from '@/constants';
-import type { PrintHeaderMode } from './modals/PrintModal';
+import { formatPrintDate, getSchoolYearLabel, type FlatDataItem, type PrintRow, type PrintViewProps } from './printViewModel';
 
 // Props interfaces
-interface PrintViewProps {
-    lessonsData: LessonsData;
-    annotationLessons?: LessonsData;
-    sessionAnnotations?: ReadonlyMap<string, string>;
-    absenceSessions?: readonly AbsenceSession[];
-    classInfo: ClassInfo;
-    config: AppConfig;
-    /** Même direction que le tableau d'édition, pour une impression fidèle. */
-    contentDirection: ContentDirection;
-    newlyAddedIds: string[];
-    /** numéroter les pages en bas (moteurs compatibles avec les boîtes de marge CSS) */
-    pageNumbers?: boolean;
-    colorContent?: boolean;
-    /** Development/preview surface using the exact same print composition. */
-    preview?: boolean;
-    /** en-tête administratif : première page (défaut), toutes les pages ou masqué */
-    headerMode?: PrintHeaderMode;
-    /** taille du texte imprimé (modale d'impression) */
-    textSize?: 's' | 'm' | 'l';
-    /** aération des lignes (modale d'impression) */
-    lineSpacing?: 'compact' | 'normal' | 'aere';
-}
-
-const getSchoolYearLabel = (schoolYearStart: string | undefined, fallbackDate: string | undefined): string => {
-    const source = schoolYearStart ?? fallbackDate ?? new Date().toISOString().slice(0, 10);
-    return schoolYearLabelFromDate(source).replace('-', ' – ');
-};
-
-const formatPrintDate = (rawDate: string | undefined, isRtl: boolean): string => {
-    if (!rawDate) return '';
-    const trimmed = rawDate.trim();
-
-    // 1. Plage "Du ... au ..." ou "من ... إلى ..."
-    const rangeMatch = trimmed.match(
-        /(?:Du|du|De|de|From|from|من)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)\s+(?:au|à|a|to|إلى)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)/i
-    );
-    if (rangeMatch) {
-        const f1 = formatDateDDMMYYYY(rangeMatch[1]) || rangeMatch[1];
-        const f2 = formatDateDDMMYYYY(rangeMatch[2]) || rangeMatch[2];
-        return isRtl ? `${f1} و ${f2}` : `${f1} et ${f2}`;
-    }
-
-    // 2. Deux jours avec connecteur 'et' / 'و'
-    const pairMatch = trimmed.match(
-        /(?:^|\s)(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)\s+(?:et|and|و)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)(?:\s|$)/i
-    );
-    if (pairMatch) {
-        const f1 = formatDateDDMMYYYY(pairMatch[1]) || pairMatch[1];
-        const f2 = formatDateDDMMYYYY(pairMatch[2]) || pairMatch[2];
-        return isRtl ? `${f1} و ${f2}` : `${f1} et ${f2}`;
-    }
-
-    // 3. Plusieurs dates dans la cellule (ex: 3 dates et plus)
-    const allMatches = trimmed.match(/\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?\b/g);
-    if (allMatches && allMatches.length > 2) {
-        const formatted = allMatches.map(d => formatDateDDMMYYYY(d) || d);
-        if (isRtl) {
-            return formatted.join(' و ');
-        }
-        return `${formatted.slice(0, -1).join(', ')} et ${formatted[formatted.length - 1]}`;
-    }
-
-    return formatDateDDMMYYYY(trimmed) || trimmed;
-};
-
-interface FlatDataItem {
-    data: TopLevelItem | Section | SubSection | SubSubSection | LessonItem;
-    indices: Indices;
-    elementType: ElementType;
-}
-
-type PrintRow =
-    | { kind: 'single'; item: FlatDataItem }
-    | { kind: 'session'; date: string; items: FlatDataItem[] };
 
 // Main component
 export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: sourceLessons, annotationLessons, sessionAnnotations, absenceSessions: suppliedAbsences, classInfo, config, contentDirection, newlyAddedIds, pageNumbers = true, colorContent = false, headerMode = 'first', textSize = 'm', lineSpacing = 'normal', preview = false }) => {
@@ -446,3 +359,4 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
     );
 });
 PrintView.displayName = 'PrintView';
+

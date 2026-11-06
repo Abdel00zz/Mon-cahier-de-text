@@ -602,7 +602,7 @@ export const AuthPage: React.FC<{
                         <span
                           id={id + "-phone-valid"}
                           role="status"
-                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-emerald-700 dark:text-emerald-300"
+                          className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-emerald-700 dark:text-emerald-300"
                         >
                           <CircleCheck className="h-5 w-5" aria-hidden="true" />
                           <span className="sr-only">{copy.phoneComplete}</span>

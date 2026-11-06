@@ -245,7 +245,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                           {item.badge}
                         </span>
                       )}
-                      <ArrowRight className="hidden h-4 w-4 text-primary group-data-[selected=true]:inline-block" />
+                      <ArrowRight className="hidden h-4 w-4 text-primary rtl:rotate-180 group-data-[selected=true]:inline-block" />
                     </div>
                   </Command.Item>
                 );

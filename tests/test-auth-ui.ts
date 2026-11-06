@@ -95,21 +95,22 @@ test('cartes : seul le statut de séance remplace la dernière ouverture ; bouto
   );
   for (const source of [card, list]) {
     assert.doesNotMatch(source, /classOpeningLabel|lastOpenedAt|class-card__status|<time\b/);
-    assert.match(source, /isActiveSession &&[\s\S]*class-card__live[\s\S]*t\('dashboard\.welcome\.nowTitle'\)/);
+    assert.match(source, /data-session-active=\{isActiveSession \? 'true' : undefined\}/);
+    assert.doesNotMatch(source, /class-card__live|welcome\.nowTitle/, 'aucun badge de séance dans la carte');
   }
   // Les actions de classe restent une liste déroulante dans les deux vues.
   assert.match(card, /ClassActionsMenu/);
   assert.match(list, /ClassActionsMenu/);
   // Profil modifié : deux actions dans le pied fixe, en ordre logique RTL/LTR.
-  assert.match(settings, /footer=\{hasProfileChanges \? footer : undefined\}/);
+  assert.match(settings, /footer=\{profile\.hasChanges \? footer : undefined\}/);
   assert.match(settings, /grid w-full grid-cols-2/);
 });
 
 test('éditeur : la hiérarchie typographique du titre de chapitre reste verrouillée', () => {
-  const content = readFileSync(
-    new URL('../src/features/editor/ContentRenderer.tsx', import.meta.url),
-    'utf8',
-  );
+  const content = [
+    '../src/features/editor/ContentRenderer.tsx',
+    '../src/features/editor/contentRendererText.tsx',
+  ].map(path => readFileSync(new URL(path, import.meta.url), 'utf8')).join('\n');
   const css = readIndexCss();
   assert.match(content, /renderChapterLabel/);
   assert.match(content, /text-\[1em\]/);
@@ -120,10 +121,10 @@ test('éditeur : la hiérarchie typographique du titre de chapitre reste verroui
 
 test('éditeur : une échelle mobile unique reste stable après rotation', () => {
   const css = readIndexCss();
-  const content = readFileSync(
-    new URL('../src/features/editor/ContentRenderer.tsx', import.meta.url),
-    'utf8',
-  );
+  const content = [
+    '../src/features/editor/ContentRenderer.tsx',
+    '../src/features/editor/contentRendererText.tsx',
+  ].map(path => readFileSync(new URL(path, import.meta.url), 'utf8')).join('\n');
 
   for (const role of [
     'chapter',

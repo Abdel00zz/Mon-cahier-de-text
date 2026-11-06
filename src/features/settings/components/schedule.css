@@ -59,17 +59,18 @@
 .schedule-grid-frame {
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  border: 1px solid color-mix(in srgb, var(--schedule-enamel) 14%, var(--schedule-paper));
+  padding: 2px;
+  border: 0;
   border-radius: 16px;
-  background: var(--schedule-paper);
-  box-shadow: 0 1px 2px hsl(var(--foreground) / .04);
+  background: transparent;
+  box-shadow: none;
   scrollbar-width: thin;
 }
 .schedule-grid {
   width: 100%;
   min-width: 16.25rem;
   table-layout: fixed;
-  border-spacing: 0;
+  border-spacing: 6px;
   border-collapse: separate;
 }
 .schedule-grid[data-period='all'] { min-width: 40rem; }
@@ -80,8 +81,7 @@
  * d'affectation reste identique, la lecture devient nette.
  */
 @media (max-width: 480px) {
-  .schedule-grid { min-width: 26rem; }
-  .schedule-grid[data-period='all'] { min-width: 44rem; }
+  .schedule-grid { min-width: 32rem; }
   .schedule-cell__label { font-size: .78rem; line-height: 1.3; }
 }
 .schedule-grid :is(th, td) {
@@ -89,14 +89,13 @@
   text-align: center;
   vertical-align: middle;
 }
-.schedule-grid tr > * + * { border-inline-start: 1px solid color-mix(in srgb, var(--schedule-enamel) 9%, var(--schedule-paper)); }
-.schedule-grid tbody :is(th, td) { border-top: 1px solid color-mix(in srgb, var(--schedule-enamel) 9%, var(--schedule-paper)); }
-.schedule-grid[data-period='all'] [data-lunch] { border-inline-start: 1px solid color-mix(in srgb, var(--schedule-enamel) 22%, var(--schedule-paper)); }
+/* Chaque jour et chaque séance ont leur surface, séparée par un espace de papier. */
+.schedule-grid[data-period='all'] [data-lunch] { border-inline-start: 2px solid var(--schedule-rule); }
 .schedule-tab .schedule-grid thead th {
-  height: 40px;
+  height: 44px;
   padding: 4px;
-  background: transparent;
-  border-block-end: 1px solid color-mix(in srgb, var(--schedule-enamel) 14%, var(--schedule-paper));
+  border-radius: 12px;
+  background: var(--schedule-wash);
   color: var(--schedule-secondary);
   font-size: .75rem;
   font-weight: 600;
@@ -111,7 +110,10 @@
 .schedule-grid__day-heading { width: 5.25rem; }
 .schedule-tab .schedule-grid__day {
   padding: 5px;
+  border: 1px solid var(--schedule-rule);
+  border-radius: 12px;
   background: var(--schedule-paper);
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .035);
   color: hsl(var(--foreground));
   font-size: .8125rem;
   font-weight: 600;
@@ -129,16 +131,24 @@
 
 .schedule-grid .schedule-cell {
   position: relative;
-  padding: 3px;
+  /* Donne une hauteur de référence au contenu, y compris dans les séances fusionnées. */
+  height: 58px;
+  padding: 0;
+  border-radius: 12px;
   background: transparent;
   transition: background-color 160ms ease;
 }
 .schedule-cell__content {
-  min-height: 46px;
+  min-height: 58px;
+  height: 100%;
   display: grid;
   place-items: center;
   border-radius: 12px;
-  transition: background-color 180ms ease, box-shadow 180ms ease, transform 140ms ease;
+  transition: background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+.schedule-cell--empty .schedule-cell__content {
+  background: color-mix(in srgb, var(--schedule-enamel) 2%, var(--schedule-paper));
+  border: 1px dashed var(--schedule-rule);
 }
 .schedule-cell__pickers {
   display: flex;
@@ -154,7 +164,7 @@
   min-height: 44px;
   padding: 0;
   border: 0;
-  border-radius: 0;
+  border-radius: 12px;
   color: transparent;
   background: transparent;
   appearance: none;
@@ -167,18 +177,20 @@
 }
 .schedule-grid .schedule-cell--assigned {
   --session-ink: var(--card-title);
-  --session-fill: color-mix(in srgb, var(--card-bg) 58%, var(--schedule-paper));
+  --session-fill: var(--card-bg);
+  --session-fill-end: color-mix(in srgb, var(--card-bg2) 40%, var(--card-bg));
   color: var(--session-ink);
 }
-/* La séance devient une pastille posée dans la cellule : fond teinté, liseré
-   fin, coins arrondis — plus de barre latérale ni de bloc plein bord à bord. */
+/* La palette de la classe habille la séance, avec le même dégradé doux. */
 .schedule-grid .schedule-cell--assigned .schedule-cell__content {
   background: var(--session-fill);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--card-border) 40%, transparent);
+  background-image: linear-gradient(135deg, var(--session-fill), var(--session-fill-end));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--card-border) 70%, transparent), 0 2px 4px hsl(var(--foreground) / .04);
 }
 .dark .schedule-grid .schedule-cell--assigned {
   --session-ink: hsl(var(--foreground));
-  --session-fill: color-mix(in srgb, var(--card-bg2) 16%, var(--schedule-paper));
+  --session-fill: color-mix(in srgb, var(--card-bg) 20%, var(--schedule-paper));
+  --session-fill-end: color-mix(in srgb, var(--card-bg2) 26%, var(--schedule-paper));
 }
 .schedule-cell[data-class-target] .schedule-cell__content {
   box-shadow: inset 0 0 0 2px var(--schedule-enamel);
@@ -223,6 +235,7 @@
   .schedule-cell--empty:hover .schedule-cell__add { color: var(--schedule-enamel); }
   .schedule-grid .schedule-cell--assigned:hover .schedule-cell__content {
     background: color-mix(in srgb, var(--session-ink) 7%, var(--session-fill));
+    box-shadow: inset 0 0 0 1px var(--card-border), 0 3px 8px hsl(var(--foreground) / .07);
   }
 }
 /* Retour tactile immédiat, très court, sur la cellule elle-même. */
@@ -230,7 +243,7 @@
 @container (max-width: 35rem) {
   .schedule-hour-label { flex-direction: column; }
   .schedule-hour-separator { display: none; }
-  .schedule-grid[data-period='all'] { min-width: 32rem; }
+  .schedule-grid[data-period='all'] { min-width: 52rem; }
 }
 @container (max-width: 25rem) {
   .schedule-periods__label { display: none; }

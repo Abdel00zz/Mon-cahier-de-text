@@ -112,11 +112,8 @@
   display: flex; align-items: center;
   margin: .25rem .25rem .55rem !important;
 }
-/* ── Grille des classes ───────────────────────────────────────────────────────
-   Sur téléphone, une carte par ligne : la largeur est rare et le pouce lit
-   verticalement. Le bureau utilise la largeur disponible, selon la disposition
-   retenue (`data-display` : triple, double, single, list). Aucune carte ne perd
-   sa cible tactile : la grille se contente de répartir l'espace. */
+/* Une carte par ligne sur téléphone conserve la lisibilité des noms de classe.
+   Les écrans plus larges respectent le nombre de colonnes choisi. */
 .dashboard-classes-container .dashboard-day-group__cards {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -152,7 +149,7 @@
 .dashboard-day-group__title {
   display: inline-flex; align-items: center;
   font-family: var(--font-sans);
-  font-size: .8125rem !important; font-weight: 600 !important;
+  font-size: .95rem !important; font-weight: 700 !important;
   color: var(--dash-group-ink) !important; margin: 0 !important;
 }
 @media (prefers-reduced-motion: reduce) {

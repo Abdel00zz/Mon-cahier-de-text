@@ -1,433 +1,3 @@
-/* Course sheets: serene workspace pastel cards (.cl) with asymmetric bottom-start radius */
-:is(.class-card, .class-list-item) {
-  --class-live-ink: hsl(342 59% 31%);
-  --class-live-fill: hsl(342 35% 94%);
-}
-
-.dashboard-class-slot { container-type: inline-size; display: flex; min-width: 0; }
-.class-card {
-  --class-surface: var(--class-palette-bg, var(--keep-light, #fcfaf6));
-  --class-accent: var(--class-palette-secondary, var(--keep-accent, #754c04));
-  --class-vivid: var(--class-palette-border, var(--keep-vivid, #f59e0b));
-  --class-border: var(--class-palette-border, color-mix(in srgb, var(--class-accent) 24%, hsl(var(--border))));
-  --class-ink: var(--class-accent, hsl(var(--foreground)));
-  --class-muted: color-mix(in srgb, var(--class-ink) 72%, transparent);
-  --card-bg: var(--class-palette-bg, hsl(var(--card)));
-  --card-bg2: var(--class-palette-bg2, var(--card-bg));
-  --card-border: var(--class-palette-border, hsl(var(--border)));
-  --card-title: var(--class-palette-title, hsl(var(--foreground)));
-  --card-secondary: var(--class-palette-secondary, hsl(var(--muted-foreground)));
-  --class-paper: hsl(42 46% 96%);
-  --class-pill-bg: color-mix(in srgb, var(--class-vivid) 13%, var(--class-paper));
-  --class-rule-step: 28px;
-  --class-rule-ink: hsl(var(--foreground) / .025);
-  --class-hole-offset: 12px;
-  --class-radius: 1.3rem;
-  --class-title-scale: 1;
-  --class-badge-scale: 1;
-  --spring-out: var(--spring, cubic-bezier(.34, 1.4, .5, 1));
-  --spring-golden: var(--spring, cubic-bezier(.34, 1.4, .5, 1));
-  --spring-bounce: var(--spring, cubic-bezier(.34, 1.4, .5, 1));
-
-  position: relative;
-  isolation: isolate;
-  container-type: inline-size;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-width: 0;
-  min-height: 4.8rem;
-  height: auto;
-  border-radius: 1.375rem;
-  border: 1px solid var(--card-border, hsl(var(--border)));
-  background-color: var(--card-bg, hsl(var(--card)));
-  background-image: linear-gradient(
-    135deg,
-    var(--card-bg, hsl(var(--card))),
-    color-mix(in srgb, var(--card-bg2, var(--card-bg)) 40%, var(--card-bg, hsl(var(--card))))
-  );
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .58), var(--ui-card-shadow);
-  color: var(--card-title, hsl(var(--foreground)));
-  font-family: "Readex Pro", var(--font-sans);
-  font-synthesis: weight;
-  box-sizing: border-box;
-  overflow: hidden;
-  transition:
-    transform 300ms var(--spring-golden),
-    background-color 220ms ease,
-    border-color 220ms ease,
-    box-shadow 250ms ease,
-    border-radius 320ms cubic-bezier(.2, .8, .2, 1);
-}
-
-.class-card:hover,
-.class-card--active,
-.class-card[data-session-active="true"] {
-  border-radius: 1.5rem;
-}
-
-[dir="rtl"] .class-card {
-  padding: 0.92rem 1.15rem 0.92rem 0.55rem;
-}
-
-[dir="ltr"] .class-card {
-  padding: 0.92rem 0.55rem 0.92rem 1.15rem;
-}
-
-.class-card__sheet {
-  display: none !important;
-}
-
-/* Cercles de marge modernes, doux, sans contour, aux teintes harmonisées avec la carte */
-.class-card__sheet::after {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  pointer-events: none;
-  background-image: radial-gradient(
-    circle 4.25px at center,
-    color-mix(in srgb, var(--class-accent) 24%, var(--class-surface)) 0 4.25px,
-    transparent 5px
-  );
-  background-size: 14px var(--class-rule-step);
-  background-position: left var(--class-hole-offset) top 8px;
-  background-repeat: repeat-y;
-  opacity: 0.92;
-  transition: opacity 240ms ease;
-}
-
-.class-card[dir="rtl"] .class-card__sheet::after {
-  background-position: right var(--class-hole-offset) top 8px;
-}
-
-.dark .class-card__sheet::after {
-  background-image: radial-gradient(
-    circle 4.25px at center,
-    color-mix(in srgb, var(--class-accent) 26%, var(--class-surface)) 0 4.25px,
-    transparent 5px
-  );
-  opacity: 0.95;
-}
-
-/* Lignes de carnet douces et harmonieuses */
-.class-card__sheet::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(to bottom, transparent 0 calc(var(--class-rule-step) - 1px), var(--class-rule-ink) calc(var(--class-rule-step) - 1px) var(--class-rule-step));
-  background-position: 0 10px;
-  pointer-events: none;
-  opacity: 0.7;
-}
-
-.class-card__open {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  outline: none;
-}
-
-.class-card__open:focus-visible {
-  outline: 2px solid var(--class-accent);
-  outline-offset: -4px;
-}
-
-.class-card__body,
-.class-card__footer {
-  position: relative;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.class-card__body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  padding-block: 18px;
-  padding-inline: 36px 18px;
-  gap: 8px;
-}
-
-.class-card__header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 30px;
-  min-width: 0;
-}
-
-/* A soft, frameless badge carries the class colour. */
-.class-card__tier {
-  display: inline-block;
-  flex: 0 1 auto;
-  min-width: 0;
-  max-width: 100%;
-  padding: 3px 9px;
-  border: 0;
-  border-radius: 6px;
-  background: var(--class-pill-bg);
-  color: var(--class-accent);
-  font-family: var(--font-secondary);
-  font-variant-numeric: lining-nums tabular-nums;
-  font-size: calc(.76em * var(--class-badge-scale));
-  font-weight: 500;
-  letter-spacing: 0.1px;
-  line-height: 1.25;
-  text-align: start;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transform-origin: center;
-  transition:
-    transform 240ms var(--spring-bounce),
-    background-color 240ms ease,
-    box-shadow 240ms ease;
-}
-
-/* Contenu de la carte centré verticalement */
-.class-card__content {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  width: 100%;
-  min-width: 0;
-  pointer-events: none;
-}
-
-.class-card__text-block {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
-  pointer-events: none;
-  flex: 1;
-}
-
-.class-card__title {
-  font-family: "Readex Pro", var(--font-sans) !important;
-  font-size: 1.05rem !important;
-  font-weight: 600 !important;
-  color: var(--card-title, #14503a) !important;
-  line-height: 1.5 !important;
-  margin: 0;
-  padding: 0;
-  text-shadow: none !important;
-  letter-spacing: -0.01em;
-}
-
-.class-card__tier-plain {
-  font-family: "Readex Pro", var(--font-sans) !important;
-  font-size: 0.8rem !important;
-  font-weight: 500 !important;
-  color: var(--card-secondary, #3f7f63) !important;
-  line-height: 1.35;
-  margin-top: 0.1rem;
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-}
-
-.class-card__actions-block {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  pointer-events: auto;
-  position: relative;
-  z-index: 3;
-}
-
-/* Bouton menu ⋮ dans une zone tactile ronde 44x44px (48px au doigt) */
-.class-card__menu {
-  display: grid;
-  place-items: center;
-  width: max(var(--touch-min, 44px), 2.75rem);
-  height: max(var(--touch-min, 44px), 2.75rem);
-  min-width: 44px;
-  min-height: 44px;
-  border: none;
-  border-radius: 50%;
-  background: transparent !important;
-  color: var(--card-secondary, #3f7f63) !important;
-  pointer-events: auto;
-  touch-action: manipulation;
-  cursor: pointer;
-  transition: opacity 150ms ease, background-color 200ms ease, transform 250ms var(--spring-golden);
-}
-
-.class-card__menu:hover,
-.class-card__menu:active,
-.class-card__menu[data-state="open"] {
-  background: rgba(255, 255, 255, 0.65) !important;
-}
-
-.dark .class-card__menu:hover,
-.dark .class-card__menu:active,
-.dark .class-card__menu[data-state="open"] {
-  background: rgba(255, 255, 255, 0.12) !important;
-}
-
-.class-card__menu:active {
-  transform: scale(0.85);
-}
-
-.class-card__menu:focus-visible {
-  outline: 2px solid var(--card-secondary, #3f7f63);
-  outline-offset: -2px;
-}
-
-.class-card__name { display: block; }
-.class-card__stream { display: block; font-size: 1em; line-height: 1.45; }
-.class-card[dir="rtl"] .class-card__stream { line-height: 1.5; }
-.class-card[dir="rtl"] .class-card__title { font-synthesis: none; }
-
-.class-card .class-card__group {
-  display: inline;
-  margin: 0;
-  padding: 0;
-  color: var(--class-ink);
-  opacity: 1;
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  font-style: normal;
-  line-height: inherit;
-  letter-spacing: inherit;
-  vertical-align: baseline;
-  font-variant-numeric: lining-nums tabular-nums;
-  -webkit-text-stroke: 0;
-  text-shadow: none;
-  background: none;
-  border: 0;
-  box-shadow: none;
-  pointer-events: none;
-}
-
-.class-card .class-card__group.keep-group-watermark {
-  display: inline !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  color: var(--card-title, #14503a) !important;
-  opacity: 1 !important;
-  font-family: inherit !important;
-  font-size: inherit !important;
-  font-weight: inherit !important;
-  font-style: normal !important;
-  line-height: inherit !important;
-  letter-spacing: inherit !important;
-  vertical-align: baseline !important;
-  font-variant-numeric: lining-nums tabular-nums !important;
-  -webkit-text-stroke: 0 !important;
-  text-shadow: none !important;
-  background: none !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  pointer-events: none !important;
-}
-
-.class-card__footer {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-  min-height: 36px;
-  margin-inline: 36px 18px;
-  padding-block: 6px 10px;
-  color: var(--class-muted);
-}
-
-.class-card__live {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 100%;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--class-live-ink) 20%, transparent);
-  background: var(--class-live-fill);
-  color: var(--class-live-ink);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-.class-card__live-remaining {
-  font-weight: 500;
-  opacity: 0.92;
-}
-
-.class-card__schedule {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  max-width: 100%;
-  padding: 0;
-  background: none;
-  border: none;
-  box-shadow: none;
-  color: var(--class-muted);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.4;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0.85;
-  transition: opacity 180ms ease, color 180ms ease;
-}
-
-/* Badge horaire / jour sans cadre, poussé en bas, en gris moderne transparent */
-.class-card__schedule-capsule {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-end;
-  gap: 0.3rem;
-  margin-inline-start: auto;
-  margin-bottom: -0.22rem;
-  padding: 0 0.25rem;
-  border-radius: 0;
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  color: rgba(71, 76, 94, 0.66) !important;
-  font-size: 0.74rem;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-  white-space: nowrap;
-  pointer-events: none;
-  flex-shrink: 0;
-  transition: color 180ms ease, opacity 180ms ease;
-}
-
-.dark .class-card__schedule-capsule {
-  background: transparent !important;
-  box-shadow: none !important;
-  color: rgba(214, 218, 234, 0.56) !important;
-}
-
-.class-card:hover .class-card__schedule-capsule {
-  background: transparent !important;
-  box-shadow: none !important;
-  color: rgba(56, 61, 78, 0.82) !important;
-}
 
 .dark .class-card:hover .class-card__schedule-capsule {
   background: transparent !important;
@@ -524,58 +94,18 @@
   opacity: 0.92;
 }
 
-.class-card__live-dot {
-  position: relative;
-  flex: 0 0 6px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-  animation: class-live-heartbeat 1800ms ease-in-out infinite;
-}
-
-.class-card__live-dot::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border: 1px solid currentColor;
-  border-radius: inherit;
-  animation: class-live-ripple 1800ms cubic-bezier(.2,.7,.3,1) infinite;
-}
-
-@keyframes class-live-heartbeat {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  45% { opacity: 0.45; transform: scale(0.82); }
-  65% { opacity: 1; transform: scale(1); }
-}
-
-@keyframes class-live-ripple {
-  0% { opacity: 0.5; transform: scale(0.65); }
-  65%, 100% { opacity: 0; transform: scale(1.6); }
-}
-
-.dark :is(.class-card, .class-list-item) {
-  --class-live-fill: hsl(342 30% 78%);
-}
-
 /* Une seule pulsation d'opacité : la teinte vient de la carte, sans
    animation d'ombre ni de couleur recalculée à chaque image. */
 :is(.class-card, .class-list-item) {
   --session-accent: var(--card-secondary, var(--class-accent));
 }
-@keyframes class-session-frame-pulse {
-  0%, 100% { opacity: .18; }
-  50% { opacity: .55; }
-}
+
 .class-card--active,
 .class-card[data-session-active="true"],
 .class-list-item[data-session-active="true"] {
-  border-color: color-mix(in srgb, var(--session-accent) 45%, var(--card-border, hsl(var(--border)))) !important;
+  border-color: color-mix(in srgb, var(--session-accent) 42%, var(--card-border, hsl(var(--border)))) !important;
 }
-.class-card.class-card--active {
-  min-height: 112px !important;
-  padding-block: 14px 42px;
-}
+
 .class-card--active::after,
 .class-card[data-session-active="true"]::after,
 .class-list-item[data-session-active="true"]::after {
@@ -584,43 +114,10 @@
   inset: 0;
   z-index: 3;
   border-radius: inherit;
-  border: 1px solid var(--session-accent);
+  border: 1px solid color-mix(in srgb, var(--session-accent) 44%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--session-accent) 8%, transparent);
   pointer-events: none;
-  animation: class-session-frame-pulse 2.8s ease-in-out infinite;
 }
-.class-card--active .class-card__footer {
-  position: absolute;
-  inset-inline: 14px;
-  bottom: 12px;
-  min-height: 24px;
-  margin: 0;
-  padding: 0;
-  justify-content: center;
-  text-align: center;
-}
-.class-card--active .class-card__live {
-  color: var(--card-title, var(--class-ink));
-  background: color-mix(in srgb, var(--card-title, var(--class-ink)) 7%, var(--card-bg, hsl(var(--card))));
-  border-color: color-mix(in srgb, var(--card-title, var(--class-ink)) 12%, transparent);
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.5;
-  padding: 3px 12px;
-  justify-content: center;
-}
-
-/* Desktop feedback is enabled only for a precise pointer. */
-@media (hover: hover) and (pointer: fine) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
-  .class-card:has(.class-card__open:hover) {
-    transform: translateY(-2px);
-    box-shadow: var(--ui-card-shadow-raised) !important;
-  }
-  .dark .class-card:has(.class-card__open:hover) {
-    box-shadow: 0 2px 6px rgb(0 0 0 / 0.4), 0 16px 30px -20px rgb(0 0 0 / 0.7) !important;
-  }
-}
-
 .class-card:has(.class-card__open:active) {
   transform: scale(0.975);
   transition-duration: 100ms;
@@ -667,12 +164,7 @@
   --class-paper: color-mix(in srgb, hsl(var(--card)) 88%, var(--class-surface));
   --class-ink: hsl(var(--foreground));
   --class-muted: hsl(var(--muted-foreground));
-  --class-rule-ink: hsl(var(--foreground) / .055);
   box-shadow: 0 4px 12px hsl(var(--background) / 0.28);
-}
-
-.dark .class-card__sheet {
-  background: var(--class-paper);
 }
 
 /* Forme System UI : rayon unique, hauteur minimale 4.8rem, ombre de carte. */
@@ -707,21 +199,17 @@ html[data-platform="ios"] .class-card,
 
 @media (prefers-reduced-motion: reduce) {
   .class-card,
-  .class-card__sheet,
   .class-card__tier,
   .class-card__title,
   .class-card__menu { transition: none; }
   .class-card:has(.class-card__open:hover),
   .class-card:has(.class-card__open:active) { transform: none; }
-  .class-card__live-dot,
-  .class-card__live-dot::after,
   .class-card--active,
   .class-card[data-session-active="true"],
   .class-list-item[data-session-active="true"],
   .class-card--active::after,
   .class-card[data-session-active="true"]::after,
   .class-list-item[data-session-active="true"]::after { animation: none; transform: none; opacity: 1; }
-  .class-card__live-dot::after { display: none; }
 }
 
 /* Neutral, short feedback at the point of contact. */
@@ -740,11 +228,19 @@ html[data-platform="ios"] .class-card,
   min-height: 88px;
   padding-inline-end: 12px;
   border: 1px solid hsl(var(--border));
-  border-radius: var(--ui-radius-surface, 1.25rem);
+  border-radius: var(--ui-radius-surface, 1.35rem);
   background: hsl(var(--card));
-  box-shadow: var(--ui-card-shadow);
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.04), var(--ui-card-shadow);
   font-family: var(--font-sans);
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), border-color 180ms ease, box-shadow 220ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .class-list-item:hover { transform: translateY(-1px); box-shadow: var(--ui-card-shadow-raised); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .class-list-item { transition: none; }
+  .class-list-item:hover { transform: none; }
 }
 .dark .class-list-item { background: hsl(var(--card)); }
 .class-list-item__open {
@@ -838,21 +334,5 @@ html[data-platform="ios"] .class-list-item[dir="rtl"] .class-list-item__title,
 .dashboard-day-group:has(.class-card__menu[data-state='open']) { position: relative; z-index: 30; }
 @media (prefers-reduced-motion: reduce) { .class-card__menu svg { transition: none; } }
 
-/* Mode sombre : la même surface unique, un cran au-dessus du fond, et un
-   filet seulement effleuré par la teinte de la classe. */
-.dark .class-card {
-  background-color: hsl(var(--card)) !important;
-  background-image: none !important;
-  border-color: color-mix(in srgb, var(--card-border, hsl(var(--border))) 45%, hsl(var(--border))) !important;
-}
-.dark .class-card__title { color: hsl(var(--foreground)) !important; }
-.dark .class-card__tier-plain { color: hsl(var(--muted-foreground)) !important; }
-.dark .class-card__menu { color: hsl(var(--muted-foreground)) !important; }
-.dark .class-card .class-card__group.keep-group-watermark { color: inherit !important; }
-.dark .class-card__schedule-capsule { color: hsl(var(--muted-foreground)) !important; }
-.dark .class-card__schedule-time { color: inherit !important; }
-.dark .class-card--active .class-card__live {
-  color: hsl(var(--foreground));
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.14);
-}
+/* Les variables --card-* adaptent la palette à la profondeur du mode sombre. */
+

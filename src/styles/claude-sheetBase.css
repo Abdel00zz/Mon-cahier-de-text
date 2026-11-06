@@ -1,0 +1,378 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Guide de design des modales — style Claude mobile
+   Fond crème chaud, accent terracotta, bordures fines, typographie hiérarchisée,
+   physique iOS spring (450ms), largeur max 430px centrée, support RTL strict.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --cm-sheet: #FFFFFF;
+  --cm-surface: #FAFAFD;
+  --cm-sunken: #F4F3F8;
+  --cm-text: #19162A;
+  --cm-text-sec: #453F5D;
+  --cm-text-muted: #7E7896;
+  --cm-border: rgba(40, 30, 80, 0.12);
+  --cm-border-subtle: rgba(40, 30, 80, 0.06);
+  --cm-accent: #705df2;
+  --cm-accent-hover: #5e4bdc;
+  --cm-accent-grad: var(--cm-accent);
+  --cm-danger: #B3261E;
+  --cm-danger-bg: #FBEBE8;
+  --cm-danger-border: rgba(179, 38, 30, 0.2);
+
+  --cm-font-serif: var(--font-display);
+  --cm-font-sans: var(--font-sans);
+}
+
+.dark {
+  --cm-sheet: #1C1929;
+  --cm-surface: #242036;
+  --cm-sunken: #161421;
+  --cm-text: #F7F5FE;
+  --cm-text-sec: #C8C3DE;
+  --cm-text-muted: #958FA8;
+  --cm-border: rgba(230, 220, 255, 0.12);
+  --cm-border-subtle: rgba(230, 220, 255, 0.06);
+  --cm-accent: #8b7cf6;
+  --cm-accent-hover: #9c8ff8;
+  --cm-accent-grad: var(--cm-accent);
+  --cm-danger: #F2958E;
+  --cm-danger-bg: #3B2523;
+  --cm-danger-border: rgba(242, 149, 142, 0.25);
+}
+
+/* ── 1. SOCLE DE FEUILLE CLAUDE MOBILE ── */
+.claude-sheet-dialog {
+  background-color: var(--cm-sheet);
+  color: var(--cm-text);
+  font-family: var(--cm-font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.claude-sheet-dialog--wide {
+  max-width: min(94vw, 520px);
+}
+
+.claude-sheet-dialog--eval {
+  max-width: min(96vw, 68rem);
+}
+
+/* ── 2. POIGNÉE DE GLISSEMENT ET EN-TÊTE ── */
+.claude-sheet-handle {
+  width: 38px;
+  height: 4.5px;
+  border-radius: 9999px;
+  background-color: var(--cm-text-muted);
+  opacity: 0.35;
+  margin: 10px auto 6px;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.claude-sheet-handle:hover,
+.claude-sheet-handle:active {
+  opacity: 0.6;
+}
+
+.claude-sheet-header {
+  padding: 12px 20px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: relative;
+}
+
+.claude-sheet-title {
+  font-family: var(--cm-font-serif);
+  font-size: 16px;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  color: var(--cm-text) !important;
+  letter-spacing: 0 !important;
+  text-wrap: balance;
+  margin: 0;
+}
+
+.claude-sheet-subtitle {
+  font-size: 12.5px !important;
+  color: var(--cm-text-muted) !important;
+  line-height: 1.4 !important;
+  margin-top: 2px;
+}
+
+.claude-sheet-close-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 9999px;
+  border: 0;
+  background: var(--cm-sunken);
+  color: var(--cm-text-sec);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 220ms cubic-bezier(0.18, 1.01, 0.24, 1), background-color 180ms ease, color 180ms ease;
+  flex-shrink: 0;
+}
+
+.claude-sheet-close-btn:hover {
+  background: var(--cm-border);
+  color: var(--cm-text);
+}
+
+.claude-sheet-close-btn:active {
+  transform: scale(0.92);
+}
+
+/* ── 3. LISTES GROUPÉES ET CARTES ── */
+.claude-grouped-list {
+  background-color: var(--cm-surface);
+  border: 1px solid var(--cm-border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 0 20px;
+}
+
+.claude-list-item {
+  min-height: 56px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--cm-border-subtle);
+  color: var(--cm-text);
+  font-size: 16px;
+  font-weight: 500;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
+  touch-action: manipulation;
+}
+
+.claude-list-item:last-child {
+  border-bottom: 0;
+}
+
+.claude-list-item:hover {
+  background-color: var(--cm-sunken);
+}
+
+.claude-list-item:active {
+  transform: scale(0.99);
+  background-color: var(--cm-sunken);
+}
+
+.claude-list-item--danger {
+  color: var(--cm-danger);
+}
+
+.claude-list-item--danger:hover {
+  background-color: var(--cm-danger-bg);
+}
+
+.claude-list-item-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--cm-text-sec);
+}
+
+.claude-list-item--danger .claude-list-item-icon {
+  color: var(--cm-danger);
+}
+
+/* ── 4. BOUTONS CLAUDE MOBILE ── */
+.claude-btn-primary {
+  height: 52px;
+  min-height: 52px;
+  border-radius: 14px;
+  border: 0;
+  background: var(--cm-accent-grad, var(--cm-accent));
+  color: #FFFFFF;
+  font-family: var(--cm-font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 10px 22px -6px rgba(112, 93, 242, 0.40);
+  transition: background 180ms ease, transform 150ms ease, opacity 180ms ease, box-shadow 180ms ease;
+  touch-action: manipulation;
+  width: 100%;
+}
+
+.claude-btn-primary:hover:not(:disabled) {
+  background: var(--cm-accent);
+  box-shadow: 0 12px 26px -6px rgba(112, 93, 242, 0.52);
+}
+
+.claude-btn-primary:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: 0 6px 14px -4px rgba(112, 93, 242, 0.35);
+}
+
+.claude-btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.claude-btn-secondary {
+  height: 52px;
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1px solid var(--cm-border);
+  background-color: var(--cm-surface);
+  color: var(--cm-text);
+  font-family: var(--cm-font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 180ms ease, border-color 180ms ease, transform 150ms ease;
+  touch-action: manipulation;
+}
+
+.claude-btn-secondary:hover {
+  background-color: var(--cm-sunken);
+}
+
+.claude-btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.claude-btn-cancel {
+  height: 52px;
+  min-height: 52px;
+  border-radius: 14px;
+  border: 0;
+  background-color: var(--cm-sunken);
+  color: var(--cm-text);
+  font-family: var(--cm-font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 180ms ease, transform 150ms ease;
+  width: 100%;
+}
+
+.claude-btn-cancel:hover {
+  background-color: var(--cm-border);
+}
+
+.claude-btn-cancel:active {
+  transform: scale(0.98);
+}
+
+.claude-btn-danger {
+  height: 52px;
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1px solid var(--cm-danger-border);
+  background-color: var(--cm-danger-bg);
+  color: var(--cm-danger);
+  font-family: var(--cm-font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 150ms ease, filter 150ms ease;
+}
+
+.claude-btn-danger:active {
+  transform: scale(0.98);
+}
+
+/* ── 5. ONGLETS DE FEUILLE (Tabs) ── */
+.claude-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border-radius: 12px;
+  background-color: var(--cm-sunken);
+  margin: 0 20px 14px;
+  position: relative;
+}
+
+.claude-tab-btn {
+  height: 44px;
+  border-radius: 9px;
+  border: 0;
+  background: transparent;
+  color: var(--cm-text-sec);
+  font-family: var(--cm-font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+
+.claude-tab-btn[data-active='true'] {
+  background-color: var(--cm-surface);
+  color: var(--cm-text);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.claude-tab-badge {
+  font-size: 12px;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: var(--cm-sunken);
+  color: var(--cm-text-muted);
+}
+
+.claude-tab-btn[data-active='true'] .claude-tab-badge {
+  background: var(--cm-sunken);
+  color: var(--cm-text-sec);
+}
+
+/* ── 6. COMPTEUR + / − (Stepper) ── */
+.claude-stepper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background-color: var(--cm-surface);
+  border: 1px solid var(--cm-border);
+  border-radius: 14px;
+  padding: 4px;
+}
+
+.claude-stepper-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 0;
+  background-color: var(--cm-sunken);
+  color: var(--cm-text);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 150ms ease, background-color 150ms ease;
+  touch-action: manipulation;
+}

@@ -284,6 +284,8 @@ export function initPwaInstall(): () => void {
   mediaQuery?.addEventListener?.('change', onDisplayModeChange);
 
   let stopControllerWatch = () => {};
+  let stopUpdateChecks = () => {};
+  let disposed = false;
   if ('serviceWorker' in navigator) {
     stopControllerWatch = watchPwaControllerChanges(
       navigator.serviceWorker,
@@ -291,9 +293,29 @@ export function initPwaInstall(): () => void {
       () => window.location.reload(),
     );
   }
-  void registerPwaServiceWorker();
+  void registerPwaServiceWorker().then(registration => {
+    if (!registration || disposed) return;
+    // Une PWA installée peut rester ouverte plusieurs jours : on revalide le
+    // worker au retour au premier plan et au retour du réseau, pas seulement
+    // au démarrage. La mise à jour reste silencieuse et n'interrompt pas la saisie.
+    const check = () => {
+      if (document.visibilityState === 'visible' && navigator.onLine) {
+        void registration.update().catch(() => {});
+      }
+    };
+    const timer = window.setInterval(check, 30 * 60_000);
+    window.addEventListener('online', check);
+    document.addEventListener('visibilitychange', check);
+    stopUpdateChecks = () => {
+      window.clearInterval(timer);
+      window.removeEventListener('online', check);
+      document.removeEventListener('visibilitychange', check);
+    };
+  });
 
   return () => {
+    disposed = true;
+    stopUpdateChecks();
     window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
     window.removeEventListener('appinstalled', onAppInstalled);
     mediaQuery?.removeEventListener?.('change', onDisplayModeChange);

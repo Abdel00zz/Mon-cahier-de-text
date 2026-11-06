@@ -9,20 +9,10 @@ import { readWorkspaceScope, switchAccountWorkspace, workspaceIsCurrent, WORKSPA
 import { unsubscribeFromPush } from '../infrastructure/push/push';
 import { clearInboxBadge, enableInboxBadge } from '../infrastructure/push/appBadge';
 import { isRetryableSyncError, requestSyncJson, retryDelayMs, SyncRequestError } from '../infrastructure/sync/syncTransport';
-import { accountOwner, isAccountId } from '../domain/auth/accountIdentity';
+import { accountOwner } from '../domain/auth/accountIdentity';
+import { cacheUser, isAuthUser, readCachedUser, type AuthUser } from './authCache';
 import { accountPhoneForEmptyProfile } from '../domain/auth/profilePhone';
 import { clearGoogleSignIn, googleSignIn } from '../platform/googleAuth';
-
-interface AuthUser {
-  id?: string;
-  phone: string;
-  email?: string;
-  provider?: 'password' | 'google.com';
-  nom: string;
-  prenom: string;
-  /** Marqueur serveur : l'accueil a été terminé ou ignoré par ce compte. */
-  hasCompletedWelcome?: boolean;
-}
 
 type AuthStatus = 'loading' | 'authenticated' | 'anonymous' | 'offline';
 
@@ -48,38 +38,9 @@ interface AuthContextValue {
   deleteAccount: () => Promise<void>;
 }
 
-const AUTH_CACHE_KEY = 'authUser_v1';
 const SIGNED_OUT_KEY = 'authSignedOut_v1';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-const readCachedUser = (): AuthUser | null => {
-  try {
-    const raw = localStorage.getItem(AUTH_CACHE_KEY);
-    const value = raw ? JSON.parse(raw) : null;
-    return isAuthUser(value) ? value : null;
-  } catch {
-    return null;
-  }
-};
-
-const cacheUser = (user: AuthUser | null): void => {
-  try {
-    if (user) {
-      localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(AUTH_CACHE_KEY);
-    }
-  } catch {
-    // stockage indisponible : le mode hors ligne sera simplement moins persistant
-  }
-};
-
-const isAuthUser = (value: unknown): value is AuthUser => {
-  if (!value || typeof value !== 'object') return false;
-  const user = value as Partial<AuthUser>;
-  return typeof user.phone === 'string' && isAccountId(user.id ?? user.phone) && typeof user.nom === 'string' && typeof user.prenom === 'string';
-};
 
 const activateUserWorkspace = async (user: AuthUser, current: () => boolean): Promise<boolean> => {
   if (readWorkspaceScope()?.owner !== accountOwner(user)) await clearInboxBadge();
@@ -329,14 +290,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       delay(5_000),
     ]);
     // Keep unsynced work for the next login of its owner, even when offline.
-    const previousSignedOut = localStorage.getItem(SIGNED_OUT_KEY);
-    localStorage.setItem(SIGNED_OUT_KEY, 'true');
+    // La préférence est un confort : un stockage plein/privé ne doit pas bloquer
+    // la déconnexion ni laisser la session locale active.
+    let previousSignedOut: string | null = null;
+    try {
+      previousSignedOut = localStorage.getItem(SIGNED_OUT_KEY);
+      localStorage.setItem(SIGNED_OUT_KEY, 'true');
+    } catch {
+      /* stockage indisponible : on poursuit la fermeture de session */
+    }
     try {
       const cached = readCachedUser();
       switchAccountWorkspace(null, { legacyOwner: cached ? accountOwner(cached) : undefined });
     } catch (error) {
-      if (previousSignedOut === null) localStorage.removeItem(SIGNED_OUT_KEY);
-      else localStorage.setItem(SIGNED_OUT_KEY, previousSignedOut);
+      try {
+        if (previousSignedOut === null) localStorage.removeItem(SIGNED_OUT_KEY);
+        else localStorage.setItem(SIGNED_OUT_KEY, previousSignedOut);
+      } catch {
+        /* le drapeau de session ne peut pas être restauré */
+      }
       throw error;
     }
     cacheUser(null);
@@ -373,7 +345,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       body: JSON.stringify({ action: 'deleteAccount' }),
     }, 25_000);
     setSessionNotice(null);
-    localStorage.setItem(SIGNED_OUT_KEY, 'true');
+    try { localStorage.setItem(SIGNED_OUT_KEY, 'true'); } catch { /* stockage indisponible */ }
     try {
       switchAccountWorkspace(null, { legacyOwner: owner ?? undefined });
       if (owner) {

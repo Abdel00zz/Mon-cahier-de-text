@@ -214,7 +214,6 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
       canContactTeam,
       canSkip,
       skipKey,
-      taskPosition: index + 1,
       action: selectAction(decision, guidanceAction(guidance), guidance.step === 'checking', guidance.step === 'standby'),
       behavior: { ...behavior, problemCount: attentionCount }, nextTaskId,
       attentionKey: isInstallApp ? 'install-app'

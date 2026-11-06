@@ -10,7 +10,7 @@ export const profile = chapter('profile', ['schedule', 'classes', 'appearance'],
         steps: [
           'Ouvrez Paramètres → Profil. Saisissez votre nom complet, la matière enseignée, le nom de l’établissement, ainsi que la Direction provinciale et l’Académie (AREF) de rattachement.',
           'Sélectionnez vos cycles d’intervention : Enseignement secondaire collégial, Enseignement secondaire qualifiant ou Classes préparatoires (CPGE). Plusieurs choix sont possibles.',
-          'Cliquez sur « Enregistrer le profil ». Vos coordonnées administratives sont automatiquement intégrées aux cartouches de garde et d’impression officielle.',
+          'Sur mobile, les changements sont enregistrés automatiquement. Sur ordinateur, cliquez sur « Enregistrer le profil ». Ces informations apparaissent dans les en-têtes et à l’impression.',
         ],
       },
       {
@@ -19,7 +19,7 @@ export const profile = chapter('profile', ['schedule', 'classes', 'appearance'],
       },
       {
         title: 'Bilinguisme et prise en main de l’interface',
-        body: 'Le choix de la langue (arabe ou français) adapte l’ensemble de l’interface et l’orientation de lecture (RTL / LTR) sans modifier la langue d’origine de vos cours. Langue, apparence, notifications et emploi du temps s’appliquent immédiatement ; le profil se valide séparément.',
+        body: 'La langue adapte l’interface et son sens de lecture sans modifier vos cours. Sur mobile, tous les réglages sont regroupés sur une page et s’enregistrent au fil des changements. Sur ordinateur, le profil conserve son bouton de validation.',
       },
     ],
   }, {
@@ -32,7 +32,7 @@ export const profile = chapter('profile', ['schedule', 'classes', 'appearance'],
         steps: [
           'افتح «الإعدادات» ثم «الملف الشخصي». عبّئ الاسم الكامل للأستاذ، المؤسسة التعليمية، الأكاديمية الجهوية للتربية والتكوين، والمديرية الإقليمية التابع لها.',
           'حدّد السلك التعليمي والمادة المسندة: السلك الثانوي الإعدادي، السلك الثانوي التأهيلي، أو الأقسام التحضيرية (CPGE). يمكنك تحديد أكثر من سلك عند الاقتضاء.',
-          'اضغط على «حفظ الملف الشخصي». تُعتمد هذه المعطيات الرسمية مباشرة في ترويسات الدفاتر وصفحات التصدير والطباعة.',
+          'على الهاتف، تُحفظ التغييرات تلقائياً. على الحاسوب، اضغط على «حفظ الملف الشخصي». تظهر هذه المعطيات في ترويسات الدفاتر وعند الطباعة.',
         ],
       },
       {
@@ -41,7 +41,7 @@ export const profile = chapter('profile', ['schedule', 'classes', 'appearance'],
       },
       {
         title: 'لغة الواجهة والخصوصية التحريرية',
-        body: 'تتيح إعدادات الحساب التبديل السلس بين اللغتين العربية والفرنسية مع ضبط المحاذاة التلقائية (من اليمين إلى اليسار للغة العربية). لا يؤثر تغيير لغة الواجهة على لغة نصوص الدروس والمفاهيم العلمية المدونة داخل الدفاتر.',
+        body: 'تكيّف اللغة الواجهة واتجاه القراءة دون تغيير نصوص دروسك. على الهاتف، تظهر الإعدادات في صفحة واحدة وتُحفظ التغييرات تلقائياً. على الحاسوب، يُحفظ الملف الشخصي بزر التأكيد.',
       },
     ],
   });

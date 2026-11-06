@@ -57,8 +57,8 @@ test('mobile bottom navigation stays compact, safe-area aware and visually restr
   assert.match(styles, /border-top:\s*1px solid var\(--ui-glass-border\)/);
   assert.match(styles, /border-radius:\s*0/);
   assert.match(styles, /padding:\s*5px 8px calc\(5px \+ env\(safe-area-inset-bottom, 0px\)\)/);
-  assert.match(styles, /--mobile-tab-accent:\s*#0a5bbd/);
-  assert.match(styles, /--mobile-tab-accent-wash:\s*rgb\(10 91 189 \/ \.08\)/);
+  assert.match(styles, /--mobile-tab-accent:\s*hsl\(var\(--primary\)\)/);
+  assert.match(styles, /--mobile-tab-accent-wash:\s*hsl\(var\(--primary\) \/ \.09\)/);
   assert.match(styles, /min-height:\s*60px/);
   assert.match(styles, /\.mobile-tab-bar--modal \{[^}]*position:\s*relative/, 'la barre de la modale reste dans son flux');
   assert.match(styles, /@media \(max-width: 1023px\) \{\s*\.modal-bottom-navigation \{ display: block !important; \}/,

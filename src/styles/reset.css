@@ -9,12 +9,29 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     font-kerning: normal;
+    font-optical-sizing: auto;
+    font-synthesis: none;
+    font-variant-ligatures: common-ligatures contextual;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
   }
 
   body {
     min-inline-size: 0;
     min-block-size: 100vh;
     min-block-size: 100svh;
+    /* Une encre optiquement plus dense sur les écrans haute densité. */
+    font-synthesis-weight: none;
+    font-synthesis-style: none;
+  }
+
+  /* Les chiffres de tableau restent alignés d'une ligne à l'autre : la lecture
+     des dates, notes et totaux gagne en netteté sans changer la fonte. */
+  :where(table, .tabular-nums, [data-numeric]) {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  :where(p, li, dd, blockquote) {
+    text-wrap: pretty;
   }
 
   /* Native field metrics follow the surrounding bilingual typography. */
@@ -38,6 +55,7 @@
   :where(iframe, embed, object) { max-inline-size: 100%; }
 
   @media (prefers-reduced-motion: reduce) {
+    html,
     html:focus-within { scroll-behavior: auto; }
   }
 

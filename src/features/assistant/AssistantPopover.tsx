@@ -10,7 +10,7 @@ import type { GuideReference } from '../../constants/guide/model';
 import { companionHelpCopy } from './companionHelpCopy';
 import { CompanionText } from './CompanionText';
 import { AssistantTips } from './AssistantTips';
-import { BookOpen, ChevronRight, Search } from '@/components/ui/icons';
+import { BookOpen, Search } from '@/components/ui/icons';
 import { AssistantExplorer, explorerLabels, type AssistantWorkspace } from './AssistantExplorer';
 import './companion.css';
 
@@ -31,7 +31,6 @@ interface AssistantPopoverProps {
   contactLabel?: string;
   onContact?: () => void;
   primaryAction?: ReactNode;
-  alternateAction?: ReactNode;
   secondaryActionLabel?: string;
   onSecondaryAction?: () => void;
   dismissLabel?: string;
@@ -40,8 +39,6 @@ interface AssistantPopoverProps {
   helpReference?: GuideReference;
   onOpenGuide?: (reference: GuideReference, signal?: AbortSignal) => Promise<boolean>;
   tips?: { day: string; initiallyOpen: boolean };
-  nextTaskLabel?: string;
-  onNextTask?: () => void;
 }
 
 /** Gestion autonome de l'ouverture et fermeture de la bulle avec focus accessible. */
@@ -78,9 +75,9 @@ export function AssistantPopover({
   antennaFlash,
   headRoundness,
   autoSleepMs,
-  onAction, actionBusy = false, keepOpenOnAction = false, contactLabel, onContact, primaryAction, alternateAction,
+  onAction, actionBusy = false, keepOpenOnAction = false, contactLabel, onContact, primaryAction,
   secondaryActionLabel, onSecondaryAction,
-  dismissLabel, onDismiss, keepOpenOnDismiss = false, helpReference, onOpenGuide, tips, nextTaskLabel, onNextTask,
+  dismissLabel, onDismiss, keepOpenOnDismiss = false, helpReference, onOpenGuide, tips,
 }: AssistantPopoverProps) {
   const { root, trigger, panel, open, setOpen, close } = useAssistantPopover();
   const { welcoming, dismissWelcome } = useCompanionWelcome();
@@ -190,36 +187,41 @@ export function AssistantPopover({
                   <CompanionText text={message.detail} highlights={highlights} />
                 </p>
               </div>
-              {(primaryAction || alternateAction || (onAction && message.action) || (onSecondaryAction && secondaryActionLabel)) && <div className="assistant-panel__actions">
+              {(primaryAction || (onAction && message.action)) && <div className="assistant-panel__actions">
                 {primaryAction ?? (onAction && message.action && <button type="button" className="assistant-panel__action"
                   disabled={actionBusy} aria-busy={actionBusy || undefined} onClick={() => { if (!keepOpenOnAction) close(); onAction(); }}>
                   <span>{message.action}</span>
                 </button>)}
-                {alternateAction}
-                {onSecondaryAction && secondaryActionLabel && <button type="button" className="assistant-panel__help"
-                  onClick={() => { close(); onSecondaryAction(); }}>{secondaryActionLabel}</button>}
               </div>}
-              {(onNextTask && nextTaskLabel || onDismiss && dismissLabel) && <div className="assistant-panel__navigation">
-                {onNextTask && nextTaskLabel && <button type="button" className="assistant-panel__next" onClick={onNextTask}>
-                  {nextTaskLabel}<ChevronRight size={14} className="assistant-forward" aria-hidden="true" /></button>}
-                {onDismiss && dismissLabel && <button type="button" className="assistant-panel__dismiss"
-                  onClick={() => { if (keepOpenOnDismiss) onDismiss(); else handleDismissAndClose(true); }}>{dismissLabel}</button>}
+              {((onSecondaryAction && secondaryActionLabel) || (onDismiss && dismissLabel)) && <div className="assistant-panel__navigation">
+                {onSecondaryAction && secondaryActionLabel
+                  ? <button type="button" className="assistant-panel__link" onClick={() => { close(); onSecondaryAction(); }}>{secondaryActionLabel}</button>
+                  : onDismiss && dismissLabel && <button type="button" className="assistant-panel__dismiss"
+                    onClick={() => { if (keepOpenOnDismiss) onDismiss(); else handleDismissAndClose(true); }}>{dismissLabel}</button>}
               </div>}
               {tips && <AssistantTips key={`${tips.day}:${locale}`} locale={locale} {...tips} />}
             </>}
             {exploring && workspace && <AssistantExplorer workspace={workspace} locale={locale} guideBusy={helpBusy}
               onGuide={openReference} onNavigate={action => { close(); workspace.navigate(action); }} />}
-            {(workspace || (!exploring && (helpReference && onOpenGuide || onContact && contactLabel))) && <div className="assistant-panel__tools">
-              {workspace && <button ref={explorerTrigger} type="button" className="assistant-panel__tool" aria-expanded={exploring}
-                onClick={() => { setExploring(value => !value); if (exploring) explorerTrigger.current?.focus(); }}>
-                <Search size={15} aria-hidden="true" />{exploring ? explore.back : explore.open}</button>}
-              {!exploring && helpReference && onOpenGuide && <button type="button" className="assistant-panel__tool"
-                disabled={helpBusy} aria-busy={helpBusy || undefined} onClick={() => openReference(helpReference)}>
-                <BookOpen size={15} aria-hidden="true" />{helpBusy ? companionHelpCopy(locale).opening : helpError ? companionHelpCopy(locale).retry : companionHelpCopy(locale).open}
-              </button>}
-              {!exploring && onContact && contactLabel && <button type="button" className="assistant-panel__tool"
-                onClick={() => { close(); onContact(); }}>{contactLabel}</button>}
+            {exploring && <div className="assistant-panel__tools">
+              <button ref={explorerTrigger} type="button" className="assistant-panel__tool" onClick={() => { setExploring(false); }}>
+                <Search size={15} aria-hidden="true" />{explore.back}</button>
             </div>}
+            {!exploring && (workspace || (helpReference && onOpenGuide) || (onContact && contactLabel)) && (
+              <details className="assistant-panel__disclosure">
+                <summary className="assistant-panel__disclosure-summary">{companionHelpCopy(locale).more}</summary>
+                <div className="assistant-panel__tools">
+                  {workspace && <button type="button" className="assistant-panel__tool" onClick={() => setExploring(true)}>
+                    <Search size={15} aria-hidden="true" />{explore.open}</button>}
+                  {helpReference && onOpenGuide && <button type="button" className="assistant-panel__tool"
+                    disabled={helpBusy} aria-busy={helpBusy || undefined} onClick={() => openReference(helpReference)}>
+                    <BookOpen size={15} aria-hidden="true" />{helpBusy ? companionHelpCopy(locale).opening : helpError ? companionHelpCopy(locale).retry : companionHelpCopy(locale).open}
+                  </button>}
+                  {onContact && contactLabel && <button type="button" className="assistant-panel__tool"
+                    onClick={() => { close(); onContact(); }}>{contactLabel}</button>}
+                </div>
+              </details>
+            )}
             {helpError && <p role="alert" className="assistant-panel__detail">{companionHelpCopy(locale).error}</p>}
           </div>
         )}

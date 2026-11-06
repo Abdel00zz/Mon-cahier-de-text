@@ -38,6 +38,9 @@ jobs:
       - name: Vérifier l'architecture
         run: node scripts/validation/check-architecture.mjs
 
+      - name: Qualité structurelle (taille, cycles, code mort)
+        run: npm run quality
+
       - name: Vérifier les traductions
         run: npm run check:i18n
 
@@ -65,4 +68,13 @@ jobs:
             dist
             !dist/**/*.map
           retention-days: 7
+          if-no-files-found: warn
+
+      - name: Conserver le rapport qualité
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: quality-${{ github.sha }}
+          path: artifacts/quality
+          retention-days: 14
           if-no-files-found: warn

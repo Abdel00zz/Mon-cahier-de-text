@@ -78,7 +78,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
           {/* Desktop popover */}
           <div
             id="toolbar-search-panel"
-            className={`rtl-search-popover absolute hidden sm:block transition-all duration-300 ease-in-out top-1/2 -translate-y-1/2 w-44 ${isRtl ? 'left-[calc(100%+0.5rem)] origin-left' : 'right-[calc(100%+0.5rem)] origin-right'} ${isSearchVisible ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`}
+            className={`rtl-search-popover absolute hidden sm:block transition-all duration-200 ease-in-out top-1/2 -translate-y-1/2 w-56 ${isRtl ? 'left-[calc(100%+0.5rem)] origin-left' : 'right-[calc(100%+0.5rem)] origin-right'} ${isSearchVisible ? 'scale-x-100 opacity-100' : 'pointer-events-none scale-x-0 opacity-0'}`}
           >
             <div className="relative w-full">
               <Input
@@ -92,7 +92,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
                 onChange={(e) => setLocalSearch(e.target.value)}
                 onCompositionStart={() => setIsComposing(true)}
                 onCompositionEnd={() => setIsComposing(false)}
-                className="rounded-md h-7.5 text-xs px-2.5 border-border/60 bg-background/80 backdrop-blur-sm focus:border-border/80 focus:ring-0"
+                className="editor-toolbar__search-input h-11 rounded-lg px-3 text-sm"
               />
             </div>
           </div>
@@ -163,7 +163,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
               onChange={(e) => setLocalSearch(e.target.value)}
               onCompositionStart={() => setIsComposing(true)}
               onCompositionEnd={() => setIsComposing(false)}
-              className="min-w-0 flex-1 h-11 text-base rounded-md border-border/70 bg-background focus:border-primary/60 focus:ring-1 focus:ring-primary/40 focus:outline-none"
+              className="editor-toolbar__search-input min-w-0 flex-1 h-11 rounded-lg px-3 text-base"
             />
             {localSearch && (
               <button

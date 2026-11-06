@@ -220,8 +220,7 @@ test('un devoir maison s’affiche en deux entrées : assigné aux élèves, pui
   const correction = view.slice(split, view.indexOf('return <React.Fragment key={a.id}>'));
   // Assigné aux élèves : document · date limite · corbeille — ni absents, ni remises.
   assert.match(assigned, /<ActionIcon name="document" \/>/);
-  assert.match(assigned, /field: 'due'/, 'le bouton de la date limite');
-  assert.match(assigned, /<ActionIcon name="deadline" \/>/);
+  assert.match(assigned, /evaluations\.homework\.dueOn/, 'l’échéance est rappelée sous le titre');
   assert.match(assigned, /<AnimatedTrashButton/);
   assert.match(assigned, /kindPolicy\.absences && a\.type !== 'maison'/, 'jamais d’absents sur un devoir maison');
   assert.match(assigned, /kindPolicy\.students && a\.type !== 'maison'/, 'le bouton d’élèves des autres devoirs ne s’applique pas');
@@ -230,7 +229,7 @@ test('un devoir maison s’affiche en deux entrées : assigné aux élèves, pui
   assert.match(correction, /evaluations\.action\.correctionContent/, "le libellé du corrigé");
   assert.match(correction, /evaluations\.action\.notReturned/, "les élèves qui n’ont pas rendu");
   assert.match(correction, /setSubmissionsFor\(link\)/);
-  assert.match(correction, /field: 'correction'/, "sa date est la séance de correction");
+  assert.match(correction, /<EvaluationDate date=\{correctionDateISO\} \/>/, 'sa date est la séance de correction');
   assert.match(correction, /setDeletingCorrection\(link\)/, "sa corbeille supprime la correction seule");
   assert.equal((correction.match(/<AnimatedTrashButton/g) ?? []).length, 1);
   assert.doesNotMatch(correction, /evaluations\.action\.absent|evaluations\.action\.dueDate/, "ni absents, ni date limite");
@@ -255,17 +254,17 @@ test('un titre généré se dit dans la langue de l’écran, sans pastille ni r
 
 test('sans date, la ligne le dit simplement : rien à cliquer, la date vient du tableau de l’éditeur', () => {
   const undated = renderSheet([event('u1', 'olympiade', 'Olympiade', '')]);
-  assert.match(undated, /<span class="ev-date-empty">Pas encore de date<\/span>/);
+  assert.match(undated, /<span class="ev-date-text">Pas encore de date<\/span>/);
   assert.doesNotMatch(undated, /ev-date-trigger/, 'aucun bouton de date sans date');
   assert.doesNotMatch(undated, /Définir une date/, 'plus de « + Définir une date »');
   const arabic = renderSheet([event('u2', 'olympiade', 'أولمبياد', '')], 'ar');
-  assert.match(arabic, /<span class="ev-date-empty">لا يوجد تاريخ بعد<\/span>/);
+  assert.match(arabic, /<span class="ev-date-text">لا يوجد تاريخ بعد<\/span>/);
   const dated = renderSheet([event('u3', 'olympiade', 'Olympiade', '2026-09-14')]);
-  assert.match(dated, /class="ev-date-trigger[^"]*"/, 'une date posée reste modifiable');
-  assert.doesNotMatch(dated, /ev-date-empty/);
+  assert.match(dated, /class="ev-date-text">[\s\S]*?14\/09\/2026/, 'une date posée reste lisible');
+  assert.doesNotMatch(dated, /ev-date-trigger/, 'la date ne s’édite plus depuis cette ligne');
 });
 
-test('le jour de la date limite, le bouton pulse avec l’effet existant ; avant et après, il reste calme', () => {
+test('le jour de la date limite, la note le dit ; avant et après, aucune animation', () => {
   const today = todayInMorocco(new Date(), getBundledCalendar());
   const day = (offset: number) => new Date(Date.parse(`${today}T12:00:00Z`) + offset * 86_400_000).toISOString().slice(0, 10);
   const render = (due: string) => renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
@@ -274,8 +273,8 @@ test('le jour de la date limite, le bouton pulse avec l’effet existant ; avant
       manualAssessments: { c1: [{ id: 'maison-1-custom', schoolYear: '2026-2027', type: 'maison', num: 1, semestre: 1, dateISO: day(-3), dueDateISO: due }] },
     } as unknown as AppConfig }) }));
   const dueToday = render(today);
-  assert.match(dueToday, /class="ev-action shrink-0 glow-pulse-warning"[^>]*data-due="today"/, 'halo ambré le jour même');
-  assert.match(dueToday, /À rendre aujourd’hui/, 'la ligne le dit aussi');
+  assert.match(dueToday, /À rendre aujourd’hui/, 'la ligne le dit');
+  assert.doesNotMatch(dueToday, /glow-pulse-warning|data-due=/, 'aucun halo animé');
   for (const offset of [-1, 1]) {
     const other = render(day(offset));
     assert.doesNotMatch(other, /glow-pulse-warning|data-due=/, `${offset > 0 ? 'avant' : 'après'} : aucun halo`);
@@ -293,12 +292,8 @@ test('la fenêtre du rendu se dit « Rendu du devoir », sans la phrase « élè
   }
 });
 
-test('fiche classe : panneaux colorés (pêche/loupe, lavande/crayon, vert/maison, bleu/livre) et petite feuille de calendrier (jour + MM/YYYY)', async () => {
-  const { parseCalendarSheetDate, resolveSectionPanelVariant } = await import('../src/features/evaluations/components/SectionPanelBadge');
-  assert.deepEqual(parseCalendarSheetDate('2026-09-14'), { day: '14', monthYear: '09/2026' });
-  assert.deepEqual(parseCalendarSheetDate('2026-09-14', '2026-09-18'), { day: '14–18', monthYear: '09/2026' });
-  assert.equal(parseCalendarSheetDate(''), null);
-
+test('fiche classe : panneaux colorés (pêche/loupe, lavande/crayon, vert/maison, bleu/livre) et date compacte en texte gris', async () => {
+  const { resolveSectionPanelVariant } = await import('../src/features/evaluations/components/SectionPanelBadge');
   assert.deepEqual(resolveSectionPanelVariant('evaluation_diagnostic', 0), { tone: 'peach', glyph: 'loupe' });
   assert.deepEqual(resolveSectionPanelVariant('controle', 1), { tone: 'lavender', glyph: 'crayon' });
   assert.deepEqual(resolveSectionPanelVariant('maison', 2), { tone: 'green', glyph: 'maison' });
@@ -306,6 +301,6 @@ test('fiche classe : panneaux colorés (pêche/loupe, lavande/crayon, vert/maiso
 
   const dated = renderSheet([event('d1', 'evaluation_diagnostic', 'Diagnostic', '2026-09-14')]);
   assert.match(dated, /data-panel-tone="peach" data-panel-glyph="loupe"/);
-  assert.match(dated, /class="ev-cal-sheet"[^>]*><span class="ev-cal-sheet__day">14<\/span><span class="ev-cal-sheet__my">09\/2026<\/span><\/span>/);
+  assert.match(dated, /class="ev-date-text">[\s\S]*?14\/09\/2026/);
 });
 

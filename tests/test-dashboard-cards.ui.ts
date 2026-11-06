@@ -8,7 +8,6 @@ import { ClassListItem } from '../src/features/dashboard/ClassListItem';
 import { DashboardActions } from '../src/features/dashboard/DashboardActions';
 import { CLASS_DISPLAY_MODES, isClassDisplayMode, nextClassDisplayMode } from '../src/features/dashboard/classDisplayMode';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
-import { translateLocaleMessage } from '../src/i18n/messages';
 import { detectSessionAlerts } from '../src/domain/notifications/sessionAlertEngine';
 import { prioritizeActiveClasses } from '../src/domain/classes/classOrder';
 import { buildUnifiedClassPaletteMap } from '../src/features/dashboard/departmentPalette';
@@ -47,7 +46,6 @@ const renderCards = (active: ReadonlySet<string>) => {
 };
 
 test('séance en cours : la carte de la classe active, et elle seule, porte le repère « en cours »', () => {
-  const nowLabel = translateLocaleMessage('fr', 'dashboard.welcome.nowTitle');
   const cases: Array<[string, string[]]> = [
     ['07:54:59', []],
     ['07:55:00', ['a']],
@@ -71,14 +69,14 @@ test('séance en cours : la carte de la classe active, et elle seule, porte le r
       const isActive = expected.includes(card.id);
       assert.equal(card.html.includes('data-session-active="true"'), isActive, `carte ${card.id} à ${clock}`);
       assert.equal(card.html.includes('class-card--active'), isActive, `style actif ${card.id} à ${clock}`);
-      assert.equal(card.html.includes(nowLabel), isActive, `libellé « en cours » ${card.id} à ${clock}`);
+      assert.doesNotMatch(card.html, /class-card__live|class-card__footer/, `aucun badge « en cours » ${card.id} à ${clock}`);
     }
     // La classe active passe en tête sans modifier l'ordre enregistré des autres.
     if (expected.length === 1) assert.equal(cards[0].id, expected[0]);
   }
   const activeHtml = renderCards(new Set(['a']))[0].html;
-  assert.match(activeHtml, /class="class-card__footer"/, 'le libellé de séance est visible');
-  assert.doesNotMatch(activeHtml, /class-card__footer sr-only/, 'le statut ne doit pas être masqué');
+  assert.doesNotMatch(activeHtml, /class-card__footer|class-card__live/, 'le badge de séance est supprimé');
+  assert.match(activeHtml, /data-session-active="true"/, 'la carte active reste identifiable');
 
 });
 
@@ -118,8 +116,9 @@ test('la palette de chaque classe traverse le tableau de bord jusqu’au fond, a
     assert.ok(card.html.includes(`--class-palette-title:${palette.title}`), `titre de ${card.id}`);
     assert.ok(card.html.includes(`--class-palette-secondary:${palette.secondary}`), `texte secondaire de ${card.id}`);
   }
-  const styles = readFileSync('src/features/dashboard/classCards.css', 'utf8');
-  assert.match(styles, /background-image:\s*linear-gradient\(/, 'les aplats de classe retrouvent leur dégradé pastel discret');
+  const styles = ['src/features/dashboard/classCardsBase.css', 'src/features/dashboard/classCards.css'].map(path => readFileSync(path, 'utf8')).join('\n');
+  assert.doesNotMatch(styles, /background-image:\s*linear-gradient\(/, 'plus aucune couche de fond sur les cartes');
+  assert.match(styles, /background:\s*var\(--card-bg/, 'une seule surface pastel, sans dégradé');
   assert.match(styles, /\.dark \.class-card\s*\{[\s\S]*?--card-bg:\s*color-mix/, 'les couleurs restent désaturées en mode sombre');
   assert.doesNotMatch(styles, /Surface unique, encre unique/, 'aucune règle finale ne neutralise les palettes');
 });
@@ -145,7 +144,6 @@ test('les cartes de classe ne montrent plus le jour, l’heure ou la durée du p
     classInfo: makeClass('scheduled-row', '1AC 1'),
     onSelect: () => {},
     onConfigure: () => {},
-    scheduleStatus,
   }));
   for (const html of [card, listItem]) {
     assert.doesNotMatch(html, /class-card__schedule-capsule|class-card__schedule-day|class-card__schedule-time|class-card__schedule-multihour/,
@@ -163,25 +161,29 @@ test('la teinte personnalisée reste branchée avec la palette de la carte', () 
   assert.ok(html.includes(`--class-palette-bg:${palette?.bg}`), 'la palette calculée reste présente en parallèle');
 });
 
-test('menu de classe : emploi du temps retiré, choix en tuiles avec icônes encadrées', () => {
+test('menu de classe : emploi du temps retiré, liste compacte sans vide', () => {
   const menu = readFileSync('src/features/dashboard/ClassActionsMenu.tsx', 'utf8');
   const styles = readFileSync('src/features/dashboard/classActionsSheet.css', 'utf8');
   assert.doesNotMatch(menu, /onOpenSchedule|CalendarDays|settings\.item\.schedule/,
     'le raccourci emploi du temps ne figure plus dans le menu ⋮');
-  assert.match(menu, /class-quick-sheet__actions hub-grid" data-tiles/,
-    'les actions restantes reprennent la grille de tuiles');
-  assert.equal((menu.match(/data-layout="tile"/g) ?? []).length, 3,
-    'évaluations, modification et suppression utilisent le même format de tuile');
-  assert.match(menu, /<span className="hub-card__icon" aria-hidden="true"><CalendarCheck \/><\/span>/,
-    'l’icône des évaluations est placée dans sa boîte neutre');
-  assert.match(styles, /\.class-quick-sheet__action \.hub-card__icon > svg \{[\s\S]*?width: 2\.25rem;[\s\S]*?height: 2\.25rem;/,
-    'les icônes sont dimensionnées comme celles des cartes devoirs/évaluations');
-  assert.match(styles, /\.modal-sheet-viewport \.modal-motion-surface\.class-quick-sheet\[data-sheet-library\] \{[\s\S]*?height: fit-content !important;[\s\S]*?max-height: min\(calc\(var\(--modal-visible-height\) \* var\(--sheet-max-height, \.72\)\)/,
-    'la feuille d’actions suit les tuiles et se limite à la hauteur visible du téléphone');
-  assert.match(styles, /min-height: clamp\(5rem, 16dvh, 8rem\)/,
-    'les tuiles réduisent leur hauteur sur les petits écrans');
-  assert.match(styles, /\.class-quick-sheet \.class-quick-sheet__action\.hub-card\[data-layout='tile'\] \{[\s\S]*?min-height: clamp\(5rem, 16dvh, 8rem\);[\s\S]*?padding-block: clamp/,
-    'la hauteur adaptative prévaut sur la hauteur minimale générique des cartes');
+  assert.match(menu, /className="class-quick-sheet__actions"/,
+    'les actions sont une liste, plus une grille de grandes tuiles');
+  assert.equal((menu.match(/className="class-quick-sheet__action"/g) ?? []).length, 3,
+    'évaluations, modification et suppression partagent la même ligne');
+  assert.match(menu, /className="class-quick-sheet__icon" data-tone="blue" aria-hidden="true"><CalendarCheck \/><\/span>/,
+    'l’icône des évaluations reste dans sa boîte neutre');
+  assert.match(styles, /\.class-quick-sheet__icon > svg \{[\s\S]*?width: 1\.15rem;[\s\S]*?height: 1\.15rem;/,
+    'les icônes de ligne restent compactes');
+  assert.match(styles, /\.class-quick-sheet__action \{[\s\S]*?min-height: 3\.25rem;/,
+    'les lignes sont compactes et tactiles');
+  assert.match(menu, /className="class-quick-sheet__title"[\s\S]*?className="class-quick-sheet__class" dir="auto">\{name\}/,
+    'le titre et le nom de classe partagent la même ligne');
+  assert.match(styles, /\.class-quick-sheet__title \{[\s\S]*?display: inline-flex;[\s\S]*?align-items: baseline;/,
+    'le nom de classe est aligné sur le titre');
+  assert.match(styles, /\.class-quick-sheet__class \{[\s\S]*?color: hsl\(var\(--muted-foreground\)\);[\s\S]*?font-size: \.78rem;/,
+    'le nom de classe est gris et plus petit');
+  assert.doesNotMatch(styles, /data-danger='true'[\s\S]{0,220}border-block-start/,
+    'la suppression n’est plus séparée par un filet');
 });
 
 test('la fiche reste décorative et un nom libre conserve son identité sans icône de cahier dans les trois langues', () => {

@@ -24,6 +24,7 @@
     "scripts/firebase/*.mjs",
     "scripts/benchmarks/benchmark-*.ts",
     "scripts/benchmarks/baseline.mjs",
+    "scripts/quality/*.mjs",
     "scripts/guide-preview/main.tsx",
     "scripts/generate-guide-images.mjs",
     "scripts/auth-preview/main.tsx",
