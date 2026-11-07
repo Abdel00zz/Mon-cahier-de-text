@@ -69,7 +69,7 @@ test('every document surface mounts the shared header with its class', () => {
     assert.match(source, /classLabel/, `${path} reçoit la classe`);
     assert.match(source, /headerTitleFor|DocumentSheetHeader|<DocumentPrintButton/, `${path} passe par l'en-tête partagé`);
   }
-  assert.match(read('src/features/editor/Editor.tsx'), /classLabel=\{formatLocalizedClassDisplayName\(/);
+  assert.match(read('src/features/editor/Editor.tsx'), /classLabel: formatLocalizedClassDisplayName\(/);
 });
 
 test('le titre d’en-tête est centré, en texte dégradé sans fond ni soulignement, et reste lisible à l’impression', () => {

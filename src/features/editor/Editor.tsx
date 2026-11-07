@@ -15,6 +15,7 @@ import { readInitialNotebook, notebookStorageKey } from './initialNotebook';
 import { storedNotebookChanged } from './notebookRefresh';
 import { toast } from 'sonner';
 import { Header } from './Header';
+import { EditorOverlays } from './EditorOverlays';
 import { Toolbar } from './Toolbar';
 import { MainTable } from './MainTable';
 import { SelectionBar } from './SelectionBar';
@@ -57,7 +58,7 @@ import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, 
 import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs, sessionPrintSignatures, type PrintPrefs } from '@/infrastructure/printing/printMeta';
 import { toDisplayWarnings, createSessionDateValidator } from '@/domain/calendar/dateValidation';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '@/domain/curriculum/predefinedContent';
-import { PrintModal, PrintMode, PrintOptions } from './modals/PrintModal';
+import { PrintMode, PrintOptions } from './modals/PrintModal';
 import { printDocument, preparePrintContent } from '@/infrastructure/printing/printUtils';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, ContentDirection } from '@/types';
 import { PrintView } from './PrintView';
@@ -1389,135 +1390,119 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       </div>
 
 
-      {!activeModal && !sessionAssignment.review && (
-        <SelectionBar
-          count={selectedCount}
-          hasDate={hasSelectedDate}
-          allToday={allSelectedToday}
-          canAdd={canAddAfterSelection}
-          canAssignDate={canAssignDateSelection}
-          onAdd={handleSelectionAdd}
-          onAssignDate={handleSelectionDatePicker}
-          onAssignToday={handleAssignToday}
-          onClearDate={handleClearSelectedDates}
-          onEdit={handleSelectionEdit}
-          onDelete={handleBulkDelete}
-          onClear={handleDeselectAll}
-          canEdit={canEditSelection}
-        />
-      )}
-
-      <PrintModal
-        classId={classInfo.id}
-        isOpen={activeModal === 'print'}
-        onClose={handleModalClose}
-        totalDates={printStats.totalDates}
-        newDates={printStats.newDates}
-        allDates={printStats.allDates}
-        printedDates={printStats.printedDates}
-        lastPrintedAt={printStats.lastPrintedAt}
-        savedPrefs={printStats.prefs}
-        isPrinting={isPrinting}
-        config={config}
-        onConfigChange={updateConfig}
-        onPrint={handleExecutePrint}
-      />
-      <EditorModals
-        activeModal={activeModal}
-        handleModalClose={handleModalClose}
-        handleImport={handleImport}
-        handleExportData={handleExportData}
-        exportChapters={exportChapters}
-        lessonsData={lessonsData}
-        handleUpdateLessons={handleUpdateLessons}
-        handleEvaluationsLessonsChange={handleEvaluationsLessonsChange}
-        config={config}
-        onConfigChange={updateConfig}
-        sessionEditor={sessionAssignment.editor}
-        onApplySession={sessionAssignment.apply}
-        handleConfirmAddContent={handleConfirmAddContent}
-        selectedIndices={selectedIndices}
-        getDateWarnings={getDateWarnings}
-        getDisplayDateWarnings={getDisplayDateWarnings}
-        classInfo={classInfo}
-        contentDirection={contentDirection}
-        editingItem={editingItem}
-        editingTitleOnly={editingTitleOnly}
-        editingTitleField={editingTitleField}
-        editingCount={editingIndices ? contentEditTargets.get(indicesKey(editingIndices))?.length ?? 1 : 1}
-        handleConfirmContentEdit={value => {
-          if (editingIndices) handleConfirmContentEdit(editingIndices, value);
+      <EditorOverlays
+        selectionBar={!activeModal && !sessionAssignment.review ? {
+          count: selectedCount,
+          hasDate: hasSelectedDate,
+          allToday: allSelectedToday,
+          canAdd: canAddAfterSelection,
+          canAssignDate: canAssignDateSelection,
+          onAdd: handleSelectionAdd,
+          onAssignDate: handleSelectionDatePicker,
+          onAssignToday: handleAssignToday,
+          onClearDate: handleClearSelectedDates,
+          onEdit: handleSelectionEdit,
+          onDelete: handleBulkDelete,
+          onClear: handleDeselectAll,
+          canEdit: canEditSelection,
+        } : null}
+        printModal={{
+          classId: classInfo.id,
+          isOpen: activeModal === 'print',
+          onClose: handleModalClose,
+          totalDates: printStats.totalDates,
+          newDates: printStats.newDates,
+          allDates: printStats.allDates,
+          printedDates: printStats.printedDates,
+          lastPrintedAt: printStats.lastPrintedAt,
+          savedPrefs: printStats.prefs,
+          isPrinting,
+          config,
+          onConfigChange: updateConfig,
+          onPrint: handleExecutePrint,
         }}
-        getSessionAnnotation={getSessionAnnotation}
-        getSessionRemarkEntries={getSessionRemarkEntries}
-        getSessionDocuments={getSessionDocuments}
-        onOpenDocumentPreview={handleOpenDocumentPreview}
-      />
-
-      <ConfirmDialog open={!!pendingEvaluationEdit} onOpenChange={open => { if (!open) setPendingEvaluationEdit(null); }}
-        title={t('evaluations.conflict.title')} description={pendingEvaluationEdit?.message ?? ''} variant="default"
-        confirmLabel={t('dateReview.confirmAria')} cancelLabel={t('evaluations.conflict.modify')}
-        onConfirm={() => pendingEvaluationEdit?.commit()} />
-
-      <DateReviewModal
-        isOpen={sessionAssignment.review !== null}
-        date={sessionAssignment.review?.date ?? ''}
-        warnings={sessionAssignment.review?.warnings ?? []}
-        onModify={() => {
-          sessionAssignment.modify();
-          window.requestAnimationFrame(() => {
-            window.requestAnimationFrame(() => document.getElementById('assign-date-input')?.focus());
-          });
+        editorModals={{
+          activeModal,
+          handleModalClose,
+          handleImport,
+          handleExportData,
+          exportChapters,
+          lessonsData,
+          handleUpdateLessons,
+          handleEvaluationsLessonsChange,
+          config,
+          onConfigChange: updateConfig,
+          sessionEditor: sessionAssignment.editor,
+          onApplySession: sessionAssignment.apply,
+          handleConfirmAddContent,
+          selectedIndices,
+          getDateWarnings,
+          getDisplayDateWarnings,
+          classInfo,
+          contentDirection,
+          editingItem,
+          editingTitleOnly,
+          editingTitleField,
+          editingCount: editingIndices ? contentEditTargets.get(indicesKey(editingIndices))?.length ?? 1 : 1,
+          handleConfirmContentEdit: value => {
+            if (editingIndices) handleConfirmContentEdit(editingIndices, value);
+          },
+          getSessionAnnotation,
+          getSessionRemarkEntries,
+          getSessionDocuments,
+          onOpenDocumentPreview: handleOpenDocumentPreview,
         }}
-        onConfirm={sessionAssignment.confirm}
-      />
-
-      <TimetableNudgeModal
-        isOpen={showTimetableNudge}
-        onSkip={dismissTimetableNudge}
-        onFill={fillTimetableFromNudge}
-        className={classInfo.name}
-      />
-
-      {/* Aperçu du sujet : lecture seule, depuis la table comme depuis le cahier.
-          Le document est déjà en mémoire, la fenêtre n'a donc que la page à
-          composer (et seulement quand elle est ouverte). */}
-      <DocumentPreview
-        isOpen={openDocument !== null}
-        onClose={closeDocumentPreview}
-        title={openDocument?.title ?? ''}
-        classLabel={formatLocalizedClassDisplayName(classInfo.name, locale)}
-        source={openDocument?.document.source}
-        updatedLabel={documentUpdatedLabel}
-      />
-
-      <ConfirmDialog
-        open={pendingPrintConfirmation !== null}
-        onOpenChange={open => { if (!open) setPendingPrintConfirmation(null); }}
-        title={t('print.confirmTitle')}
-        description={t('print.confirmDescription')}
-        confirmLabel={t('print.confirmDone')}
-        cancelLabel={t('print.confirmNotDone')}
-        variant="default"
-        onConfirm={() => {
-          if (!pendingPrintConfirmation || !workspaceIsActive()) return;
-          if (!recordPrint(pendingPrintConfirmation.classId, pendingPrintConfirmation.signatures)) {
-            showNotification(t('editorNotice.printHistoryError'), 'warning');
-          }
-          setPrintMetaVersion(version => version + 1);
+        evaluationConflict={{
+          open: !!pendingEvaluationEdit,
+          message: pendingEvaluationEdit?.message ?? '',
+          onConfirm: () => pendingEvaluationEdit?.commit(),
+          onCancel: () => setPendingEvaluationEdit(null),
         }}
+        dateReview={{
+          isOpen: sessionAssignment.review !== null,
+          date: sessionAssignment.review?.date ?? '',
+          warnings: sessionAssignment.review?.warnings ?? [],
+          onModify: () => {
+            sessionAssignment.modify();
+            window.requestAnimationFrame(() => {
+              window.requestAnimationFrame(() => document.getElementById('assign-date-input')?.focus());
+            });
+          },
+          onConfirm: sessionAssignment.confirm,
+        }}
+        timetableNudge={{
+          isOpen: showTimetableNudge,
+          onSkip: dismissTimetableNudge,
+          onFill: fillTimetableFromNudge,
+          className: classInfo.name,
+        }}
+        documentPreview={{
+          isOpen: openDocument !== null,
+          onClose: closeDocumentPreview,
+          title: openDocument?.title ?? '',
+          classLabel: formatLocalizedClassDisplayName(classInfo.name, locale),
+          source: openDocument?.document.source,
+          updatedLabel: documentUpdatedLabel,
+        }}
+        printConfirmation={{
+          open: pendingPrintConfirmation !== null,
+          onOpenChange: open => { if (!open) setPendingPrintConfirmation(null); },
+          onConfirm: () => {
+            if (!pendingPrintConfirmation || !workspaceIsActive()) return;
+            if (!recordPrint(pendingPrintConfirmation.classId, pendingPrintConfirmation.signatures)) {
+              showNotification(t('editorNotice.printHistoryError'), 'warning');
+            }
+            setPrintMetaVersion(version => version + 1);
+          },
+        }}
+        bulkDelete={{
+          open: confirmBulkDelete,
+          count: selectedIndices.length,
+          onOpenChange: setConfirmBulkDelete,
+          onConfirm: executeBulkDelete,
+        }}
+        mathPreparing={isInitialMathPreparing}
       />
-
-      <ConfirmDialog
-        open={confirmBulkDelete}
-        onOpenChange={setConfirmBulkDelete}
-        title={t(selectedIndices.length === 1 ? 'bulkDelete.titleOne' : 'bulkDelete.titleMany', { count: selectedIndices.length })}
-        description={t('bulkDelete.description')}
-        confirmLabel={t('selection.delete')}
-        onConfirm={executeBulkDelete}
-      />
-
-      {isInitialMathPreparing && <AppBootSkeleton stage="latex" overlay />}
     </div>
   );
 };

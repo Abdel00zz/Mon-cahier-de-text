@@ -24,8 +24,8 @@ test('la barre de sélection n’affiche ni compteur ni bouton fermer et reste l
   assert.match(bar, /Escape/, 'Échap désélectionne');
   assert.match(bar, /allToday/, '« Aujourd’hui » disparaît quand tout porte déjà la date du jour');
   const editor = read('src/features/editor/Editor.tsx');
-  assert.match(editor, /allToday=\{allSelectedToday\}/);
-  assert.match(editor, /onAdd=\{handleSelectionAdd\}/, 'actions à référence stable');
+  assert.match(editor, /allToday: allSelectedToday/);
+  assert.match(editor, /onAdd: handleSelectionAdd/, 'actions à référence stable');
 });
 
 test('les écrans de chargement n’affichent plus de textes de détail sous le spinner', () => {

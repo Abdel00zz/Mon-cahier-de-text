@@ -1,7 +1,7 @@
 {
   "max": 400,
   "files": {
-    "src/features/editor/Editor.tsx": 1523,
+    "src/features/editor/Editor.tsx": 1508,
     "src/admin/components/TeacherDetail.tsx": 1395,
     "api/admin.ts": 1055,
     "src/features/editor/modals/AssignDateModal.tsx": 867,

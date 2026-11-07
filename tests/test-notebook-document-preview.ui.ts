@@ -72,11 +72,12 @@ test('la table passe la lecture du sujet jusqu’aux rangées mémoïsées', () 
 });
 
 test('l’éditeur ouvre l’aperçu du sujet sans quitter le cahier', () => {
-    const editor = readFileSync('src/features/editor/Editor.tsx', 'utf8');
+    const editor = readFileSync('src/features/editor/Editor.tsx', 'utf8') + readFileSync('src/features/editor/EditorOverlays.tsx', 'utf8');
     assert.match(editor, /useNotebookDocumentPreviews\(classInfo, config, lessonsData\)/, 'les sujets viennent du moteur partagé');
     assert.match(editor, /onOpenDocumentPreview=\{handleOpenDocumentPreview\}/, 'le cahier ouvre l’aperçu');
-    assert.match(editor, /<DocumentPreview[\s\S]*?isOpen=\{openDocument !== null\}/, 'une seule fenêtre, fermée par défaut');
-    assert.match(editor, /source=\{openDocument\?\.document\.source\}/, 'la source est lue telle quelle, sans recopie');
+    assert.match(editor, /documentPreview=\{\{[\s\S]*?isOpen: openDocument !== null/, 'une seule fenêtre, fermée par défaut');
+  assert.match(editor, /<DocumentPreview \{\.\.\.documentPreview\} \/>/, 'la fenêtre est montée par le socle d’overlays');
+    assert.match(editor, /source: openDocument\?\.document\.source/, 'la source est lue telle quelle, sans recopie');
 
     const hook = readFileSync('src/features/editor/hooks/useNotebookDocumentPreviews.ts', 'utf8');
     assert.match(hook, /linkAssessments/, 'même moteur de correspondance que les écarts de date');
