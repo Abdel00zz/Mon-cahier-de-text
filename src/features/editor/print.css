@@ -24,7 +24,7 @@
 
 .print-document {
     --print-fill: 1;
-    font-size: var(--print-size-body);
+    font-size: calc(var(--print-size-body) * var(--print-fill));
     margin: 0;
     padding: 0;
     background: white !important;
@@ -101,7 +101,7 @@
     padding-block: calc(var(--print-cell-block, 3pt) * var(--print-fill));
     vertical-align: top;
     text-align: start;
-    font-size: var(--print-size-cell);
+    font-size: calc(var(--print-size-cell) * var(--print-fill));
     line-height: calc(var(--print-spacing-line) * var(--print-fill));
     border-inline-end: 0.55pt solid var(--print-rule) !important;
 }
@@ -135,7 +135,7 @@
 .print-col-content { width: 65%; }
 .print-col-remark {
     width: 20%;
-    font-size: var(--print-size-description);
+    font-size: calc(var(--print-size-description) * var(--print-fill));
     color: #4b5563;
     overflow-wrap: anywhere;
 }
@@ -188,7 +188,7 @@
 }
 .print-session-chapter-item .font-bold,
 .print-session-chapter-item .font-extrabold {
-    font-size: var(--print-size-chapter) !important;
+    font-size: calc(var(--print-size-chapter) * var(--print-fill)) !important;
     font-weight: bold !important;
     color: var(--print-ink) !important;
 }

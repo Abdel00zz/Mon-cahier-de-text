@@ -1,8 +1,8 @@
 import { useLayoutEffect, type DependencyList, type RefObject } from 'react';
 import { pageCountFor, planPrintFill, PRINT_PAGE_HEIGHT_PX } from '@/infrastructure/printing/printBalance';
 
-const MAX_FILL = 1.14;
-const MIN_COMPACT = 0.82;
+const MAX_FILL = 1.12;
+const MIN_COMPACT = 0.78;
 
 /**
  * Ajuste le rendu imprimé après mesure réelle du DOM :

@@ -96,3 +96,7 @@ Ressources PWA précachées : **360 → 305** (7 fichiers de polices ajoutés).
 
 - Pilotage 60 chapitres / 12 000 éléments : **19,8 ms** à froid, **0,7 ms** à chaud.
 - Diagnostic JSON 5 000 éléments : **16,8 ms** médian, **26,5 ms** p95.
+
+## Équilibrage d'impression
+
+Le moteur ajuste maintenant **taille, interligne et espacement vertical** des cellules, titres, paragraphes et listes, puis répartit le reliquat entre les blocs afin que la dernière page soit aussi pleine que les précédentes. Une dernière page entamée à moins de 50 % est compactée pour disparaître.

@@ -30,7 +30,7 @@ export function planPrintFill(contentHeight: number, pageHeight = PRINT_PAGE_HEI
   if (pages <= 1) return { mode: 'none', targetPages: 1, targetHeight: contentHeight };
   const lastPageHeight = contentHeight - (pages - 1) * pageHeight;
   const lastPageRatio = lastPageHeight / pageHeight;
-  if (lastPageRatio < 0.45) {
+  if (lastPageRatio < 0.5) {
     return {
       mode: 'compact',
       targetPages: pages - 1,
