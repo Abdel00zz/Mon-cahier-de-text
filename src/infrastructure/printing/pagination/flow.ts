@@ -2,7 +2,7 @@ import { PRINT_PAGE_HEIGHT_PX } from '../printBalance';
 
 // Simulation fidèle de la fragmentation A4 et justification verticale.
 
-export interface FlowRow {
+interface FlowRow {
   height: number;
   avoid: boolean;
   keepWithNext?: boolean;
@@ -18,7 +18,7 @@ export interface FlowInput {
   trailerHeight: number;
 }
 
-export interface FlowPage {
+interface FlowPage {
   rows: number[];
   split: number[];
   used: number;
