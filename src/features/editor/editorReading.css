@@ -1,0 +1,100 @@
+/* The reading layout changes only presentation. Session ownership,
+   selection, date/remark handlers, ordering and print composition stay shared. */
+@media screen {
+  .editor-reading-table[data-editor-table] {
+    --reading-mute: hsl(var(--muted-foreground));
+    --reading-teal: #326c70;
+    --reading-date: #805d29;
+    --reading-note: #326c70;
+    border-radius: 1.25rem;
+    padding: 0;
+    background: hsl(var(--card));
+    box-shadow: 0 16px 40px -30px hsl(var(--foreground) / .2);
+  }
+  .dark .editor-reading-table[data-editor-table] { --reading-teal: #a0ceca; --reading-date: #dcc394; --reading-note: #a0ceca; }
+  .editor-reading-table, .editor-reading-table :is([dir], [data-row-content]) {
+    --font-latin-reading: 'Lexend', system-ui;
+    --font-latin-body: 'Lexend', system-ui;
+    --font-latin-display: 'Bricolage Grotesque', system-ui;
+    --font-arabic-body: 'IBM Plex Sans Arabic', sans-serif;
+    --font-arabic-display: 'IBM Plex Sans Arabic', sans-serif;
+    --font-arabic-secondary: 'IBM Plex Sans Arabic', sans-serif;
+    --font-content: 'Lexend', 'IBM Plex Sans Arabic', sans-serif;
+    --font-editor-title: 'Bricolage Grotesque', 'IBM Plex Sans Arabic', sans-serif;
+    --font-display: var(--font-editor-title);
+    --font-sans: var(--font-content);
+  }
+  .editor-reading-table :is(.editor-type-item-title, .editor-type-description, .editor-free-content, .editor-session-note, .editor-type-remark) {
+    font-family: var(--font-content);
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.7;
+  }
+  .editor-reading-table :is(.editor-type-chapter, .editor-type-top, .editor-type-evaluation, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection),
+  .editor-reading-table :is(.editor-type-chapter, .editor-type-top, .editor-type-evaluation, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection) [dir]:not(.katex, .katex *) {
+    font-family: var(--font-editor-title);
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .editor-reading-table [data-editor-table-header] { display: block; background: hsl(var(--muted) / .35); }
+  .editor-reading-table [data-editor-table-header] .editor-type-table-side,
+  .editor-reading-table [data-editor-table-header] .editor-type-table-main { font: 500 .75rem/1.5 var(--font-content); letter-spacing: normal; text-transform: none; }
+  .editor-reading-table [data-editor-table-header] .sr-only { position: static; width: auto; height: auto; padding: 0; margin: 0; overflow: visible; clip: auto; clip-path: none; white-space: normal; }
+  .editor-reading-table [data-editor-table-header] [aria-hidden='true'] { display: none; }
+  .editor-reading-table .editor-section-letter {
+    display: inline-grid; place-items: center; align-self: start;
+    min-width: 1.9rem; height: 1.9rem; padding-inline: .25rem;
+    border-radius: .5rem; background: color-mix(in srgb, var(--reading-teal) 11%, transparent);
+    color: var(--reading-teal); font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: .95rem; line-height: 1;
+  }
+  .editor-reading-table [data-row-content] { border-radius: 0; padding: .65rem .75rem; }
+  .editor-reading-table :is(.editor-type-chapter, .editor-type-top) { padding-block: .35rem; }
+  .editor-reading-table .editor-kind-badge { border-radius: 99px !important; padding: .2rem .6rem; font-family: var(--font-content); font-weight: 500; }
+  .editor-reading-table .editor-lesson-row { gap: .65rem; }
+  .editor-reading-table .editor-type-item-title { font-size: max(.875rem, var(--editor-fs-item-title)); }
+  .editor-reading-table .editor-item-description { border-radius: .8rem; font-style: normal; box-shadow: none; }
+
+  /* The three columns remain aligned, including merged sessions. Only their
+     inner date and note objects receive a pill treatment. */
+  .editor-reading-table :is([data-session-cell='date'], [data-editor-cell='date']) {
+    min-width: 0; min-height: 44px; align-self: stretch; justify-self: stretch;
+    padding: .25rem; background: transparent;
+  }
+  .editor-reading-table [data-editor-cell='date'] > div { min-height: 44px; padding: 0; background: transparent; }
+  .editor-reading-table .editor-date-value {
+    width: fit-content; max-width: 100%; margin: auto; padding: .4rem .45rem;
+    border-radius: 99px; background: color-mix(in srgb, var(--reading-date) 10%, transparent);
+    font: 500 .75rem/1.4 'Lexend', sans-serif;
+  }
+  .editor-reading-table .editor-date-value:not(.text-alert-strong) { color: var(--reading-date) !important; }
+  .editor-reading-table :is([data-session-cell='remark'], [data-editor-cell='remark']) { min-width: 0; padding: .25rem; background: transparent; }
+  .editor-reading-table [data-remark-cell] { min-height: 44px; padding: .25rem; border-radius: .75rem; }
+  .editor-reading-table :is(.editor-type-remark, .editor-session-note) {
+    font-size: .8125rem; color: var(--reading-note); padding: .3rem .45rem;
+    border-radius: .75rem; background: color-mix(in srgb, var(--reading-note) 8%, transparent);
+  }
+  .editor-reading-table .editor-empty-date, .editor-reading-table .editor-empty-note {
+    margin: auto; color: #737373; opacity: .55;
+    transition: opacity 160ms ease;
+  }
+  .dark .editor-reading-table :is(.editor-empty-date, .editor-empty-note) { color: #c2c2c2; }
+  .editor-reading-table button:is(:hover, :focus-visible) :is(.editor-empty-date, .editor-empty-note) { opacity: .9; }
+  .editor-reading-table [data-absence-session] > * { padding: .5rem .25rem; }
+  
+  .editor-reading-table .editor-reorder-handle { border-radius: .6rem; color: var(--reading-mute); }
+  .editor-reading-table [data-editor-drop-side] { --primary: 184 37% 32%; }
+  .dark .editor-reading-table [data-editor-drop-side] { --primary: 174 35% 63%; }
+  .editor-reading-table [data-editor-dragging='true'] { box-shadow: 0 10px 28px -16px hsl(var(--foreground) / .3); }
+  @media (max-width: 639px) {
+    .editor-reading-table[data-editor-table] { padding: 0; }
+    .editor-reading-table .editor-table-grid { grid-template-columns: 52px minmax(0, 1fr) 88px; }
+    .editor-reading-table [data-row-content] { padding: .6rem .5rem; }
+    .editor-reading-table :is([data-session-cell='remark'], [data-editor-cell='remark'], [data-remark-cell]) { padding-inline: .1rem; }
+    .editor-reading-table :is(.editor-type-remark, .editor-session-note) { padding-inline: .25rem; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .editor-reading-table :is(.editor-empty-date, .editor-empty-note) { transition: none; }
+}

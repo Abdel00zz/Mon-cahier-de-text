@@ -101,8 +101,6 @@
    deux dates (donné, corrigé). Une ligne discrète qui se replie au besoin. */
 .ev-row__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .75rem; margin-top: .2rem; }
 /* « Aligner sur le cahier » est une commande : 44 px au doigt, discrète à la souris. */
-.ev-row__align { min-height: 1.75rem; }
-@media (pointer: coarse) { .ev-row__align { min-height: var(--touch-min, 2.75rem); padding-inline: .75rem; } }
 
 /* Material 3 : une ligne de 36 px reste compacte à la souris, mais la cible
    atteint 48 px au doigt — la grille grandit sans changer de colonnes. */
@@ -275,54 +273,6 @@
     text-align: center;
     min-width: 0;
 }
-/* Date ajustée par le professeur : elle est écrite en accent, comme partout. */
-
-/* Pastille interactive de date (activité / période) : badge centré compact */
-.ev-date-trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 24px;
-    padding-inline: .625rem;
-    font-size: 11px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    border-radius: 9999px;
-    border: 1px solid color-mix(in srgb, hsl(var(--border)) 70%, transparent);
-    background: color-mix(in srgb, hsl(var(--background)) 85%, transparent);
-    color: hsl(var(--foreground));
-    transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
-}
-.ev-date-trigger:hover {
-    background: color-mix(in srgb, hsl(var(--muted)) 75%, transparent);
-    border-color: color-mix(in srgb, hsl(var(--primary)) 45%, transparent);
-    color: hsl(var(--primary));
-}
-/* Sans date : un constat discret, aligné au centre. */
-.ev-date-empty {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 24px;
-    padding-inline: .625rem;
-    font-size: 11px;
-    font-weight: 600;
-    border-radius: 9999px;
-    border: 1px dashed color-mix(in srgb, hsl(var(--border)) 80%, transparent);
-    background: color-mix(in srgb, hsl(var(--muted)) 35%, transparent);
-    color: hsl(var(--muted-foreground));
-    cursor: default;
-    white-space: nowrap;
-}
-.ev-date-trigger:active {
-    transform: scale(0.95);
-}
-.ev-date-trigger:focus-visible {
-    outline: none;
-    border-color: color-mix(in srgb, hsl(var(--primary)) 55%, transparent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, hsl(var(--primary)) 20%, transparent);
-}
-
 /* La ligne d'une activité réalisée s'éteint sans disparaître. */
 .ev-board__rows > .ev-row[data-done='true'] .ev-row__id {
     text-decoration: line-through;

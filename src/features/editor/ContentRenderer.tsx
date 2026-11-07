@@ -173,7 +173,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                     `overflow-wrap: anywhere` ([data-row-content]), donc sans
                     cela le repli d'un titre long comprime « A. » jusqu'à ce
                     que le point passe seul à la ligne suivante. */}
-                <bdi dir="ltr" className="shrink-0 whitespace-nowrap">{contentNumber ?? sectionLetter}.</bdi>
+                <bdi dir="ltr" className="editor-section-letter shrink-0 whitespace-nowrap">{contentNumber ?? sectionLetter}</bdi>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>
@@ -269,11 +269,11 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         : undefined;
 
       const content = (
-        <div dir={textDirectionAttribute(item.title || item.description)} className={`editor-lesson-row editor-table-content text-start font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
+        <div dir={textDirectionAttribute(item.title || item.description)} className={`editor-lesson-row editor-table-content block min-w-0 text-start font-editor-system py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
           <Badge
             variant="outline"
             dir={textDirectionAttribute(badgeText) ?? 'ltr'}
-            className={`editor-kind-badge editor-type-badge shrink-0 select-none whitespace-nowrap px-1 transition-colors duration-150 cursor-default self-baseline ${badgeClass} ${isPrint ? 'badge-print' : ''}`}
+            className={`editor-kind-badge editor-type-badge me-1.5 inline-flex shrink-0 select-none whitespace-nowrap px-1 align-baseline transition-colors duration-150 cursor-default ${badgeClass} ${isPrint ? 'badge-print' : ''}`}
             data-content-type={normalizedType}
             data-content-number={displayNumber ?? ''}
             data-tippy-content={fullTooltip}
@@ -282,7 +282,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             {displayNumber ? <bdi dir="ltr" className="ms-px font-bold lg:ms-0.5">{displayNumber}</bdi> : null}
           </Badge>
           {/* Titre : wrap multilingue / saut de ligne supporté */}
-          <div
+          <span
             title={item.title || t('editor.titlePlaceholder')}
             dir={textDirectionAttribute(item.title)}
             className="editor-type-item-title text-start min-w-0 break-words p-0 font-semibold text-foreground"
@@ -309,12 +309,12 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             ) : (
               <span dir={textDirectionAttribute(t('editor.titlePlaceholder'))} className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>
             )}
-          </div>
+          </span>
 
           {/* Description : encadré mathématique sobre sans arrondi sous le titre (masqué si un document dédié existe pour éliminer tout sous-titre redondant) */}
           {allowDescription && !itemDocumentPreview && (
             <div
-              className="col-start-2 editor-item-description editor-type-description text-start mt-1.5 px-2.5 py-1 text-foreground whitespace-pre-wrap break-words"
+              className="editor-item-description editor-type-description text-start mt-1.5 block px-2.5 py-1 text-foreground whitespace-pre-wrap break-words"
               data-content-type={normalizedType}
               dir={textDirectionAttribute(item.description)}
             >
@@ -324,7 +324,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
           {/* Info page */}
           {item.page && (
-            <div dir="ltr" className="col-start-2 editor-type-page flex items-center gap-1 text-muted-foreground italic">
+            <div dir="ltr" className="editor-type-page flex items-center gap-1 text-muted-foreground italic">
               <span>(p.</span>
               <span>{String(item.page)}</span>
               <span>)</span>
@@ -343,4 +343,14 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     default:
       return null;
   }
+}, (previous, next) => {
+  // Rebuilding the row projection after a date edit recreates coordinates.
+  // Equal coordinates do not require typesetting every unchanged lesson again.
+  const keys = new Set([...Object.keys(previous), ...Object.keys(next)] as (keyof ContentRendererProps)[]);
+  for (const key of keys) {
+    if (key === 'indices') {
+      if (indicesKey(previous.indices) !== indicesKey(next.indices)) return false;
+    } else if (!Object.is(previous[key], next[key])) return false;
+  }
+  return true;
 });

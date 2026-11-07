@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useTransition } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { Draft } from 'immer';
 import type { Indices, LessonsData } from '@/types';
 import { indicesKey } from '@/domain/notebook/lessonRows';
@@ -38,7 +38,6 @@ export function useSelectionEngine({
   setEditorState: (recipe: (draft: SelectionEditorState) => void) => void;
 }) {
   const [selectionState, setSelectionState] = useState<SelectionState>(() => createSelectionState());
-  const [isSelectionPending, startSelectionTransition] = useTransition();
 
   const selectedIndices = useMemo(() => Array.from(selectionState.items.values()), [selectionState]);
   const selectedCount = selectionState.keys.size;
@@ -57,52 +56,40 @@ export function useSelectionEngine({
   [lessonsData, moveTargets]);
 
   const handleToggleSelectRow = useCallback((indices: Indices) => {
-    startSelectionTransition(() => {
-      setSelectionState(current => {
-        const key = indicesKey(indices);
-        const keys = new Set(current.keys);
-        const items = new Map(current.items);
-        if (keys.has(key)) {
-          keys.delete(key);
-          items.delete(key);
-        } else {
-          keys.add(key);
-          items.set(key, indices);
-        }
-        return { keys, items };
-      });
+    // Selection is direct feedback. Deferring this small Set update introduced
+    // a pending render before the highlight and briefly disabled date actions.
+    setSelectionState(current => {
+      const key = indicesKey(indices);
+      const keys = new Set(current.keys);
+      const items = new Map(current.items);
+      if (keys.has(key)) {
+        keys.delete(key);
+        items.delete(key);
+      } else {
+        keys.add(key);
+        items.set(key, indices);
+      }
+      return { keys, items };
     });
   }, []);
 
   const handleToggleSelectGroup = useCallback((groupIndices: Indices[]) => {
     if (groupIndices.length === 0) return;
-    startSelectionTransition(() => {
-      setSelectionState(current => {
-        const keys = new Set(current.keys);
-        const items = new Map(current.items);
-        const allSelected = groupIndices.every(idx => keys.has(indicesKey(idx)));
-        if (allSelected) {
-          groupIndices.forEach(idx => {
-            const key = indicesKey(idx);
-            keys.delete(key);
-            items.delete(key);
-          });
-        } else {
-          groupIndices.forEach(idx => {
-            const key = indicesKey(idx);
-            keys.add(key);
-            items.set(key, idx);
-          });
-        }
-        return { keys, items };
+    setSelectionState(current => {
+      const keys = new Set(current.keys);
+      const items = new Map(current.items);
+      const allSelected = groupIndices.every(idx => keys.has(indicesKey(idx)));
+      groupIndices.forEach(idx => {
+        const key = indicesKey(idx);
+        if (allSelected) { keys.delete(key); items.delete(key); }
+        else { keys.add(key); items.set(key, idx); }
       });
+      return { keys, items };
     });
   }, []);
 
   const handleDeselectAll = useCallback(() => {
-    startSelectionTransition(() => {
-      setSelectionState(createSelectionState());
-    });
+    setSelectionState(current => current.keys.size ? createSelectionState() : current);
   }, []);
 
   return {
@@ -110,7 +97,6 @@ export function useSelectionEngine({
     selectedIndices,
     selectedCount,
     setSelectionState,
-    isSelectionPending,
     handleDropRow,
     canDropRow,
     handleToggleSelectRow,

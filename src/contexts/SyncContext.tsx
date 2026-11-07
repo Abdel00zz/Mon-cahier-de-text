@@ -53,7 +53,6 @@ import {
     type ServerClassesBlob,
 } from '../infrastructure/sync/pullHelpers';
 import { dequal } from 'dequal';
-
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
 interface SyncContextValue {
@@ -530,6 +529,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // Proposition NON bloquante pour les autres cahiers locaux.
                     // L'application conseille, le professeur décide et rien n'est interrompu.
                     setSyncStatus('idle');
+                    notifySyncProgress({ state: 'idle', total: 0, done: 0, classId: null });
                     if (!associationOffered) toast.info(
                         syncText('sync.localNotLinked', { count: localClasses.length }),
                         {

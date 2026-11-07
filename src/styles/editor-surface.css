@@ -84,9 +84,10 @@
   }
   .editor-type-item-title,
   .editor-type-item-title [dir]:not(.katex, .katex *) {
-    font-family: var(--font-editor-title);
-    font-size: var(--editor-fs-item-title);
-    line-height: 1.45;
+    font: 600 var(--editor-fs-item-title)/1.5 var(--font-editor-title);
+    font-style: normal;
+    letter-spacing: -0.005em;
+    text-wrap: pretty;
   }
   .editor-type-description {
     font-family: var(--font-content);
@@ -270,10 +271,7 @@
     .editor-document-highlight:active { transform: none; }
   }
 
-  .editor-kind-badge {
-    min-width: var(--editor-badge-min-width) !important;
-    padding-inline: var(--editor-badge-padding-inline) !important;
-  }
+  .editor-kind-badge { min-width: 0 !important; padding-inline: var(--editor-badge-padding-inline) !important; padding-block: 1px !important; border-radius: 5px; font-weight: 650; letter-spacing: 0.01em; vertical-align: baseline; }
 
   .editor-lesson-row {
     gap: var(--editor-lesson-gap);
@@ -307,16 +305,16 @@
     --editor-fs-section: calc(var(--editor-scale) * 1.16);
     --editor-fs-subsection: calc(var(--editor-scale) * 1.08);
     --editor-fs-subsubsection: calc(var(--editor-scale) * 1.02);
-    --editor-fs-item-title: calc(var(--editor-scale) * 0.96);
+    --editor-fs-item-title: calc(var(--editor-scale) * 0.98);
     --editor-fs-description: calc(var(--editor-scale) * 0.90);
     --editor-fs-remark: calc(var(--editor-scale) * 0.84);
     --editor-fs-table-main: calc(var(--editor-scale) * 0.81);
     --editor-fs-table-side: calc(var(--editor-scale) * 0.75);
     --editor-fs-date: calc(var(--editor-scale) * 0.88);
     --editor-fs-page: calc(var(--editor-scale) * 0.75);
-    --editor-fs-badge: calc(var(--editor-scale) * 0.72);
-    --editor-badge-min-width: calc(var(--editor-scale) * 1.95);
-    --editor-badge-padding-inline: 5px;
+    --editor-fs-badge: calc(var(--editor-scale) * 0.68);
+    --editor-badge-min-width: 0px;
+    --editor-badge-padding-inline: 4px;
     --editor-lesson-gap: clamp(5px, 1vw, 10px);
     --editor-lesson-indent: clamp(0px, calc(2vw - 8px), 12px);
     /* Retrait hiérarchique : le chapitre tient la marge, chaque niveau
@@ -579,113 +577,61 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------------------------------------------------------------------------
-   Cadres type Définition, Théorème, Proposition, Propriété, Lemme, Corollaire...
-   SANS ARRONDI (angles vifs, tradition mathématique et scientifique stricte).
-   --------------------------------------------------------------------------- */
+/* Cadres de contenu : contour fin, rayon doux, texte romain par défaut. */
 .editor-item-description {
-  border-radius: 0 !important;
-  border: 1px solid hsl(var(--border) / 0.85);
-  border-inline-start: 3.5px solid hsl(var(--primary));
-  background: color-mix(in srgb, hsl(var(--muted)) 35%, hsl(var(--card)));
-  padding: 0.35rem 0.65rem;
+  --frame-tone: hsl(var(--primary));
+  border: 1px solid color-mix(in srgb, var(--frame-tone) 26%, hsl(var(--border)));
+  border-inline-start: 0 !important;
+  border-radius: 12px !important;
+  background: color-mix(in srgb, var(--frame-tone) 2%, hsl(var(--card)));
+  padding: .55rem .8rem;
+  font-style: normal;
+  line-height: 1.65;
+  text-wrap: pretty;
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / .035), 0 8px 20px -18px color-mix(in srgb, var(--frame-tone) 36%, transparent);
 }
 
-/* Famille Bleu : Définitions & Introduction */
-.editor-item-description[data-content-type="définition"],
-.editor-item-description[data-content-type="introduction"] {
-  border-radius: 0 !important;
-  border-color: color-mix(in srgb, #0d549b 30%, hsl(var(--border)));
-  border-inline-start: 3.5px solid #0d549b;
-  background: color-mix(in srgb, #0d549b 6%, hsl(var(--card)));
-}
-.dark .editor-item-description[data-content-type="définition"],
-.dark .editor-item-description[data-content-type="introduction"] {
-  border-inline-start-color: #8fc3ff;
-  border-color: color-mix(in srgb, #122842 50%, hsl(var(--border)));
-  background: color-mix(in srgb, #122842 20%, hsl(var(--card)));
-}
+/* Définitions & introduction : bleu ardoise. */
+.editor-item-description:is([data-content-type='définition'], [data-content-type='introduction']) { --frame-tone: #3b6fa0; }
+.dark .editor-item-description:is([data-content-type='définition'], [data-content-type='introduction']) { --frame-tone: #8fc3ff; }
 
-/* Famille Rouge/Brique : Théorèmes, Propositions, Propriétés, Lemmes, Corollaires, Règles, Lois, Principes */
-.editor-item-description[data-content-type="théorème"],
-.editor-item-description[data-content-type="proposition"],
-.editor-item-description[data-content-type="propriété"],
-.editor-item-description[data-content-type="lemme"],
-.editor-item-description[data-content-type="corollaire"],
-.editor-item-description[data-content-type="conséquence"],
-.editor-item-description[data-content-type="règle"],
-.editor-item-description[data-content-type="loi"],
-.editor-item-description[data-content-type="principe"],
-.editor-item-description[data-content-type="sécurité"] {
-  border-radius: 0 !important;
-  border-color: color-mix(in srgb, #ad2d24 30%, hsl(var(--border)));
-  border-inline-start: 3.5px solid #ad2d24;
-  background: color-mix(in srgb, #ad2d24 6%, hsl(var(--card)));
-}
-.dark .editor-item-description[data-content-type="théorème"],
-.dark .editor-item-description[data-content-type="proposition"],
-.dark .editor-item-description[data-content-type="propriété"],
-.dark .editor-item-description[data-content-type="lemme"],
-.dark .editor-item-description[data-content-type="corollaire"],
-.dark .editor-item-description[data-content-type="conséquence"],
-.dark .editor-item-description[data-content-type="règle"],
-.dark .editor-item-description[data-content-type="loi"],
-.dark .editor-item-description[data-content-type="principe"],
-.dark .editor-item-description[data-content-type="sécurité"] {
-  border-inline-start-color: #fca597;
-  border-color: color-mix(in srgb, #381614 50%, hsl(var(--border)));
-  background: color-mix(in srgb, #381614 20%, hsl(var(--card)));
-}
+/* Théorèmes & règles : brique douce. */
+.editor-item-description:is(
+  [data-content-type='théorème'], [data-content-type='proposition'], [data-content-type='propriété'],
+  [data-content-type='lemme'], [data-content-type='corollaire'], [data-content-type='conséquence'],
+  [data-content-type='règle'], [data-content-type='loi'], [data-content-type='principe'], [data-content-type='sécurité']
+) { --frame-tone: #a34b40; }
+.dark .editor-item-description:is(
+  [data-content-type='théorème'], [data-content-type='proposition'], [data-content-type='propriété'],
+  [data-content-type='lemme'], [data-content-type='corollaire'], [data-content-type='conséquence'],
+  [data-content-type='règle'], [data-content-type='loi'], [data-content-type='principe'], [data-content-type='sécurité']
+) { --frame-tone: #f0a096; }
 
-/* Famille Verte : Activités, Applications, Exemples, Exercices */
-.editor-item-description[data-content-type="activité"],
-.editor-item-description[data-content-type="application"],
-.editor-item-description[data-content-type="exemple"],
-.editor-item-description[data-content-type="exercice"],
-.editor-item-description[data-content-type="expérience"],
-.editor-item-description[data-content-type="observation"] {
-  border-radius: 0 !important;
-  border-color: color-mix(in srgb, #196336 30%, hsl(var(--border)));
-  border-inline-start: 3.5px solid #196336;
-  background: color-mix(in srgb, #196336 6%, hsl(var(--card)));
-}
-.dark .editor-item-description[data-content-type="activité"],
-.dark .editor-item-description[data-content-type="application"],
-.dark .editor-item-description[data-content-type="exemple"],
-.dark .editor-item-description[data-content-type="exercice"],
-.dark .editor-item-description[data-content-type="expérience"],
-.dark .editor-item-description[data-content-type="observation"] {
-  border-inline-start-color: #8de3a6;
-  border-color: color-mix(in srgb, #122b1c 50%, hsl(var(--border)));
-  background: color-mix(in srgb, #122b1c 20%, hsl(var(--card)));
-}
+/* Activités & exercices : sauge profonde, plus calme que l'ancien vert. */
+.editor-item-description:is(
+  [data-content-type='activité'], [data-content-type='application'], [data-content-type='exemple'],
+  [data-content-type='exercice'], [data-content-type='expérience'], [data-content-type='observation']
+) { --frame-tone: #4f7d69; font-style: italic; }
+.dark .editor-item-description:is(
+  [data-content-type='activité'], [data-content-type='application'], [data-content-type='exemple'],
+  [data-content-type='exercice'], [data-content-type='expérience'], [data-content-type='observation']
+) { --frame-tone: #9cc7b3; font-style: italic; }
 
-/* Famille Neutre : Remarques, Preuves, Méthodes */
-.editor-item-description[data-content-type="remarque"],
-.editor-item-description[data-content-type="preuve"],
-.editor-item-description[data-content-type="méthode"],
-.editor-item-description[data-content-type="protocole"] {
-  border-radius: 0 !important;
-  border-color: color-mix(in srgb, #3e444e 30%, hsl(var(--border)));
-  border-inline-start: 3.5px solid #3e444e;
-  background: color-mix(in srgb, #3e444e 6%, hsl(var(--card)));
-}
-.dark .editor-item-description[data-content-type="remarque"],
-.dark .editor-item-description[data-content-type="preuve"],
-.dark .editor-item-description[data-content-type="méthode"],
-.dark .editor-item-description[data-content-type="protocole"] {
-  border-inline-start-color: #cbd5e1;
-  border-color: color-mix(in srgb, #20252d 50%, hsl(var(--border)));
-  background: color-mix(in srgb, #20252d 20%, hsl(var(--card)));
-}
+/* Remarques, preuves & méthodes : gris chaud. */
+.editor-item-description:is(
+  [data-content-type='remarque'], [data-content-type='preuve'], [data-content-type='méthode'], [data-content-type='protocole']
+) { --frame-tone: #5b6068; }
+.dark .editor-item-description:is(
+  [data-content-type='remarque'], [data-content-type='preuve'], [data-content-type='méthode'], [data-content-type='protocole']
+) { --frame-tone: #cbd5e1; }
 
-/* Pastilles de type sans arrondi pour TOUS les types (style artistique / éditorial) */
+/* Pastilles : petit rayon, jamais un rectangle massif. */
 .editor-kind-badge,
 .editor-type-badge,
 .content-badge,
 [data-content-type].editor-kind-badge,
 [data-content-type].content-badge {
-  border-radius: 0 !important;
+  border-radius: 4px !important;
 }
 
 /* Les champs conservent une taille lisible et évitent le zoom iOS. */
@@ -699,11 +645,11 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
     border: 1px solid hsl(var(--border) / .8) !important;
     border-radius: 8px;
     box-shadow: 0 18px 48px -24px hsl(var(--foreground) / .22);
-    --editor-badge-min-width: 60px;
+    --editor-badge-min-width: 0px;
     --editor-lesson-gap: clamp(8px, 1.5vw, 20px);
   }
   [data-editor-table] .editor-kind-badge {
-    min-width: 60px !important;
+    min-width: 0 !important;
     border-radius: 4px !important;
     padding: 3px 6px;
   }

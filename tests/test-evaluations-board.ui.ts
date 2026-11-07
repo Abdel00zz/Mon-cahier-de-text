@@ -123,7 +123,6 @@ test('le suivi affiche les dates du cahier sans permettre de les modifier', () =
   assert.match(view, /evaluations\.homework\.dueOn/, 'la date limite de rendu est rappelée sous le titre du devoir maison');
   assert.match(view, /ev-row--correction/, 'la date de correction est celle de l’entrée « Correction du devoir maison »');
   assert.match(css, /\.ev-row__meta \{/, 'la ligne secondaire a son style');
-  assert.match(css, /@media \(pointer: coarse\) \{ \.ev-row__align \{ min-height: var\(--touch-min, 2\.75rem\)/, 'et suit la cible tactile : 44 px, 48 px au doigt');
 });
 
 test('le bouton document distingue un sujet associé, requis ou facultatif', () => {

@@ -1,6 +1,7 @@
 import { dateOrderWarnings } from '@/domain/calendar/dateOrder';
 import React, { useCallback, FC, memo } from 'react';
 import { ContentRenderer } from './ContentRenderer';
+import { SectionLine } from './SectionLine';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { detectTextDirection } from '@/lib/text/textDirection';
@@ -10,12 +11,7 @@ export { DateCard, MultiDateCard } from './tableRowCells';
 import './editorRowStates.css';
 import { GripVertical } from 'lucide-react';
 
-
-
-
-
 const TABLE_GRID_CLASS = 'editor-table-grid';
-
 
 const TableRowComponent: FC<TableRowProps> = ({
   data,
@@ -45,8 +41,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   const handleToggle = useCallback(() => onToggleSelect(indices), [indices, onToggleSelect]);
   const { locale, t } = useLocale();
 
-  // La langue de chaque ligne prévaut sur celle de l'interface et du cahier.
-  const reorderDirection = detectTextDirection(data.title) ?? detectTextDirection(data.name) ?? detectTextDirection(data.description) ?? undefined;
+    const reorderDirection = detectTextDirection(data.title) ?? detectTextDirection(data.name) ?? detectTextDirection(data.description) ?? undefined;
 
   const handleContentDoubleClickCapture = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (!onDoubleClickEdit) return;
@@ -128,12 +123,8 @@ const TableRowComponent: FC<TableRowProps> = ({
       : hasAssignedDate
         ? 'hover:bg-muted/20'
         : 'hover:bg-muted/30';
-  // §G tableau serré : AUCUN padding de cadre, les filets verticaux
-  // Date|Contenu|Remarque courent jusqu'aux bords ; le padding de lisibilité
-  // reste porté par les cellules internes.
   const frameClasses = `editor-row group relative ${rowWash} ${hoverWash} transition-colors duration-150`;
 
-  // Séparateurs verticaux Date|Contenu|Remarque, filets nets et discrets style Keep
   const dividerClass = isSelected
     ? 'border-e border-e-border'
     : hasAssignedDate
@@ -151,16 +142,13 @@ const TableRowComponent: FC<TableRowProps> = ({
           : 'border-e border-e-border'
         : 'border-e border-e-border';
 
-  /* Rail latéral supprimé selon la demande. */
-  const stateRail = null;
   const rowGridClass = TABLE_GRID_CLASS;
-  const dateCellVisibility = 'flex';
 
+  const isSection = elementType === 'section';
   const isCorrection = elementType.startsWith('correction_');
   const isTopLevelBlock = (elementType in TOP_LEVEL_TYPE_CONFIG && elementType !== 'chapter') || isCorrection;
 
   if (isTopLevelBlock) {
-
 
     const contentCell = (
       <div
@@ -195,6 +183,7 @@ const TableRowComponent: FC<TableRowProps> = ({
             frameClasses,
           ].filter(Boolean).join(' ')}
           data-row-state={rowState}
+        data-row-metadata={Boolean(hasAssignedDate || data.remark || sessionAnnotation || sessionDocuments?.length) || undefined}
           onDoubleClickCapture={handleContentDoubleClickCapture}
           onDoubleClick={event => event.stopPropagation()}
         >
@@ -210,13 +199,14 @@ const TableRowComponent: FC<TableRowProps> = ({
           frameClasses,
         ].filter(Boolean).join(' ')}
         data-row-state={rowState}
+        data-row-metadata={Boolean(hasAssignedDate || data.remark || sessionAnnotation || sessionDocuments?.length) || undefined}
         onDoubleClickCapture={handleContentDoubleClickCapture}
         onDoubleClick={event => event.stopPropagation()}
       >
-        {stateRail}
         <button
           type="button"
-          className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${dividerClass} ${dateBottomBorder} cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors`}
+          data-editor-cell="date"
+          className={`min-w-0 flex flex-col items-stretch justify-center self-stretch select-none touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${dividerClass} ${dateBottomBorder} cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors`}
           onClick={(event) => {
             event.stopPropagation();
             if (onOpenDateModal) {
@@ -238,7 +228,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const contentCell = (
     <div
-      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors duration-150 ${contentBottomBorder}`}
+      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${sortable ? 'editor-row-content--sortable' : ''} ${isSection ? '' : contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       data-reorder-direction={reorderDirection}
       tabIndex={sortable ? 0 : undefined}
@@ -253,21 +243,46 @@ const TableRowComponent: FC<TableRowProps> = ({
       }}
     >
       {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={18} aria-hidden="true" /></button>}
-      <ContentRenderer
-        data={data}
-        indices={indices}
-        elementType={elementType}
-        showDescriptions={showDescriptions}
-        descriptionTypes={descriptionTypes}
-        highlight={searchQuery}
-        contentNumber={getContentNumber?.(indices)}
-        getDocumentPreview={getDocumentPreview}
-        onOpenDocumentPreview={onOpenDocumentPreview}
-      />
+      {isSection ? (
+        <SectionLine
+          date={typeof data.date === 'string' ? data.date : undefined}
+          remark={typeof data.remark === 'string' ? data.remark : undefined}
+          hasDate={hasAssignedDate}
+          onOpenDate={() => {
+            if (onOpenDateModal) onOpenDateModal(indices, typeof data.date === 'string' ? data.date : undefined);
+            else handleToggle();
+          }}
+          onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined}
+        >
+          <ContentRenderer
+            data={data}
+            indices={indices}
+            elementType={elementType}
+            showDescriptions={showDescriptions}
+            descriptionTypes={descriptionTypes}
+            highlight={searchQuery}
+            contentNumber={getContentNumber?.(indices)}
+            getDocumentPreview={getDocumentPreview}
+            onOpenDocumentPreview={onOpenDocumentPreview}
+          />
+        </SectionLine>
+      ) : (
+        <ContentRenderer
+          data={data}
+          indices={indices}
+          elementType={elementType}
+          showDescriptions={showDescriptions}
+          descriptionTypes={descriptionTypes}
+          highlight={searchQuery}
+          contentNumber={getContentNumber?.(indices)}
+          getDocumentPreview={getDocumentPreview}
+          onOpenDocumentPreview={onOpenDocumentPreview}
+        />
+      )}
     </div>
   );
 
-  if (layout === 'content-only') {
+  if (isSection || layout === 'content-only') {
     return (
       <div
         className={[
@@ -275,6 +290,7 @@ const TableRowComponent: FC<TableRowProps> = ({
           frameClasses,
         ].filter(Boolean).join(' ')}
         data-row-state={rowState}
+        data-row-metadata={Boolean(hasAssignedDate || data.remark || sessionAnnotation || sessionDocuments?.length) || undefined}
         onDoubleClickCapture={handleContentDoubleClickCapture}
         onDoubleClick={event => event.stopPropagation()}
       >
@@ -292,13 +308,14 @@ const TableRowComponent: FC<TableRowProps> = ({
     <div
       className={rowClasses}
       data-row-state={rowState}
+        data-row-metadata={Boolean(hasAssignedDate || data.remark || sessionAnnotation || sessionDocuments?.length) || undefined}
       onDoubleClickCapture={handleContentDoubleClickCapture}
       onDoubleClick={event => event.stopPropagation()}
     >
-      {stateRail}
       <button
         type="button"
-        className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${dividerClass} ${dateBottomBorder} cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors`}
+        data-editor-cell="date"
+          className={`min-w-0 flex flex-col items-stretch justify-center self-stretch select-none touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${dividerClass} ${dateBottomBorder} cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors`}
         onClick={(event) => {
           event.stopPropagation();
           if (onOpenDateModal) {

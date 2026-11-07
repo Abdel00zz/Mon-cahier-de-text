@@ -21,6 +21,8 @@
 | Configurer la connexion Google et e-mail | [Connexion Firebase](operations/firebase-sign-in.md) |
 | Compiler et tester l’application Android | [Android](operations/android.md) |
 | Consulter les analyses UX, mobile et données | [Audits](audits/) |
+| Retrouver les pages mobiles, l’aide recodée et le tableau de lecture | [Interface de lecture et suivi](audits/interface-lecture-mobile-2026-11-07.md) |
+| Vérifier les alignements du tableau, le déplacement et les mesures de latence | [Fluidité de l’éditeur](audits/editor-fluidite-2026-11-07.md) |
 | Retrouver les transcriptions des documents officiels | [Recherche](research/) |
 
 Les audits conservent le contexte de leurs dates de rédaction. Pour l’organisation actuelle et les commandes de vérification, utiliser l’architecture et le README du projet.

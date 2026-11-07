@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import type { PointerEvent as ReactPointerEvent, TouchEvent as ReactTouchEvent, MouseEvent as ReactMouseEvent, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { clamp } from 'es-toolkit';
 import { rows, type CanReorder, type DragState, type Reorder, type ReorderMessages, type Side } from './rowReorderTypes';
+import { createRowDragPreview } from './rowDragPreview';
 /** One animation frame owns pointer feedback and edge scrolling. React only
  * renders when the gesture starts/ends or the notebook order changes. */
 export function useEditorRowReorder(
@@ -37,11 +38,13 @@ export function useEditorRowReorder(
     if (!old) return;
     beforeRects.current = null;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    for (const row of rows(rootRef.current)) {
+    // Read every destination before starting animations or moving focus.
+    const destinations = rows(rootRef.current).map(row => ({ row, top: row.getBoundingClientRect().top }));
+    for (const { row, top } of destinations) {
       const id = row.dataset.editorSortId ?? '';
       const previous = old.get(id);
       if (previous && !reduce) {
-        const delta = previous.top - row.getBoundingClientRect().top;
+        const delta = previous.top - top;
         if (Math.abs(delta) > 1) row.animate([
           { transform: `translate3d(0, ${delta}px, 0)` },
           { transform: 'translate3d(0, 0, 0)' },
@@ -75,6 +78,8 @@ export function useEditorRowReorder(
     const pointerId = touchPoint?.identifier ?? pointer!.pointerId;
     const startX = touchPoint?.clientX ?? pointer!.clientX;
     const startY = touchPoint?.clientY ?? pointer!.clientY;
+    const sourceRect = surface.getBoundingClientRect();
+    const gripOffsetY = startY - sourceRect.top;
     const touch = Boolean(touchPoint);
     if (!touch) { event.preventDefault(); handle.focus({ preventScroll: true }); }
     // The table stays mounted while a virtualized source row scrolls away.
@@ -150,10 +155,11 @@ export function useEditorRowReorder(
       frame = 0;
       if (ended || !current.ghost) return;
       const vp = viewport();
-      // Keep the preview inside the visual viewport and above the finger.
-      const previewWidth = clamp(vp.width - 24, 0, 260);
-      const previewX = clamp(x + 16, vp.left + 12, Math.max(vp.left + 12, vp.left + vp.width - previewWidth - 12));
-      const previewY = clamp(y - (touch ? 84 : 30), vp.top + 12, Math.max(vp.top + 12, vp.top + vp.height - 72));
+      // Lift the content in its own column, as in the reference. Keeping its
+      // horizontal anchor avoids covering the neighbouring date/note controls.
+      const previewWidth = Math.min(sourceRect.width, Math.max(0, vp.width - 24));
+      const previewX = clamp(sourceRect.left, vp.left + 12, Math.max(vp.left + 12, vp.left + vp.width - previewWidth - 12));
+      const previewY = clamp(y - gripOffsetY, vp.top + 12, Math.max(vp.top + 12, vp.top + vp.height - Math.min(sourceRect.height, vp.height * .6) - 12));
       const toolbar = document.querySelector<HTMLElement>('.editor-toolbar-row')?.getBoundingClientRect();
       const selection = document.querySelector<HTMLElement>('.selection-bar')?.getBoundingClientRect();
       const upper = Math.max(vp.top + 12, toolbar && toolbar.bottom > vp.top && toolbar.top < vp.top + 120 ? toolbar.bottom + 8 : vp.top + 12);
@@ -231,22 +237,7 @@ export function useEditorRowReorder(
       // Only the handle starts a gesture, so capture does not affect row selection.
       if (!touch) captureElement.setPointerCapture(pointerId);
       handle.focus({ preventScroll: true });
-      const ghost = document.createElement('div');
-      ghost.className = 'editor-row-drag-ghost';
-      ghost.style.visibility = 'hidden';
-      ghost.setAttribute('aria-hidden', 'true');
-      const label = document.createElement('span');
-      label.className = 'editor-row-drag-ghost__label';
-      label.textContent = source.dataset.editorSortLabel?.trim() || callbacks.current.messages.started;
-      label.setAttribute('dir', 'auto');
-      ghost.append(label);
-      if (source.dataset.editorSortDetail) {
-        const detail = document.createElement('span');
-        detail.className = 'editor-row-drag-ghost__detail';
-        detail.textContent = source.dataset.editorSortDetail;
-        detail.setAttribute('dir', 'auto');
-        ghost.append(detail);
-      }
+      const ghost = createRowDragPreview(surface, source.dataset.editorSortDetail);
       document.body.append(ghost);
       current.ghost = ghost;
       source.setAttribute('data-editor-dragging', 'true');

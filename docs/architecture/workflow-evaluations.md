@@ -13,6 +13,11 @@ et ouvre le suivi des entrées existantes. Son état vide renvoie vers le cahier
 Le choix de nature se fait dans le tableau, par le formulaire de contenu ou
 la remarque de séance selon la famille.
 
+Les dates de cette feuille sont en lecture seule, y compris celles des
+corrections et des périodes d’activité. La datation et l’identité d’un contenu
+se modifient dans le tableau. Les actions de la feuille portent sur les
+documents, les élèves et les suppressions confirmées.
+
 ### Famille A — les faits de séance, énoncés dans la REMARQUE
 
 Contrôle des cahiers des élèves, remédiation, soutien, rattrapage et **devoir à
@@ -40,9 +45,8 @@ pas de nouveau bloc oral.
 
 - Le **tableau** (cahier de textes) reste la surface de **capture quotidienne** :
   contenu, date de séance, remarque. C’est lui qui porte le document.
-- La **modale « Contrôle continu et activités »** reste la surface de **gestion** :
-  dates, documents (sujet/corrigé), absences, remises, observations d’oral,
-  séance de correction.
+- La **modale « Contrôle continu et activités »** présente les dates reçues et
+  gère documents (sujet/corrigé), absences, remises et observations d’oral.
 - **Un objet n’existe qu’une fois** : les deux surfaces parlent du même
   enregistrement, jamais d’une copie. La réconciliation apparie par identité
   (`dev-block-<id>`, `event-<id>`), jamais par position ni par date seule.

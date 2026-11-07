@@ -105,15 +105,15 @@ Trois points techniques décisifs pour l’arabe :
 ## 4. L’éditeur : une composition, deux écritures
 
 À l’écran, le tableau du cahier n’utilise pas la police d’interface : il utilise
-une **fonte de composition** mathématique, et l’arabe garde la police bilingue.
+**Lexend** pour la lecture, **Bricolage Grotesque** pour les titres et **IBM Plex Sans Arabic** pour l’arabe. Les fichiers sont locaux et leurs licences accompagnent les fontes.
 
 | Élément du cahier | Latin | Arabe |
 |---|---|---|
-| **Chapitres, blocs de tête, sections** | Computer Modern Sans — Demi Condensed, 600 | famille bilingue |
-| **Évaluations, sous-sections, titres d’items** | Computer Modern Sans — Oblique, 500 | famille bilingue |
-| **Paragraphes, descriptions, corps de séance** | Computer Modern Sans — Medium, 500 | famille bilingue |
-| **Voix marginale** (remarques, pages, puces) | Computer Modern Sans — Oblique | famille bilingue |
-| **Numéros de structure** | Medium droit (pour ancrer la marge) | idem |
+| **Chapitres, blocs de tête, sections** | Bricolage Grotesque, 600 | IBM Plex Sans Arabic, 600 |
+| **Évaluations et sous-sections** | Bricolage Grotesque, 600 | IBM Plex Sans Arabic, 600 |
+| **Titres d’items, paragraphes, descriptions** | Lexend, 400 | IBM Plex Sans Arabic, 400 |
+| **Remarques, pages, pastilles** | Lexend, 400–500 | IBM Plex Sans Arabic, 400 |
+| **Lettre de section** | Bricolage Grotesque dans un carré arrondi | lettre latine isolée |
 | **Formules** | Polices mathématiques dédiées (KaTeX) | — |
 
 Quatre règles de composition :
@@ -180,7 +180,8 @@ l’écran ».
 | **SamsungOne Arabic** | Embarquée | Impression, documents, compagnon, chargement |
 | **Latin Modern Sans** | Embarquée (trois fichiers) + licence | Texte imprimé latin |
 | **Source Sans 3** | Embarquée (variable) + licence | Relais du texte imprimé |
-| **Computer Modern Sans** (quatre fichiers) | Embarquée + licence | Composition de l’éditeur à l’écran |
+| **Lexend / Bricolage Grotesque / IBM Plex Sans Arabic** | Embarquées + licences OFL | Lecture et titres de l’éditeur à l’écran |
+| **Computer Modern Sans** | Fichiers historiques conservés | Aucune nouvelle requête de l’éditeur |
 | **SamsungOne** (système) | Non livrée, cherchée localement | Repli natif sur Galaxy |
 | **Arabswell 3**, **Maghribi Font 3** | Embarquées, **déclarées sans rôle** | Réserves de composition arabe |
 | **Elgharib Hayyakum Allah** (deux graisses), **KOMission Black** | Embarquées, **déclarées sans rôle** | Réserves d’affichage arabe |

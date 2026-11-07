@@ -9,6 +9,7 @@ import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/hom
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { SessionDocuments } from './SessionDocuments';
+import { CalendarDays, MessageSquare } from 'lucide-react';
 
 const DATE_CARD_NUMBER_OPTIONS: Intl.NumberFormatOptions = { minimumIntegerDigits: 2, useGrouping: false };
 const dateCardNumberFormatters = new Map<AppLocale, Intl.NumberFormat>();
@@ -84,7 +85,7 @@ const parseRangeOrPair = (str: string, locale: AppLocale): ParsedRange | null =>
 
 /** Les dates simples et fusionnées partagent exactement la même typographie. */
 export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ dateStr, hasWarning }) => (
-  <MultiDateCard dates={dateStr ? [dateStr] : []} hasWarning={hasWarning} />
+  dateStr ? <MultiDateCard dates={[dateStr]} hasWarning={hasWarning} /> : <CalendarDays className="editor-empty-date" size={16} aria-hidden="true" />
 ));
 
 DateCard.displayName = 'DateCard';
@@ -228,8 +229,8 @@ export const RemarkCell: FC<{
                 {renderDescriptionWithBold(otherRemark)}
               </div>
             )}
-            {!homeworkLine && !otherRemark && (
-              <span className="opacity-0 select-none">·</span>
+            {!homeworkLine && !otherRemark && !sessionAnnotation && !sessionDocuments?.length && (
+              <MessageSquare className="editor-empty-note" size={16} aria-hidden="true" />
             )}
           </>
         );
@@ -251,7 +252,7 @@ export const RemarkCell: FC<{
 
   if (shouldMerge) {
     return (
-      <div className={`relative flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors items-center justify-start ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
+      <div data-editor-cell="remark" className={`relative flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors items-center justify-start ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
         <div className="relative z-10 h-full flex flex-col justify-center items-start text-start w-full">
           {body(true)}
         </div>
@@ -260,7 +261,7 @@ export const RemarkCell: FC<{
   }
 
   return (
-    <div className={`flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors items-center justify-start ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
+    <div data-editor-cell="remark" className={`flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors items-center justify-start ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
       {body(false)}
     </div>
   );

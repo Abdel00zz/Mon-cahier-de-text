@@ -1311,7 +1311,7 @@ test('mise en page : les commandes LaTeX de document sont traitées par la mise 
   // Les marqueurs de structure (A. / 1. / i.) sont des cellules FLEX : sans
   // `shrink-0`, le repli d'un titre long les comprimait jusqu'à couper le point.
   const contentRendererSource = readFileSync('src/features/editor/ContentRenderer.tsx', 'utf8');
-  const structureMarkers = contentRendererSource.match(/<bdi dir="ltr" className="shrink-0 whitespace-nowrap">/g) ?? [];
+  const structureMarkers = contentRendererSource.match(/<bdi dir="ltr" className="(?:editor-section-letter )?shrink-0 whitespace-nowrap">/g) ?? [];
   assert.equal(structureMarkers.length, 3, 'Section, sous-section et sous-sous-section : marqueurs insécables');
 });
 

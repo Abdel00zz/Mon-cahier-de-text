@@ -55,7 +55,7 @@ import { DocumentPreview } from '@/components/documents/DocumentPreview';
 import { dateTimeFormat } from '@/lib/formatters';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/infrastructure/sync/syncBus';
 import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs, sessionPrintSignatures, type PrintPrefs } from '@/infrastructure/printing/printMeta';
-import { toDisplayWarnings, validateSessionDate } from '@/domain/calendar/dateValidation';
+import { toDisplayWarnings, createSessionDateValidator } from '@/domain/calendar/dateValidation';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '@/domain/curriculum/predefinedContent';
 import { PrintModal, PrintMode, PrintOptions } from './modals/PrintModal';
 import { printDocument, preparePrintContent } from '@/infrastructure/printing/printUtils';
@@ -396,7 +396,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     selectionState,
     selectedIndices,
     selectedCount,
-    isSelectionPending,
     handleDropRow,
     canDropRow,
     handleToggleSelectRow,
@@ -432,9 +431,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
    * `getDateWarnings` est mémoïsé : passé à MainTable (React.memo), une
    * lambda inline casserait la mémoïsation de toute la table.
    */
-  const getDateWarnings = useCallback(
-    (date: string) => validateSessionDate(date, classInfo, config, locale),
-    [classInfo, config, locale]
+  const getDateWarnings = useMemo(
+    () => createSessionDateValidator(classInfo, config, locale),
+    [classInfo.id, classInfo.name, classInfo.cycle, classInfo.subject, config.schedules, config.absences, config.schoolYearStart, locale]
   );
 
   /*
@@ -1405,7 +1404,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           onDelete={handleBulkDelete}
           onClear={handleDeselectAll}
           canEdit={canEditSelection}
-          isPending={isSelectionPending}
         />
       )}
 

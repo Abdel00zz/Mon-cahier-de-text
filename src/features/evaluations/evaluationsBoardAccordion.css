@@ -191,32 +191,6 @@
     align-self: center;
 }
 
-.ev-accordion__body :is(.ev-date-trigger, .ev-date-empty) {
-    height: auto;
-    min-height: 0;
-    padding: 0;
-    border: 0 !important;
-    border-radius: 0;
-    background: transparent !important;
-    box-shadow: none !important;
-    color: hsl(var(--muted-foreground)) !important;
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1.35;
-    white-space: nowrap;
-}
-
-.ev-accordion__body .ev-date-trigger:hover {
-    background: transparent !important;
-    color: hsl(var(--primary)) !important;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-}
-
-.ev-accordion__body .ev-date-trigger:active {
-    transform: none;
-}
-
 @media (max-width: 639px) {
     .ev-accordion__body .ev-row {
         gap: .25rem .35rem;

@@ -6,6 +6,21 @@ ce qui s’associe automatiquement, comment une ligne se déplace d’un chapitr
 un autre, ce qui peut être annulé, et ce qui part vers l’impression, les
 évaluations ou le cloud.
 
+## Présentation de lecture — 7 novembre 2026
+
+À l’écran, les trois rôles date / contenu / remarque restent associés aux
+mêmes données et aux trois colonnes visibles **Date · Contenu · Remarque**.
+La date et la remarque deviennent des pastilles à l’intérieur de leurs colonnes.
+Une séance fusionnée garde une seule date et une seule remarque partagées.
+Les blocs sans date gardent des commandes discrètes de datation et de remarque.
+La lettre de section est un badge carré arrondi. Lexend compose les contenus,
+Bricolage Grotesque les titres et IBM Plex Sans Arabic les textes arabes.
+
+Ce changement concerne le rendu CSS et les repères accessibles. Le calcul de
+l’ordre, les limites de déplacement, la hiérarchie, les clés de ligne, la
+sélection, les fusions et l’historique restent ceux décrits ci-dessous. Les
+colonnes imprimées et les formules KaTeX conservent leur composition.
+
 Pour les formes de données, voir [le modèle JSON](json.md). Pour le papier,
 voir [l’impression](peint.md). Pour les évaluations, voir
 [le contrat de capture](docs/architecture/workflow-evaluations.md).
@@ -373,7 +388,7 @@ recalculés dans le chapitre d’arrivée. Rien n’est dupliqué.
 |---|---|
 | Capteur | La poignée uniquement ; un glissement démarré ailleurs ne déplace rien |
 | Tactile | Un seul doigt ; un second doigt annule |
-| Aperçu | Suit le doigt, maintenu au-dessus de lui et dans la zone visible |
+| Aperçu | Copie visuelle du contenu, avec ses badges et formules, soulevée dans sa colonne et suivant le pointeur verticalement. Elle reste dans la zone visible, sans identifiants dupliqués ni prise de focus |
 | Défilement automatique | Zone de bord avec accélération progressive (quadratique), jamais un saut brutal |
 | Mesures | Les positions sont relevées **avant** de modifier les styles, pour éviter un calcul de mise en page par image |
 | Rendu | Une seule image d’animation pilote l’aperçu et le défilement ; React ne redessine qu’au début, à la fin et au changement d’ordre |
@@ -512,7 +527,8 @@ décrits au §6.2. Les sigles et teintes viennent de
 
 | Élément | Rendu dans le tableau |
 |---|---|
-| Date et en-tête Date | Centrés horizontalement. Dans un groupe, la cellule est aussi centrée en hauteur |
+| En-têtes Date, Contenu, Remarque | Tous centrés horizontalement et verticalement dans leur cellule, en français comme en arabe |
+| Date | Centrée horizontalement. Dans un groupe, la cellule est aussi centrée en hauteur |
 | Chapitre | Titre centré et marqué par la typographie, sans badge de type |
 | Épreuve, activité à bloc, correction | Titre centré, y compris quand le bloc est imbriqué. Le retrait peut varier. Le numéro éventuel fait partie du titre |
 | Section, sous-section, sous-sous-section | Titre au bord de lecture, avec retrait progressif et repère de plan. Le style classique donne par exemple **A.**, **1.**, **i.** |
@@ -526,6 +542,11 @@ droite en RTL. La direction des titres et remarques suit leur texte, et les
 numéros sont isolés pour garder leur ordre. Voir
 [`ContentRenderer.tsx`](src/features/editor/ContentRenderer.tsx) et
 [`editor-surface.css`](src/styles/editor-surface.css).
+
+Le filet vertical entre Contenu et Remarque reste continu, y compris pour
+les lignes non datées. Les icônes de date et de remarque vides sont grises
+et discrètes (opacité de 55 %, renforcée au survol ou au focus), dans une cible
+tactile inchangée de 44 px minimum.
 
 Dans la fenêtre de remarque, les puces d’action **Devoir à la maison assigné
 aux élèves**, **Contrôle des cahiers**, **Remédiation**, **Soutien** et
@@ -557,6 +578,9 @@ sans se confondre : « sélectionné » et « édition ».
 | Virtualisation | Au-delà de **140 lignes** projetées avant fusion. Le navigateur monte les rangées autour de la zone visible avec une marge de 16. Il estime la hauteur à partir de 72 px, tient compte des groupes et mesure les hauteurs réelles |
 | Cache des lignes | Une projection par version du cahier (le cahier est immuable, l’identité du tableau est donc une clé sûre) |
 | Cache du groupement | Une fois par liste de lignes ; une édition produit une nouvelle liste, donc un nouveau calcul |
+| Validation du calendrier | Résultat partagé par date, classe, langue et réglages ; invalidation lorsque le calendrier officiel est actualisé. Cache local borné à 512 dates |
+| Composition du contenu | Des coordonnées recréées mais identiques ne recomposent pas les textes et formules inchangés. Déplacement, édition, recherche et document restent invalidants |
+| Sélection | Mise à jour immédiate, sans passage différé qui désactive brièvement les actions de date |
 | Mémoïsation | Une rangée ne se redessine que si une valeur affichée change ; l’oubli d’une fonction d’aperçu figerait les pastilles |
 | Largeurs | Une seule source de largeurs pour toute l’application, redéfinie pour le téléphone avec des **bornes minimales** |
 | Références stables | Aucune valeur par défaut littérale (`[]`) dans les dépendances de mémoïsation |

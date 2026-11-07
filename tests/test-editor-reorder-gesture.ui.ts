@@ -35,6 +35,11 @@ function sensor(context: TestContext) {
   let clicks = 0;
   let captures = 0;
   const surface = {
+    dataset: {} as Record<string, string>,
+    getBoundingClientRect: source.getBoundingClientRect,
+    querySelectorAll: () => [],
+    cloneNode: () => ({ ...node('preview', 100), textContent: source.dataset.editorSortLabel,
+      classList: { remove: () => {} }, querySelectorAll: () => [] }),
     closest: (selector: string) => selector === '[data-editor-sort-row]' ? source : selector === '.editor-row-content--sortable' ? surface : null,
     matches: () => true, focus: () => {}, click: () => { clicks++; },
   };
@@ -121,6 +126,7 @@ test('aperçu suit le doigt, indique la destination valide et disparaît après 
   s.start();
   const ghost = s.ghosts[0] as { children: Array<{ textContent: string }>; style: Record<string, string>; dataset: Record<string, string>; attrs: Map<string, string> };
   assert.equal(ghost.attrs.get('aria-hidden'), 'true');
+  assert.equal(ghost.attrs.has('inert'), true, 'la copie visuelle ne prend jamais le focus');
   assert.deepEqual(ghost.children.map(child => child.textContent), ['Les fractions', '14/09/2026']);
   s.win.emit('touchmove', { touches: [s.point(230)], cancelable: true, preventDefault: () => {} });
   s.flush();

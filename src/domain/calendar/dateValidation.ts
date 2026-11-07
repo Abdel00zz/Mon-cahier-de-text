@@ -9,6 +9,7 @@ import {
     localizeCalendarName,
 } from './calendar.js';
 import { translateLocaleMessage } from '../../i18n/messages.js';
+import { dateTimeFormat } from '../../lib/formatters.js';
 import {
     getClassExamsOn,
     getClassTeachingEnd,
@@ -76,6 +77,37 @@ const getWeekday = (iso: string): number => {
     return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
 };
 
+const WEEKDAY_FORMAT: Intl.DateTimeFormatOptions = { weekday: 'long', timeZone: 'UTC' };
+const TEACHING_END_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', timeZone: 'UTC' };
+
+/** A validator belongs to one immutable class/settings snapshot. Cells share
+ * results; a refreshed official calendar invalidates them even between renders. */
+export const createSessionDateValidator = (
+    classInfo: Parameters<typeof validateSessionDate>[1],
+    config: Parameters<typeof validateSessionDate>[2],
+    locale: AppLocale = 'fr',
+) => {
+    const results = new Map<string, DateWarning[]>();
+    let calendar = getBundledCalendar();
+    let events = getOfficialStudentEventsFile();
+    return (date: string): DateWarning[] => {
+        const currentCalendar = getBundledCalendar();
+        const currentEvents = getOfficialStudentEventsFile();
+        if (calendar !== currentCalendar || events !== currentEvents) {
+            results.clear();
+            calendar = currentCalendar;
+            events = currentEvents;
+        }
+        const key = (date || '').slice(0, 10);
+        const cached = results.get(key);
+        if (cached) return cached;
+        const warnings = validateSessionDate(date, classInfo, config, locale, calendar, events);
+        if (results.size >= 512) results.clear();
+        results.set(key, warnings);
+        return warnings;
+    };
+};
+
 export const validateSessionDate = (
     date: string,
     classInfo: Pick<ClassInfo, 'id' | 'name'> & Partial<Pick<ClassInfo, 'cycle' | 'subject'>>,
@@ -85,7 +117,6 @@ export const validateSessionDate = (
     officialEvents: OfficialStudentEventsFile = getOfficialStudentEventsFile(),
 ): DateWarning[] => {
     const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
-    const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
     const warnings: DateWarning[] = [];
     const iso = (date || '').slice(0, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return warnings;
@@ -110,7 +141,7 @@ export const validateSessionDate = (
                 type: 'not-scheduled',
                 message: t('dateWarning.notScheduled', {
                     className: formatLocalizedClassDisplayName(classInfo.name, locale),
-                    weekday: new Intl.DateTimeFormat(localeCode, { weekday: 'long', timeZone: 'UTC' }).format(parsed),
+                    weekday: dateTimeFormat(locale, WEEKDAY_FORMAT).format(parsed),
                 }),
             });
         }
@@ -172,7 +203,7 @@ export const validateSessionDate = (
     if (teachingEnd && iso > teachingEnd && !vacance) {
         warnings.push({
             type: 'study-ended',
-            message: t('dateWarning.studyEnded', { date: new Intl.DateTimeFormat(localeCode, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${teachingEnd}T00:00:00Z`)) }),
+            message: t('dateWarning.studyEnded', { date: dateTimeFormat(locale, TEACHING_END_FORMAT).format(new Date(`${teachingEnd}T00:00:00Z`)) }),
         });
     }
     if (isInSchoolYear && getClassExamsOn(level, iso, officialEvents).length > 0) {

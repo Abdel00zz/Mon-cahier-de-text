@@ -62,6 +62,10 @@ const lessons: LessonsData = [{ type: 'chapter', title: ar ? 'الدوال ال�
  { type: 'exercice', title: ar ? 'تدريب: تطبيق المبرهنة' : 'Entraînement : appliquer le théorème', date: '2026-09-23' },
 ]}];
 if (params.has('activities')) lessons[0].items!.push({ type: 'cours', title: ar ? 'تطبيق مستقل' : 'Application isolée', date: '2026-09-24', remark: ar ? 'ملاحظة الأستاذ' : 'Note du professeur' });
+if (params.has('reading')) lessons[0].sections = [{ name: ar ? 'الأعداد الزوجية والأعداد الفردية' : 'Nombres pairs et nombres impairs', date: '2026-11-07', remark: ar ? 'معالجة التعثرات' : 'Remédiation', items: [
+  { type: 'définition', title: ar ? 'الأعداد الصحيحة الطبيعية' : 'Les entiers naturels', description: '$n=2k$ ou $n=2k+1$' },
+  { type: 'exercice', title: ar ? 'تحديد زوجية عدد' : 'Déterminer la parité d’un entier', description: 'Étudier $A=2(7n^2+3n+5)$.' },
+] }];
 // Exercise the real virtual table with a long notebook without account data.
 if (params.has('stress')) {
   const sample = lessons[0];

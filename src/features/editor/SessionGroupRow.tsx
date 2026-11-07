@@ -1,4 +1,5 @@
 import React from 'react';
+import { MessageSquare } from 'lucide-react';
 import { uniq } from 'es-toolkit';
 import type { Indices } from '@/types';
 import type { ContentDateOrder } from '@/domain/calendar/dateOrder';
@@ -294,8 +295,8 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                               {renderDescriptionWithBold(otherRemark)}
                             </div>
                           )}
-                          {!homeworkLine && !otherRemark && (
-                            <span className="opacity-0 select-none text-xs">·</span>
+                          {!homeworkLine && !otherRemark && visibleAnnotations.length === 0 && (
+                            <MessageSquare className="editor-empty-note" size={16} aria-hidden="true" />
                           )}
                         </>
                       );

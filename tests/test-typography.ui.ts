@@ -55,17 +55,18 @@ test('les fontes arabes et latines ont des plages unicode disjointes sans mélan
   assert.deepEqual(seenLatin, latinFamilies);
 });
 
-test('le tableau de contenu compose en Computer Modern Sans Serif (Medium, Demi Condensed, Oblique)', () => {
+test('le tableau utilise Lexend, Bricolage Grotesque et IBM Plex Sans Arabic hors ligne', () => {
   const editor = readFileSync('src/features/editor/editorTypography.css', 'utf8');
-  assert.match(editor, /--notebook-heading:\s*'Computer Modern Sans Serif Demi Condensed'/, 'les titres structurels utilisent Demi Condensed');
-  assert.match(editor, /--notebook-paragraph:\s*'Computer Modern Sans Serif Medium'/, 'le corps utilise Medium');
-  assert.match(editor, /--notebook-oblique:\s*'Computer Modern Sans Serif Oblique'/, 'les intitulés académiques utilisent Oblique');
-  const fonts = readFileSync('src/styles/fonts.css', 'utf8');
-  for (const family of ['Computer Modern Sans Serif Medium', 'Computer Modern Sans Serif Demi Condensed', 'Computer Modern Sans Serif Oblique']) {
-    assert.ok(fonts.includes(`font-family: '${family}'`), `${family} déclarée`);
+  const reading = readFileSync('src/styles/fonts.css', 'utf8');
+  assert.match(editor, /--notebook-heading:\s*'Bricolage Grotesque'/);
+  assert.match(editor, /--notebook-reading:\s*'Lexend', 'IBM Plex Sans Arabic'/);
+  assert.doesNotMatch(editor, /Computer Modern|font-family:.*!important/, 'aucune ancienne pile ne masque le nouveau choix');
+  for (const family of ['Lexend', 'Bricolage Grotesque', 'IBM Plex Sans Arabic']) {
+    assert.ok(reading.includes(`font-family: '${family}'`));
   }
-  for (const file of ['cmu-sans-serif-medium', 'cmu-sans-serif-demi-condensed', 'cmu-sans-serif-oblique']) {
-    assert.ok(fonts.includes(`/fonts/${file}.woff2`), `${file} embarquée, aucune requête réseau`);
+  for (const file of ['lexend-latin-variable', 'bricolage-grotesque-latin-variable', 'ibm-plex-sans-arabic-400', 'ibm-plex-sans-arabic-600']) {
+    assert.ok(reading.includes(`/fonts/${file}.woff2`));
+    assert.ok(readFileSync(`public/fonts/${file}.woff2`).byteLength > 1000);
   }
 });
 
@@ -140,12 +141,12 @@ test('tous les blocs de tête occupent la colonne et se centrent', () => {
   assert.match(chapter, /editor-type-chapter my-3 flex w-full items-center justify-center text-center/, 'le chapitre est centré sur toute la largeur');
 });
 
-test('les remarques et les retours système utilisent la police de l’interface', () => {
+test('les remarques suivent la lecture du cahier et les retours système restent dans la police de l’interface', () => {
   const typography = readFileSync('src/styles/typography.css', 'utf8');
   const editor = readFileSync('src/features/editor/editorTypography.css', 'utf8');
   assert.ok(typography.includes("--font-feedback: 'Readex Pro'"));
   assert.ok(!typography.includes(".editor-type-remark[dir='rtl']"));
-  assert.ok(editor.includes("--notebook-reading: 'Readex Pro', system-ui, sans-serif"));
+  assert.ok(editor.includes("--notebook-reading: 'Lexend', 'IBM Plex Sans Arabic', sans-serif"));
   assert.ok(editor.includes('.editor-type-remark, .editor-session-note'));
   assert.ok(editor.includes(':not(.katex, .katex *)'), 'les fontes mathématiques restent autonomes');
 });
@@ -157,7 +158,7 @@ test('le tableau éditeur recalcule ses polices selon la langue du texte (dir="l
   assert.match(typography, /:where\(\[data-content-direction='ltr'\]\)[\s\S]*?--font-editor-title:\s*var\(--font-latin-display\)/, 'les titres de contenu LTR utilisent la famille de l’interface');
   assert.match(typography, /:where\(\[data-content-direction='ltr'\]\)[\s\S]*?--font-content:\s*var\(--font-latin-reading\)/, 'les blocs LTR reçoivent les polices françaises');
   assert.match(typography, /:where\(\[data-content-direction='rtl'\]\)[\s\S]*?--font-content:\s*var\(--font-arabic-body\)/, 'les blocs RTL reçoivent les polices arabes');
-  assert.match(indexCss, /\.editor-type-item-title[\s\S]*?\{\s*font-family:\s*var\(--font-editor-title\);/, 'les titres de définitions/propriétés/exercices lient --font-editor-title (Roboto Slab en français)');
+  assert.match(indexCss, /\.editor-type-item-title[\s\S]*?\{\s*font: 600 var\(--editor-fs-item-title\)\/1\.5 var\(--font-editor-title\);/, 'les titres de contenus suivent la police éditoriale');
   assert.match(indexCss, /\.editor-type-section[\s\S]*?\{\s*font-family:\s*var\(--font-editor-title\);/, 'les titres de sections lient --font-editor-title');
   assert.match(indexCss, /\.editor-type-subsection[\s\S]*?\{\s*font-family:\s*var\(--font-editor-title\);/, 'les titres de sous-sections lient --font-editor-title');
   assert.match(indexCss, /\.editor-type-subsubsection[\s\S]*?\{\s*font-family:\s*var\(--font-editor-title\);/, 'les titres de sous-sous-sections lient --font-editor-title');
@@ -211,7 +212,7 @@ test('le tableau éditeur recalcule ses polices selon la langue du texte (dir="l
   assert.match(frenchItemHtml, /editor-kind-badge editor-type-badge[^"]*" dir="ltr"/, 'le badge DÉF reste LTR');
   assert.match(frenchItemHtml, /dir="ltr" class="editor-type-item-title/, 'le titre français reste LTR');
   assert.match(frenchItemHtml, /editor-type-description[^"]*"[^>]*dir="ltr"><bdi dir="ltr">Soit/, 'la description française reste LTR');
-  assert.match(frenchItemHtml, /dir="ltr" class="col-start-2 editor-type-page/, 'la référence de page reste LTR');
+  assert.match(frenchItemHtml, /dir="ltr" class="editor-type-page/, 'la référence de page reste LTR');
 
   const arabicItemHtml = renderInArabicApp(
     React.createElement(ContentRenderer, {
@@ -251,3 +252,12 @@ test('le tableau éditeur recalcule ses polices selon la langue du texte (dir="l
   assert.match(arabicChapterHtml, /dir="rtl" class="editor-type-chapter/, 'le chapitre arabe est RTL');
 });
 
+
+test('cadres de contenu : vert italique, autres droits, contour moderne sans barre latérale', () => {
+  const css = readFileSync('src/styles/editor-surface.css', 'utf8');
+  assert.match(css, /\.editor-item-description \{[\s\S]*?font-style: normal/, 'les cadres neutres restent en romain');
+  assert.match(css, /data-content-type='activité'[\s\S]*?font-style: italic/, 'les activités passent en italique');
+  assert.doesNotMatch(css, /editor-item-description::before/, 'plus de barre verticale');
+  assert.doesNotMatch(css, /border-inline-start: 3\.5px/, 'plus d’accent latéral épais');
+  assert.match(css, /border-radius: 12px !important/, 'contour à rayon doux');
+});

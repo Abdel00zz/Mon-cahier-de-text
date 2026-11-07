@@ -1,15 +1,7 @@
 @import './evaluationTypography.css';
 
-/* ══════════════════════════════════════════════════════════════
-   Fiche classe (« Contrôle continu et activités ») — Espace de travail serein :
-   - Bandeau héros en dégradé pastel vertical doux (.hero), titre Readex Pro 600
-   - Nom du cours dans une pastille teintée plate (.stk) sous le titre
-   - 4 sections en accordéons pastel asymétriques (.ac : 1.4rem / .5rem) + icône ronde blanche (.ci) + compteur (.cnt)
-   - Chaque évaluation est un ticket blanc épuré (.tk : 1.1rem / .4rem) : titre à droite, date sur pastille (.lf), actions dessous séparées par un trait fin plein (#f0ebe3)
-   - Correction du devoir reliée au devoir par un connecteur coudé arrondi continu (.tk.ch::before)
-   - Mobile : feuille quasi pleine hauteur ; Grand écran : modale centrée 44rem avec rayon asymétrique (2rem / .6rem)
-   - Cibles tactiles ≥ 44px
-   ══════════════════════════════════════════════════════════════ */
+/* Feuille de suivi : familles pastel, lignes compactes, dates grises en lecture
+   seule et actions tactiles. Aucun séparateur décoratif entre les zones. */
 
 .evaluation-reference {
   --bg-page: color-mix(in srgb, var(--hero-border, #f6d9bd) 10%, #fffdfa);

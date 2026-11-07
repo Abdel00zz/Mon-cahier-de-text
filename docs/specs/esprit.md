@@ -18,6 +18,25 @@ lisibles. En mode sombre, les teintes sont adoucies et les textes éclaircis.
 La sobriété porte sur la quantité de texte, les libellés et la hiérarchie des
 actions. Elle préserve ces repères colorés et le soin des surfaces.
 
+Le tableau à l’écran privilégie la lecture : **Lexend** pour les contenus,
+**Bricolage Grotesque** pour les titres et **IBM Plex Sans Arabic** pour
+l’arabe. Ces polices sont embarquées. La lettre d’une section occupe un petit
+carré arrondi ; les dates et remarques se lisent en pastilles dans leurs
+colonnes. Les trois colonnes **Date · Contenu · Remarque** restent visibles et
+alignées, y compris sur téléphone. Les poignées, la sélection,
+les fusions et l’annulation gardent leur fonctionnement. L’impression conserve
+sa composition propre.
+
+Sur mobile, **Paramètres** et **Aide** sont des pages. Les six catégories de
+réglages se suivent ; le profil s’enregistre automatiquement. L’aide rassemble
+les réponses en quatre rubriques avec une recherche. Sur ordinateur, ces
+contenus conservent une fenêtre dédiée, avec une fermeture visible.
+
+Dans la feuille de suivi, la date est une information **petite, grise, centrée
+et non modifiable**, alignée avec le titre et les actions. Elle se modifie
+dans le tableau. Les en-têtes des modales se séparent par l’espace, sans
+ligne décorative. La carte de classe ne porte plus de badge « séance en cours ».
+
 ## Les textes
 
 Un titre **nomme l’objet ou le geste**. Une aide **explique la prochaine

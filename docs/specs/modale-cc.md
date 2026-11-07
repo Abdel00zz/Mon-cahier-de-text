@@ -84,9 +84,9 @@ Deux propriétés la définissent :
 
 | Repère | Signification |
 |---|---|
-| **Date pleine** | La date est connue |
+| **Date grise** | Date reçue du cahier, centrée et en lecture seule |
 | **« Pas encore de date »** | L’entrée reçue est visible. La date initiale se renseigne dans le tableau |
-| **Pastille d’écart** | Le cahier et le calendrier ne donnent pas la même date |
+| **Date du cahier** | La séance réellement datée est prioritaire |
 | **Badge document** | Sujet attaché, manquant, ou non concerné |
 | **Compteur d’absents** | Absences consignées, ou vérifiées à zéro |
 | **Compteur de non-rendus** | Remises manquantes sur un devoir maison |
@@ -218,7 +218,7 @@ devoirs et le cahier de textes) mises en regard.
 | État | Signification | Ce que la feuille propose |
 |---|---|---|
 | **Fait** | Saisi dans le cahier, **même date** que le calendrier | Rien : tout est aligné |
-| **Écart** | Saisi dans le cahier, **autre date** | **Aligner** le calendrier sur la date réelle |
+| **Écart** | Saisi dans le cahier, **autre date** | Lire la date du cahier ; toute modification part du tableau |
 | **À venir** | Pas encore dans le cahier, date future (ou bloc créé sans date) | Rien : ce n’est pas un oubli |
 | **Manquant** | Pas dans le cahier, date passée | Signalé comme manquant |
 
@@ -321,8 +321,6 @@ Une seule fenêtre fille à la fois : en ouvrir une autre libère la précédent
 | **État des cahiers** | Les quatre états, sur toute la liste |
 | **Élèves d’une activité** | Qui participe, avec le même moteur de liste |
 | **Sujet / corrigé** | Rédiger, attacher, apercevoir, imprimer |
-| **Date** | Date du devoir, date limite de rendu, ou date de correction |
-| **Modifier le devoir** | Ouvrir et modifier une évaluation déjà affichée en cliquant sur son titre |
 | **Suppressions** | Devoir, activité, correction — chacune confirmée |
 
 Deux confirmations sont **toujours** demandées : supprimer un devoir, supprimer
@@ -337,14 +335,13 @@ cahier.
 |---|---|
 | Deux devoirs de même identité | Revue de conflit **avant** d’enregistrer |
 | Deux évaluations qui se chevauchent | Conflit signalé, jamais bloqué d’office |
-| Un écart de date | Pastille « Aligner » avec l’explication de l’écart |
+| Un écart de date | La feuille affiche la date du cahier |
 | Un devoir manquant alors que la date est passée | Signalé, sans reproche |
-| Un alignement réussi | Message de confirmation avec la date appliquée |
-| Un devoir ajouté | Message avec le type et le numéro |
+| Un devoir ajouté dans le tableau | L’entrée apparaît dans sa famille après capture |
 | Un devoir supprimé | Message de confirmation |
 
 Règle de ton : les alertes **nomment un fait**, jamais un jugement. Un écart de
-date n’est pas une faute ; c’est deux saisies à réconcilier.
+date se corrige dans le tableau, à la source de la séance.
 
 ---
 
@@ -366,9 +363,9 @@ mathématique brute.
 
 | Paire | Sens 1 | Sens 2 | Garde-fou |
 |---|---|---|---|
-| **Feuille ↔ cahier** | La capture reçoit les blocs reconnus, même imbriqués | Les changements de date des entrées à bloc se reportent dans le cahier | Le lien suit l’identité de l’entrée |
+| **Feuille ↔ cahier** | La capture reçoit les blocs reconnus, même imbriqués | Les dates se modifient dans le tableau et sont reçues en lecture seule | Le lien suit l’identité de l’entrée |
 | **Feuille ↔ remarque de séance** | La capture détecte les activités dans le texte daté | Les annotations du suivi se lisent dans la remarque | Retirer la mention à sa source évite une nouvelle détection |
-| **Feuille ↔ devoir maison** | L’attribution crée le devoir | Le devoir reçoit document, date limite, remises | Deux temps, une identité |
+| **Feuille ↔ devoir maison** | L’attribution crée le devoir | Le devoir reçoit document et remises ; ses dates viennent du cahier | Deux temps, une identité |
 | **Feuille ↔ liste de classe** | La liste alimente tous les suivis | Un élève retiré perd ses états | Aucune transposition d’homonyme |
 | **Feuille ↔ politique** | La politique décide des capacités | Les données existantes restent visibles | Une capacité impossible reste éteinte |
 | **Feuille ↔ direction** | Les suivis et documents remontent en lecture | La direction publie la politique et les dates imposées | La politique est autoritaire, jamais renvoyée |

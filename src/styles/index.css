@@ -38,5 +38,6 @@
 @import "./settings-hub.css";
 @import "./class-tones.css";
 @import "./editor-surface.css";
+@import "../features/editor/editorSections.css";
 @import "./document-sheet.css";
 @import "./admin-workspace.css";
