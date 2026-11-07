@@ -2,10 +2,11 @@ import { assessmentAbsencesByDate } from '@/domain/evaluations/assessmentAbsence
 import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
 import { buildAbsenceSessions, withAbsenceRows, absenceRemarkGroups } from '@/domain/notebook/absenceSessions';
 import { normalizeDateForMerge } from '@/domain/notebook/classSessionDates';
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import './print.css';
 import './printRows.css';
 import { printLayoutStyle } from '@/infrastructure/printing/printLayout';
+import { usePrintFill } from './hooks/usePrintFill';
 import { collectSessionDates } from '@/infrastructure/printing/printMeta';
 import { visibleNotebookRows } from '@/domain/evaluations/homeworkPlacement';
 import { ContentRenderer } from './ContentRenderer';
@@ -25,6 +26,8 @@ import { formatPrintDate, getSchoolYearLabel, type FlatDataItem, type PrintRow, 
 // Main component
 export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: sourceLessons, annotationLessons, sessionAnnotations, absenceSessions: suppliedAbsences, classInfo, config, contentDirection, newlyAddedIds, pageNumbers = true, colorContent = false, headerMode = 'first', textSize = 'm', lineSpacing = 'normal', preview = false }) => {
     const lessonsData = useMemo(() => hasOnlyPristineStarterDiagnostic(sourceLessons) ? [] : sourceLessons, [sourceLessons]);
+    const printRootRef = useRef<HTMLDivElement>(null);
+    usePrintFill(printRootRef, [lessonsData, config, textSize, lineSpacing, headerMode, colorContent, preview]);
     const containsArabic = (text: string): boolean => /[\u0600-\u06FF]/.test(text || '');
     const isArabicClassName = containsArabic(classInfo.name);
 
@@ -217,7 +220,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
 
 
     return (
-        <div className={`print-document ${preview ? 'print-preview' : 'print-only'}`} data-print-color={colorContent ? 'color' : 'mono'} dir={isRtlPrint ? 'rtl' : 'ltr'} aria-hidden={preview ? undefined : true} style={printLayoutStyle(textSize, lineSpacing)}>
+        <div ref={printRootRef} className={`print-document ${preview ? 'print-preview' : 'print-only'}`} data-print-color={colorContent ? 'color' : 'mono'} dir={isRtlPrint ? 'rtl' : 'ltr'} aria-hidden={preview ? undefined : true} style={printLayoutStyle(textSize, lineSpacing)}>
             <style>{`@media print { @page cahier { @bottom-center {
                 content: ${pageNumbers ? (isRtlPrint ? '\"الصفحة \" counter(page) \" / \" counter(pages)' : '\"Page \" counter(page) \" / \" counter(pages)') : 'none'};
                 font-family: 'Latin Modern Sans', 'SamsungOne Arabic', sans-serif; font-size: 8pt; color: #515a63;

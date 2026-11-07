@@ -1,15 +1,5 @@
 /* ── Liquid futuriste : un liseré irisé qui tourne, un reflet qui respire.
    Le flou n'est animé par aucune keyframe ; seuls le rim et le reflet bougent. */
-@property --liquid-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
-}
-
-@keyframes liquid-rim-spin {
-  to { --liquid-angle: 360deg; }
-}
-
 @keyframes liquid-sheen-drift {
   0% { transform: translate3d(-14%, -10%, 0) rotate(-4deg); opacity: .38; }
   50% { transform: translate3d(10%, 6%, 0) rotate(3deg); opacity: .62; }
@@ -34,7 +24,7 @@
   padding: 1px;
   border-radius: inherit;
   background: conic-gradient(
-    from var(--liquid-angle),
+    from 132deg,
     transparent 0 52%,
     color-mix(in srgb, hsl(var(--primary)) 58%, transparent) 63%,
     rgb(255 255 255 / .72) 69%,
@@ -47,7 +37,6 @@
   mask-composite: exclude;
   opacity: .72;
   pointer-events: none;
-  animation: liquid-rim-spin 12s linear infinite;
 }
 
 .modal-motion-surface[data-mobile-presentation]:not([data-modal-alert])::after {

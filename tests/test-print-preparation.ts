@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { preparePrintContent } from '../src/infrastructure/printing/printUtils';
 import { fitDocumentMath } from '../src/infrastructure/printing/documentMathLayout';
+import { planPrintFill, PRINT_PAGE_HEIGHT_PX, pageCountFor } from '../src/infrastructure/printing/printBalance';
 
 function fixture(context: test.TestContext, options: { rawMath?: boolean; invalidMath?: boolean; fonts?: Promise<void> } = {}) {
   const timers = new Map<number, () => void>();
@@ -90,4 +91,21 @@ test('A5 layout fits wide formulae without enlarging normal ones or changing sur
   fitDocumentMath({ querySelectorAll: () => [wide, normal] } as unknown as HTMLElement);
   assert.equal(wide.style.fontSize, '0.495em');
   assert.equal(normal.style.fontSize, '');
+});
+
+test('équilibre d’impression : la dernière page se remplit, une page presque vide se compacte', () => {
+  const P = PRINT_PAGE_HEIGHT_PX;
+  assert.equal(pageCountFor(0, P), 1);
+  assert.equal(pageCountFor(P * 2.01, P), 3);
+
+  const nearFull = planPrintFill(P * 2.6, P);
+  assert.equal(nearFull.mode, 'fill');
+  assert.equal(nearFull.targetPages, 3);
+  assert.ok(nearFull.targetHeight > P * 2.5);
+
+  const almostEmpty = planPrintFill(P * 2.1, P);
+  assert.equal(almostEmpty.mode, 'compact');
+  assert.equal(almostEmpty.targetPages, 2);
+
+  assert.equal(planPrintFill(P * 0.8, P).mode, 'none');
 });

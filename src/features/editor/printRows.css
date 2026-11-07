@@ -111,13 +111,13 @@
     font-family: var(--content-font-latin), Arial, sans-serif;
 }
 /* Tighten content spacing inside content column */
-.print-col-content p { margin: 0 0 2px 0; line-height: var(--print-spacing-line); }
+.print-col-content p { margin: 0 0 2px 0; line-height: calc(var(--print-spacing-line) * var(--print-fill)); }
 .print-col-content h1,
 .print-col-content h2,
-.print-col-content h3 { margin: 4px 0 2px 0; line-height: var(--print-spacing-line); }
+.print-col-content h3 { margin: 4px 0 2px 0; line-height: calc(var(--print-spacing-line) * var(--print-fill)); }
 .print-col-content ul,
 .print-col-content ol { margin: 0 0 3px 1.05em; padding-left: 1.05em; }
-.print-col-content li { margin: 0 0 1px 0; line-height: var(--print-spacing-line); }
+.print-col-content li { margin: 0 0 1px 0; line-height: calc(var(--print-spacing-line) * var(--print-fill)); }
 
 .print-lesson-item {
     display: block;
@@ -157,7 +157,7 @@
     background-color: #faf9f6;
     color: #222;
     font-size: var(--print-size-description);
-    line-height: var(--print-spacing-line);
+    line-height: calc(var(--print-spacing-line) * var(--print-fill));
     white-space: pre-wrap;
 }
 

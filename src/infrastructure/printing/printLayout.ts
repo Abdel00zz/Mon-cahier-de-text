@@ -8,9 +8,9 @@ const PRINT_TEXT_SIZES = {
   l: { body: '11pt', cell: '10.5pt', description: '10pt', chapter: '13pt' },
 } as const;
 const SPACINGS = {
-  compact: { line: 1.25, cellPad: '1.5pt 4pt', itemGap: '1.5pt' },
-  normal: { line: 1.4, cellPad: '3pt 4pt', itemGap: '3pt' },
-  aere: { line: 1.6, cellPad: '5pt 5pt', itemGap: '5pt' },
+  compact: { line: 1.25, cellPad: '1.5pt 4pt', cellBlock: '1.5pt', itemGap: '1.5pt' },
+  normal: { line: 1.4, cellPad: '3pt 4pt', cellBlock: '3pt', itemGap: '3pt' },
+  aere: { line: 1.6, cellPad: '5pt 5pt', cellBlock: '5pt', itemGap: '5pt' },
 } as const;
 
 export function printLayoutStyle(textSize: PrintPrefs['textSize'], lineSpacing: PrintPrefs['lineSpacing']): CSSProperties {
@@ -18,6 +18,6 @@ export function printLayoutStyle(textSize: PrintPrefs['textSize'], lineSpacing: 
   const spacing = SPACINGS[lineSpacing] ?? SPACINGS.normal;
   return Object.fromEntries([
     ...Object.entries(sizes).map(([key, value]) => [`--print-size-${key}`, value]),
-    ...Object.entries(spacing).map(([key, value]) => [`--print-spacing-${key}`, value]),
+    ...Object.entries(spacing).map(([key, value]) => [key === 'cellBlock' ? '--print-cell-block' : `--print-spacing-${key}`, value]),
   ]) as CSSProperties;
 }

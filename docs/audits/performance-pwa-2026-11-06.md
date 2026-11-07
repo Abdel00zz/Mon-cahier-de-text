@@ -29,7 +29,7 @@ Fichiers retirés de `public/` :
 | `arabswell-3.ttf` | 51 Ko |
 
 `@font-face` : **55 → 14**. Dépendances `@fontsource` : **16 → 2**.
-Ressources PWA précachées : **360 → 298**.
+Ressources PWA précachées : **360 → 305** (7 fichiers de polices ajoutés).
 
 ## 2. Couches de fond supprimées
 
@@ -62,8 +62,8 @@ Ressources PWA précachées : **360 → 298**.
 - `npm run lint` ✅
 - Tests UI : **327/327**
 - Suite complète : **944 réussis**, 2 échecs hors périmètre déjà connus, 1 ignoré
-- Build : **934,8 Ko JS / 110,9 Ko CSS gzip**, budgets respectés
-- PWA : **298 ressources** précachées
+- Build : **935,8 Ko JS / 112,3 Ko CSS gzip**, budgets respectés
+- PWA : **305 ressources** précachées
 - `quality` : 14 fichiers > 400, 0 cycle, 0 code mort
 
 
@@ -71,3 +71,28 @@ Ressources PWA précachées : **360 → 298**.
 
 
 
+
+## Passe performance du 7 novembre 2026
+
+- Le liseré liquid est désormais **statique** : plus d’animation de propriété personnalisée ni de repeint du `conic-gradient` à chaque frame.
+- Seul le reflet utilise encore une animation composée (`transform` + `opacity`), coupée par `prefers-reduced-motion`.
+- Le flou de fond mobile reste limité aux dialogues, avec repli opaque si `backdrop-filter` manque ou si la transparence est réduite.
+- Les polices Lexend, Bricolage Grotesque et IBM Plex Sans Arabic sont embarquées : +7 fichiers PWA, aucune requête réseau.
+- Build : **935,8 Ko JS / 112,3 Ko CSS gzip**, budgets respectés.
+- PWA : **305 ressources**, dist totale **10,48 Mo**.
+
+### Mesures editor
+
+| Opération | Médiane | p95 |
+| --- | ---: | ---: |
+| Construction des lignes (1 260) | 2,26 ms | 7,03 ms |
+| Groupement sans cache | 4,81 ms | 6,58 ms |
+| Groupement avec cache | 0 ms | 0,02 ms |
+| Signatures d’impression | 2,49 ms | 5,20 ms |
+| Numéros de contenu | 1,26 ms | 2,40 ms |
+| Ordre des dates | 0,82 ms | 1,63 ms |
+
+### Mesures domaine
+
+- Pilotage 60 chapitres / 12 000 éléments : **19,8 ms** à froid, **0,7 ms** à chaud.
+- Diagnostic JSON 5 000 éléments : **16,8 ms** médian, **26,5 ms** p95.

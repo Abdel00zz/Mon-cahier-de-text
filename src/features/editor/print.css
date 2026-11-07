@@ -23,11 +23,12 @@
 
 
 .print-document {
+    --print-fill: 1;
     font-size: var(--print-size-body);
     margin: 0;
     padding: 0;
     background: white !important;
-    line-height: var(--print-spacing-line);
+    line-height: calc(var(--print-spacing-line) * var(--print-fill));
 }
 .print-document,
 .print-document * {
@@ -97,10 +98,11 @@
 .print-table td {
     border: none !important;
     padding: var(--print-spacing-cellPad);
+    padding-block: calc(var(--print-cell-block, 3pt) * var(--print-fill));
     vertical-align: top;
     text-align: start;
     font-size: var(--print-size-cell);
-    line-height: var(--print-spacing-line);
+    line-height: calc(var(--print-spacing-line) * var(--print-fill));
     border-inline-end: 0.55pt solid var(--print-rule) !important;
 }
 .print-table th:last-child,

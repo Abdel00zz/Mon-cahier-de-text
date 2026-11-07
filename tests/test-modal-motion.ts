@@ -47,7 +47,8 @@ test('les modales Paramètres et Aide sont des dialogues liquides à taille flex
 
 test('le liseré liquid reste décoratif et s’efface en transparence réduite', () => {
   const liquid = readFileSync('src/components/ui/liquid-modal.css', 'utf8');
-  assert.match(liquid, /liquid-rim-spin/, 'le liseré irisé tourne');
+  assert.doesNotMatch(liquid, /animation: liquid-rim-spin/, 'le liseré irisé reste statique (aucun repaint continu)');
+  assert.match(liquid, /from 132deg/, 'le liseré garde son iridescence');
   assert.match(liquid, /liquid-sheen-drift/, 'le reflet respire');
   assert.match(liquid, /@supports not \(\(backdrop-filter: blur\(1px\)\)/, 'repli opaque sans backdrop-filter');
   assert.match(liquid, /@media \(prefers-reduced-transparency: reduce\)/, 'la transparence réduite coupe le verre');
