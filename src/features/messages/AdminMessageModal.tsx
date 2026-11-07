@@ -44,7 +44,7 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
             footerClassName="border-t-0 bg-background/60"
             title={
                 <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary shadow-xs">
                         <ShieldCheck className="h-5 w-5 stroke-[2.2]" />
                     </span>
                     <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
@@ -53,13 +53,13 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
                 </div>
             }
             footer={(
-                <div className="flex flex-wrap items-center justify-end gap-2 w-full">
-                    {onReply && <Button type="button" variant="outline" disabled={isSending} onClick={() => void acknowledge(true)}>{conversationCopy(locale).answer}</Button>}
+                <div className="flex w-full flex-wrap items-center justify-end gap-2">
+                    {onReply && <Button type="button" variant="outline" disabled={isSending} onClick={() => void acknowledge(true)} className="min-h-11 rounded-xl px-4 text-sm">{conversationCopy(locale).answer}</Button>}
                     <Button
                         type="button"
                         onClick={() => void acknowledge()}
                         disabled={isSending}
-                        className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-6 h-10 text-xs sm:text-sm shadow-sm"
+                        className="min-h-11 rounded-xl bg-primary px-5 text-sm text-primary-foreground shadow-sm hover:bg-primary/90"
                     >
                         {isSending ? t('adminMessage.confirming') : t('adminMessage.acknowledge')}
                     </Button>
@@ -67,7 +67,7 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
             )}
         >
             <article className="space-y-4">
-                <div className="rounded-xl border border-primary/20 bg-primary/[0.06] p-5 shadow-xs">
+                <div className="rounded-2xl border border-primary/20 bg-primary/[0.06] p-4 shadow-xs">
                     <h2 className="text-base font-bold text-foreground sm:text-lg">{message.title}</h2>
                     <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{message.body}</p>
                 </div>

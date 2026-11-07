@@ -73,8 +73,8 @@
 }
 
 .teacher-conversation__textarea-wrap:focus-within {
-  border-color: #18181b;
-  box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.08);
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / .12);
 }
 
 .dark .teacher-conversation__textarea-wrap:focus-within {
@@ -134,10 +134,10 @@
   justify-content: center;
   min-height: 44px;
   padding: 8px 22px;
-  border-radius: 10px;
-  background: #18181b;
-  color: #fafafa;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: 1px solid transparent;
   font-family: inherit;
   font-size: 0.86rem;
   font-weight: 500;
@@ -149,13 +149,13 @@
 }
 
 .teacher-conversation__submit-btn:hover:not(:disabled) {
-  background: #27272a;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  background: color-mix(in srgb, hsl(var(--primary)) 90%, hsl(var(--foreground)));
+  box-shadow: 0 2px 4px rgb(0 0 0 / .16), inset 0 1px 0 rgb(255 255 255 / .16);
 }
 
 .teacher-conversation__submit-btn:active:not(:disabled) {
   transform: scale(0.97);
-  background: #121214;
+  background: color-mix(in srgb, hsl(var(--primary)) 84%, black);
 }
 
 .teacher-conversation__submit-btn:disabled {
@@ -166,18 +166,18 @@
 }
 
 .dark .teacher-conversation__submit-btn {
-  background: #f4f4f5;
-  color: #18181b;
-  border-color: rgba(0, 0, 0, 0.1);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: transparent;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .1), inset 0 1px 0 rgb(255 255 255 / .12);
 }
 
 .dark .teacher-conversation__submit-btn:hover:not(:disabled) {
-  background: #ffffff;
+  background: color-mix(in srgb, hsl(var(--primary)) 88%, white);
 }
 
 .dark .teacher-conversation__submit-btn:active:not(:disabled) {
-  background: #e4e4e7;
+  background: color-mix(in srgb, hsl(var(--primary)) 80%, black);
 }
 
 /* Statuts et retours système */
@@ -298,10 +298,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 4px 12px;
-  border-radius: 8px;
-  font-size: 0.78rem;
+  min-height: 40px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 0.76rem;
   font-weight: 500;
   border: 1px solid hsl(var(--border));
   background: hsl(var(--card));
@@ -320,12 +320,12 @@
 }
 
 .teacher-conversation :is(button, a, textarea, select):focus-visible {
-  outline: 2px solid #18181b;
+  outline: 2px solid hsl(var(--primary));
   outline-offset: 2px;
 }
 
 .dark .teacher-conversation :is(button, a, textarea, select):focus-visible {
-  outline-color: #fafafa;
+  outline-color: hsl(var(--primary));
 }
 
 @media (prefers-reduced-motion: reduce) {
