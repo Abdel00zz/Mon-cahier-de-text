@@ -1,19 +1,90 @@
-/* Section : la lettre devient un badge carré ; date et note restent dans leurs colonnes. */
+/* ══════════════════════════════════════════════════════════════════════════
+   Hiérarchie de structure (A / 1. / i.) — Style Vercel Geist Kbd & Tabular Grid
+   Alignement optique rigoureux entre le badge de section, les sous-sections
+   numérotées et les lignes d'éléments (dans la table d'édition et à l'écran).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+[data-editor-table] .editor-type-section {
+  align-items: center !important;
+  gap: 0.55rem !important;
+}
+
 .editor-section-letter {
-  display: inline-grid;
+  display: inline-flex;
   flex: 0 0 auto;
-  place-items: center;
-  min-width: 1.55rem;
-  height: 1.55rem;
-  padding-inline: .3rem;
-  border: 1px solid color-mix(in srgb, hsl(var(--primary)) 26%, hsl(var(--border)));
-  border-radius: .42rem;
-  background: color-mix(in srgb, hsl(var(--primary)) 8%, hsl(var(--card)));
-  color: hsl(var(--primary));
-  font-family: var(--font-editor-title);
-  font-size: .78rem;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding-inline: 0.35rem;
+  border: 1px solid color-mix(in srgb, hsl(var(--foreground)) 14%, hsl(var(--border)));
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, hsl(var(--card)) 0%, color-mix(in srgb, hsl(var(--muted)) 65%, hsl(var(--card))) 100%);
+  box-shadow: 0 1px 1.5px rgb(0 0 0 / 0.04), inset 0 1px 0 rgb(255 255 255 / 0.7);
+  color: hsl(var(--foreground));
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  font-size: 0.74rem;
   font-weight: 700;
-  letter-spacing: -.02em;
+  letter-spacing: -0.02em;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
   align-self: center;
+}
+
+.dark .editor-section-letter {
+  border-color: color-mix(in srgb, hsl(var(--foreground)) 20%, hsl(var(--border)));
+  background: linear-gradient(180deg, color-mix(in srgb, hsl(var(--muted)) 85%, hsl(var(--card))) 0%, hsl(var(--card)) 100%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+/* Marqueurs de sous-section (1., 2.) et sous-sous-section (i., ii.) en style
+   compteur Vercel Geist : boîte tabulaire sobre alignée sur la ligne de base */
+[data-editor-table] :is(.editor-type-subsection, .editor-type-subsubsection) {
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+[data-editor-table] .editor-type-subsection > bdi,
+[data-editor-table] .editor-type-subsubsection > bdi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.45rem;
+  height: 1.35rem;
+  padding-inline: 0.28rem;
+  border: 1px solid color-mix(in srgb, hsl(var(--border)) 85%, transparent);
+  border-radius: 5px;
+  background: color-mix(in srgb, hsl(var(--muted)) 55%, hsl(var(--card)));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55);
+  color: hsl(var(--foreground) / 0.88);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  align-self: center;
+}
+
+.dark [data-editor-table] .editor-type-subsection > bdi,
+.dark [data-editor-table] .editor-type-subsubsection > bdi {
+  border-color: color-mix(in srgb, hsl(var(--border)) 95%, transparent);
+  background: color-mix(in srgb, hsl(var(--muted)) 70%, hsl(var(--card)));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+/* Étagement dans le tableau d'édition : les éléments enfants (DÉF, PROPR, EXO)
+   s'alignent sous le texte de leur section/sous-section parente et non sous
+   son badge A ou 1. */
+@media screen and (min-width: 640px) {
+  [data-editor-table] .editor-lesson-row.editor-indent-1 {
+    margin-inline-start: var(--editor-indent-2);
+  }
+  [data-editor-table] .editor-lesson-row.editor-indent-2 {
+    margin-inline-start: var(--editor-indent-3);
+  }
+  [data-editor-table] .editor-lesson-row.editor-indent-3 {
+    margin-inline-start: calc(var(--editor-indent-3) + 16px);
+  }
 }
