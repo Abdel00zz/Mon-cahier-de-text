@@ -1,4 +1,4 @@
-/* Section : la lettre devient un badge carré ; date et note deviennent des pastilles. */
+/* Section : la lettre devient un badge carré ; date et note restent dans leurs colonnes. */
 .editor-section-letter {
   display: inline-grid;
   flex: 0 0 auto;
@@ -16,73 +16,4 @@
   letter-spacing: -.02em;
   line-height: 1;
   align-self: center;
-}
-
-.editor-section-line {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: .65rem;
-}
-
-.editor-section-line > :first-child { flex: 1 1 auto; min-width: 0; }
-
-.editor-section-pills {
-  display: flex;
-  flex: 0 0 auto;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: .35rem;
-  min-width: 0;
-}
-
-.editor-section-pill {
-  display: inline-flex;
-  align-items: center;
-  max-width: 14rem;
-  min-height: 24px;
-  padding: .1rem .55rem;
-  overflow: hidden;
-  border: 1px solid hsl(var(--border) / .9);
-  border-radius: 999px;
-  background: hsl(var(--card));
-  color: hsl(var(--muted-foreground));
-  font-family: var(--font-sans);
-  font-size: 10.5px;
-  font-weight: 600;
-  line-height: 1.3;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-  unicode-bidi: plaintext;
-  transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease;
-}
-
-.editor-section-pill[data-empty='true'] {
-  border-style: dashed;
-  opacity: .78;
-}
-
-.editor-section-pill:hover {
-  border-color: color-mix(in srgb, hsl(var(--primary)) 42%, hsl(var(--border)));
-  background: hsl(var(--muted) / .45);
-  color: hsl(var(--foreground));
-}
-
-.editor-section-pill:focus-visible {
-  outline: 2px solid hsl(var(--primary) / .55);
-  outline-offset: 2px;
-}
-
-.editor-section-pill--note { max-width: 18rem; }
-
-@media (max-width: 639px) {
-  .editor-section-line { flex-wrap: wrap; align-items: flex-start; }
-  .editor-section-pills { width: 100%; justify-content: flex-start; padding-inline-start: 2.1rem; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .editor-section-pill { transition: none; }
 }

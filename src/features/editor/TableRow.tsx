@@ -1,7 +1,6 @@
 import { dateOrderWarnings } from '@/domain/calendar/dateOrder';
 import React, { useCallback, FC, memo } from 'react';
 import { ContentRenderer } from './ContentRenderer';
-import { SectionLine } from './SectionLine';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { detectTextDirection } from '@/lib/text/textDirection';
@@ -144,7 +143,6 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const rowGridClass = TABLE_GRID_CLASS;
 
-  const isSection = elementType === 'section';
   const isCorrection = elementType.startsWith('correction_');
   const isTopLevelBlock = (elementType in TOP_LEVEL_TYPE_CONFIG && elementType !== 'chapter') || isCorrection;
 
@@ -228,7 +226,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const contentCell = (
     <div
-      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${sortable ? 'editor-row-content--sortable' : ''} ${isSection ? '' : contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors duration-150 ${contentBottomBorder}`}
+      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       data-reorder-direction={reorderDirection}
       tabIndex={sortable ? 0 : undefined}
@@ -243,30 +241,6 @@ const TableRowComponent: FC<TableRowProps> = ({
       }}
     >
       {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={18} aria-hidden="true" /></button>}
-      {isSection ? (
-        <SectionLine
-          date={typeof data.date === 'string' ? data.date : undefined}
-          remark={typeof data.remark === 'string' ? data.remark : undefined}
-          hasDate={hasAssignedDate}
-          onOpenDate={() => {
-            if (onOpenDateModal) onOpenDateModal(indices, typeof data.date === 'string' ? data.date : undefined);
-            else handleToggle();
-          }}
-          onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined}
-        >
-          <ContentRenderer
-            data={data}
-            indices={indices}
-            elementType={elementType}
-            showDescriptions={showDescriptions}
-            descriptionTypes={descriptionTypes}
-            highlight={searchQuery}
-            contentNumber={getContentNumber?.(indices)}
-            getDocumentPreview={getDocumentPreview}
-            onOpenDocumentPreview={onOpenDocumentPreview}
-          />
-        </SectionLine>
-      ) : (
         <ContentRenderer
           data={data}
           indices={indices}
@@ -278,11 +252,10 @@ const TableRowComponent: FC<TableRowProps> = ({
           getDocumentPreview={getDocumentPreview}
           onOpenDocumentPreview={onOpenDocumentPreview}
         />
-      )}
     </div>
   );
 
-  if (isSection || layout === 'content-only') {
+  if (layout === 'content-only') {
     return (
       <div
         className={[

@@ -94,7 +94,7 @@ test('la grille d’emploi du temps et le dock s’adaptent aux téléphones 360
 test('le robot et le bouton + collent au haut de l’écran sur téléphone', () => {
   const dashboard = read('src/features/dashboard/Dashboard.tsx');
   assert.match(dashboard, /antialiased pt-0 sm:pt-6/, 'aucune marge morte au-dessus de l’en-tête sur téléphone');
-  assert.match(dashboard, /px-5 pt-2 sm:pt-11/, 'la marge haute du téléphone reste compacte, celle du bureau inchangée');
+  assert.match(dashboard, /px-5 pt-2 sm:pt-4/, 'le téléphone reste compact et le bureau remonte les actions');
   assert.doesNotMatch(dashboard, /pt-7 sm:pt-11/, 'l’ancienne marge de 28 px est retirée');
   // Les anciens décalages RTL (barre remontée de 10 px, titre abaissé de 6 px)
   // désalignaient les icônes et le titre : l’alignement vient du flexbox.

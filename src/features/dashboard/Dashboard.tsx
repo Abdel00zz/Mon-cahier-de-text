@@ -431,7 +431,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto w-full max-w-[40rem] px-5 pt-2 sm:pt-11 lg:max-w-[78rem] lg:px-8 xl:max-w-[86rem] pl-safe pr-safe">
+                <div className="relative z-10 mx-auto w-full max-w-[40rem] px-5 pt-2 sm:pt-4 lg:max-w-[78rem] lg:px-8 xl:max-w-[86rem] pl-safe pr-safe">
                     {/* En-tête : Titre à droite (Readex Pro 600), actions et bouton + à gauche en RTL */}
                     <header className="dashboard-top-header mb-4 pt-1" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
                         <DashboardActions

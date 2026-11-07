@@ -299,7 +299,7 @@
      > Description/Corps (0.90) > Remarque (0.84) > En-tête/Page (0.75) > Badge (0.72). */
   [data-editor-table] {
     --editor-scale: max(0.875rem, calc(clamp(0.9375rem, calc(0.875rem + 0.2vw), 1rem) * var(--app-text-scale, 1)));
-    --cdt-table-cols: minmax(4.75rem, 18%) minmax(0, 1fr) minmax(3.5rem, 20%);
+    --cdt-table-cols: minmax(5rem, 20%) minmax(0, 1fr) minmax(3.5rem, 19%);
     --editor-fs-chapter: calc(var(--editor-scale) * 1.45);
     --editor-fs-top: calc(var(--editor-scale) * 1.25);
     --editor-fs-section: calc(var(--editor-scale) * 1.16);
@@ -337,7 +337,7 @@
 
   @media (max-width: 639px) {
     [data-editor-table] {
-      --cdt-table-cols: minmax(3.5rem, 14%) minmax(0, 1fr) minmax(3.5rem, 16%);
+      --cdt-table-cols: minmax(4rem, 17%) minmax(0, 1fr) minmax(3.5rem, 16%);
       --editor-description-indent: 0px;
       --editor-description-padding: 8px;
     }
@@ -350,7 +350,7 @@
 
   @media (min-width: 768px) {
     [data-editor-table] {
-      --cdt-table-cols: minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%);
+      --cdt-table-cols: minmax(9rem, 16%) minmax(0, 1fr) minmax(9.5rem, 16%);
     }
   }
   /* Esprit éditeur de livre : la marge raconte la profondeur. */

@@ -1130,8 +1130,8 @@ test('tableau : les colonnes viennent des jetons, pas de pourcentages codés en 
   const table = readFileSync('src/features/editor/MainTable.tsx', 'utf8');
   // Le jeton existe pour le téléphone (bornes minimales) et pour le desktop.
   assert.equal((css.match(/--cdt-table-cols:/g) ?? []).length >= 2, true, 'Les deux jeux de colonnes existent');
-  assert.match(css, /--cdt-table-cols:\s*minmax\(\s*4\.75rem/);
-  assert.match(css, /--cdt-table-cols:\s*minmax\(\s*8\.5rem/);
+  assert.match(css, /--cdt-table-cols:\s*minmax\(\s*5rem/);
+  assert.match(css, /--cdt-table-cols:\s*minmax\(\s*9rem/);
   // La grille du tableau consomme le jeton, jamais des pourcentages bruts :
   // sinon le téléphone perd ses largeurs minimales (date tronquée, rails tassés).
   assert.match(table, /TABLE_GRID_CLASS = 'editor-table-grid'/);
