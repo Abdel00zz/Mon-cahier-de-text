@@ -19,7 +19,7 @@ import { getAcademyById } from '@/domain/classes/moroccoEducation';
 import { isArabicText, renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { formatLocalizedClassDisplayName } from '@/constants';
-import { formatPrintDate, getSchoolYearLabel, type FlatDataItem, type PrintRow, type PrintViewProps } from './printViewModel';
+import { formatPrintDate, splitPrintDates, getSchoolYearLabel, type FlatDataItem, type PrintRow, type PrintViewProps } from './printViewModel';
 
 // Props interfaces
 
@@ -169,6 +169,25 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
         return remarks;
     };
 
+    /* Une séance sur plusieurs jours : dates empilées, reliées par « et » / « و »,
+       pour ne jamais déborder sur le filet de la colonne. */
+    const renderPrintDate = (rawDate: string) => {
+        const dates = splitPrintDates(formatPrintDate(rawDate, isRtlPrint));
+        if (dates.length === 1) return <span className="print-date-text">{dates[0]}</span>;
+        return (
+            <span className="print-date-text">
+                <span className="print-date-stack" data-count={dates.length}>
+                    {dates.map((date, index) => (
+                        <React.Fragment key={`${date}-${index}`}>
+                            {index > 0 && <span className="print-date-join" aria-hidden="true">{isRtlPrint ? 'و' : 'et'}</span>}
+                            <bdi dir="ltr">{date}</bdi>
+                        </React.Fragment>
+                    ))}
+                </span>
+            </span>
+        );
+    };
+
     const administrativeHeader = (
         <div className={`print-header ${isRtlPrint ? 'direction-rtl' : ''}`}>
             <div className="print-government">
@@ -272,7 +291,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
                                 return (
                                     <tr key={`session-${row.date}-${index}`} className={rowClassName}>
                                         <td className="print-col-date">
-                                            <span className="print-date-text">{formatPrintDate(row.date, isRtlPrint)}</span>
+                                            {renderPrintDate(row.date)}
                                         </td>
                                         <td className="print-col-content">
                                             <div className="print-session-content">

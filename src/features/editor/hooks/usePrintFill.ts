@@ -1,16 +1,9 @@
 import { useLayoutEffect, type DependencyList, type RefObject } from 'react';
-import { pageCountFor, planPrintFill, PRINT_PAGE_HEIGHT_PX } from '@/infrastructure/printing/printBalance';
-
-const MAX_FILL = 1.12;
-const MIN_COMPACT = 0.78;
+import { balancePrintLayout, clearPrintBalance } from '@/infrastructure/printing/pagination';
 
 /**
- * Ajuste le rendu imprimé après mesure réelle du DOM :
- * - remplit la dernière page quand elle est suffisamment entamée ;
- * - compresse doucement pour supprimer une dernière page presque vide.
- *
- * Le facteur est appliqué via `--print-fill` : interlignes et padding vertical
- * des cellules suivent, sans toucher à la taille des caractères.
+ * Ajuste et justifie verticalement le rendu A4 dès le montage et à chaque
+ * chargement de police ou d'image (mode aperçu et préparation d'impression).
  */
 export function usePrintFill(rootRef: RefObject<HTMLElement | null>, deps: DependencyList): void {
   useLayoutEffect(() => {
@@ -19,57 +12,35 @@ export function usePrintFill(rootRef: RefObject<HTMLElement | null>, deps: Depen
     let frame = 0;
     let cancelled = false;
 
-    const apply = (factor: number) => root.style.setProperty('--print-fill', factor.toFixed(4));
-
-    const balance = () => {
-      if (cancelled) return;
-      apply(1);
-      const baseHeight = root.scrollHeight;
-      const plan = planPrintFill(baseHeight, PRINT_PAGE_HEIGHT_PX);
-      if (plan.mode === 'none') return;
-
-      const inCompactMode = plan.mode === 'compact';
-      let low = inCompactMode ? MIN_COMPACT : 1;
-      let high = inCompactMode ? 1 : MAX_FILL;
-      let best = 1;
-
-      for (let attempt = 0; attempt < 7; attempt += 1) {
-        const factor = (low + high) / 2;
-        apply(factor);
-        const height = root.scrollHeight;
-        const pages = pageCountFor(height, PRINT_PAGE_HEIGHT_PX);
-        const fits = inCompactMode
-          ? pages <= plan.targetPages
-          : pages === plan.targetPages && height <= plan.targetHeight;
-        if (fits) {
-          best = factor;
-          low = factor;
-        } else {
-          high = factor;
-        }
-      }
-
-      apply(best);
-      root.dataset.printFillMode = plan.mode;
-      root.dataset.printFillFactor = best.toFixed(3);
+    const run = () => {
+      if (cancelled || !root.isConnected) return;
+      balancePrintLayout(root);
     };
 
     const schedule = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        frame = requestAnimationFrame(balance);
+        frame = requestAnimationFrame(run);
       });
     };
 
-    if (document.fonts?.status === 'loading') void document.fonts.ready.then(schedule);
-    else schedule();
+    // Exécution synchrone initiale puis rafraîchissement après polices/images.
+    run();
+    const images = Array.from(root.querySelectorAll('img'));
+    const pendingImages = images.filter(image => !image.complete);
+    pendingImages.forEach(image => image.addEventListener('load', schedule, { once: true }));
+    const fontsReady = document.fonts?.status === 'loading' ? document.fonts.ready : Promise.resolve();
+    void Promise.all([fontsReady, ...images.map(image => image.decode?.().catch(() => undefined))]).then(schedule);
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
+      pendingImages.forEach(image => image.removeEventListener('load', schedule));
+      clearPrintBalance(root);
       root.style.removeProperty('--print-fill');
       delete root.dataset.printFillMode;
       delete root.dataset.printFillFactor;
+      delete root.dataset.printPages;
     };
   }, deps);
 }

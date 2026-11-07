@@ -7,12 +7,12 @@
     "src/features/editor/modals/AssignDateModal.tsx": 867,
     "src/contexts/SyncContext.tsx": 839,
     "src/features/dashboard/modals/CreateClassModal.tsx": 790,
-    "src/features/auth/AuthPage.tsx": 747,
     "server/dev/mockApi.ts": 712,
     "src/admin/components/TeacherList.tsx": 682,
     "src/styles/editor-surface.css": 666,
     "src/features/dashboard/Dashboard.tsx": 639,
     "api/_lib/validate.ts": 600,
+    "src/features/auth/AuthPage.tsx": 569,
     "src/features/evaluations/DevoirsView.tsx": 523,
     "src/app/App.tsx": 437
   }

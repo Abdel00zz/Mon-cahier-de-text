@@ -78,3 +78,9 @@ export interface FlatDataItem {
 export type PrintRow =
     | { kind: 'single'; item: FlatDataItem }
     | { kind: 'session'; date: string; items: FlatDataItem[] };
+
+/** Découpe une date imprimée (« 14/09/2026 et 21/09/2026 ») en dates distinctes à empiler. */
+export const splitPrintDates = (formatted: string): string[] => {
+    const parts = formatted.split(/\s*(?:,|\bet\b|\band\b|\s\u0648\s)\s*/u).map(part => part.trim()).filter(Boolean);
+    return parts.length > 1 ? parts : [formatted];
+};

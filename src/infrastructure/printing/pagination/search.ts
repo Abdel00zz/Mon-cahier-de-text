@@ -25,7 +25,7 @@ const SPACINGS = 9;
  * mise en forme ; l'interligne et l'espacement sont des approximations.
  */
 export function searchBestLayout(
-  atoms: readonly PrintAtom[],
+  _atoms: readonly PrintAtom[],
   opts: PaginationOptions,
   prefs: LayoutPreferences,
   measure: (sizeFactor: number) => readonly PrintAtom[],

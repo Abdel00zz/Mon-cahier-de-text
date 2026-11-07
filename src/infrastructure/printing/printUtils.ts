@@ -1,6 +1,7 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { WebviewPrint } from 'capacitor-webview-print';
 import { hasMathSyntax } from '../../lib/text/math';
+import { balancePrintLayout } from './pagination';
 
 export type PrintOutcome = 'completed' | 'confirmation-required' | 'cancelled' | 'failed';
 const NativePrint = registerPlugin<{ print(options: { name: string; paperSize: 'A4' | 'A5' }): Promise<{ status: PrintOutcome }> }>('NativePrint');
@@ -66,6 +67,7 @@ export const preparePrintContent = async (root: HTMLElement, timeoutMs = 12000):
       for (const row of root.querySelectorAll<HTMLElement>('.print-session-row')) {
         row.dataset.printOversized = String(row.getBoundingClientRect().height > pageBodyHeight - headerHeight - 2);
       }
+      balancePrintLayout(root);
     })();
     await Promise.race([
       prepare,

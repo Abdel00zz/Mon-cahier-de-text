@@ -1,6 +1,6 @@
 import type { AtomPlacement, PaginationOptions, PaginationPage, PaginationResult, PrintAtom } from './model';
 
-const usableOn = (opts: PaginationOptions, index: number) =>
+const usableOn = (opts: PaginationOptions, _index: number) =>
   opts.pageHeight - (opts.headerHeight > 0 ? opts.headerHeight - opts.headerOverlap : 0);
 
 /** Hauteur minimale d'un fragment selon sa nature et les règles de veuves/orphelines. */
@@ -32,8 +32,6 @@ export function paginateAtoms(atoms: readonly PrintAtom[], opts: PaginationOptio
     used = 0;
     pageIndex += 1;
   };
-
-  const fits = (height: number, index: number) => height <= usableOn(opts, index) - used;
 
   for (let i = 0; i < atoms.length; i += 1) {
     const atom = atoms[i];

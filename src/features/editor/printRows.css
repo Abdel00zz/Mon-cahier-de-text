@@ -279,3 +279,95 @@
 
 .print-document[data-print-color='color'] [data-content-tone='purple'] { --print-tone-ink: #573d80; --print-tone-fill: #f3ebfa; }
 
+
+/* ── Intégrité des séances & Justification verticale A4 ─────────────────
+   Spécificité supérieure à `.print-table tr` pour empêcher toute coupure
+   au milieu d'une séance normale (évite un EXO orphelin sans date en haut
+   de la page suivante). L'air calculé par page se répartit entre haut/bas
+   des lignes, intervalles entre exercices, espace sous l'en-tête et
+   ancrage des signatures. */
+.print-document .print-table tr.print-session-row,
+.print-document .print-table tr.print-session-row > td,
+.print-document .print-table tr.print-absence-row,
+.print-document .print-table tr.print-absence-row > td,
+.print-document .print-table tr.print-separator-row,
+.print-document .print-table tr.print-separator-row > td,
+.print-document .print-table tr.print-chapter-row,
+.print-document .print-table tr.print-chapter-row > td,
+.print-document .print-table tr.print-context-row,
+.print-document .print-table tr.print-context-row > td {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.print-document .print-table tr.print-chapter-row,
+.print-document .print-table tr.print-context-row {
+    break-after: avoid;
+    page-break-after: avoid;
+}
+.print-document .print-table tr.print-session-row[data-print-oversized="true"],
+.print-document .print-table tr.print-session-row[data-print-oversized="true"] > td {
+    break-inside: auto;
+    page-break-inside: auto;
+}
+.print-document .print-table tbody > tr {
+    --row-pad-start: calc(var(--print-cell-block, 3pt) * var(--print-fill));
+    --row-pad-end: calc(var(--print-cell-block, 3pt) * var(--print-fill));
+}
+.print-document .print-table tbody > tr.new-date-row { --row-pad-start: 5px; }
+.print-document .print-table tbody > tr.print-session-row { --row-pad-end: 5px; }
+.print-document .print-table tbody > tr.print-chapter-row { --row-pad-start: 5px; --row-pad-end: 2px; }
+.print-document .print-table tbody > tr > td {
+    padding-top: calc(var(--row-pad-start) + (var(--print-row-extra, 0px) / 2)) !important;
+    padding-bottom: calc(var(--row-pad-end) + (var(--print-row-extra, 0px) / 2)) !important;
+}
+.print-document .print-session-item + .print-session-item {
+    margin-top: calc(var(--print-spacing-itemGap, 3pt) * var(--print-fill) + var(--print-item-extra, 0px));
+}
+.print-document > .print-header { margin-bottom: max(4px, calc(15px * var(--print-fill) + var(--print-lead-extra, 0px))); }
+.print-document > .print-signatures { margin-top: max(8px, calc(18px * var(--print-fill) + var(--print-trailer-extra, 0px))); }
+
+/* ── Cellule date : plusieurs dates empilées, jamais par-dessus le filet ── */
+.print-col-date { overflow: hidden; }
+.print-date-stack {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    max-width: 100%;
+    line-height: 1.15;
+}
+.print-date-stack > bdi { display: block; white-space: nowrap; }
+.print-date-join {
+    font-size: 0.72em;
+    font-weight: 500;
+    color: var(--print-rule-strong);
+    letter-spacing: 0.04em;
+    line-height: 1;
+}
+.print-date-stack[data-count="3"] > bdi,
+.print-date-stack[data-count="4"] > bdi { font-size: 0.92em; }
+
+/* ── Images du contenu : à la largeur de la colonne, jamais coupées ─────── */
+.print-document img {
+    max-width: 100%;
+    height: auto;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    image-rendering: auto;
+    object-fit: contain;
+    vertical-align: middle;
+}
+.print-col-content img { max-height: 120mm; }
+.print-col-remark img { max-height: 30mm; }
+
+/* ── Finition des filets : trois graisses cohérentes, angles nets ─────────
+   cadre 0.9pt · séparation de séance 0.6pt · colonnes 0.45pt */
+.print-document .print-table { border-width: 0.9pt; }
+.print-document .print-table th,
+.print-document .print-table td { border-inline-end-width: 0.45pt !important; }
+.print-document .print-table .new-date-row > td { border-top-width: 0.6pt !important; }
+.print-document .print-table .print-session-row > td,
+.print-document .print-table .print-separator-row > td { border-bottom-width: 0.6pt !important; }
+.print-document .print-table th { border-bottom-width: 0.9pt !important; }
+.print-document .print-table tr,
+.print-document .print-table td { -webkit-box-decoration-break: clone; box-decoration-break: clone; }
