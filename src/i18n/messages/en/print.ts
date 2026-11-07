@@ -50,4 +50,5 @@ export const messages: Record<string, string> = {
   'print.noHeader': 'None',
   'print.historyUnavailable': 'Printing from the school office: the print history stays on the teacher’s device. Choose the full document or the sessions to print.',
   'print.noContent': 'No content to display',
+  'print.balanceHint': 'The engine will automatically balance the last page for this selection.',
 };

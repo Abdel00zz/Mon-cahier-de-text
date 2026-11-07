@@ -50,4 +50,5 @@ export const messages: Record<string, string> = {
   'print.noHeader': 'بدون',
   'print.historyUnavailable': 'الطباعة من الإدارة: يبقى سجل الطباعة على جهاز الأستاذ. اختر الوثيقة كاملة أو الحصص المطلوب طبعها.',
   'print.noContent': 'لا يوجد محتوى للعرض',
+  'print.balanceHint': 'سيوازن المحرك تلقائياً الصفحة الأخيرة حتى يمتلئ هذا الاختيار.',
 };

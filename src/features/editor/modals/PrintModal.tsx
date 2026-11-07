@@ -221,6 +221,12 @@ export const PrintModal: React.FC<PrintModalProps> = ({
               {activeMode.badge && <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-700 dark:text-emerald-300">{activeMode.badge}</span>}
             </div>
             <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{activeMode.subtitle}</p>
+            {mode !== 'all' && (
+              <p className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-relaxed text-muted-foreground">
+                <span aria-hidden="true" className="text-primary">✦</span>
+                <span>{t('print.balanceHint')}</span>
+              </p>
+            )}
           </div>
         </div>
 

@@ -50,4 +50,5 @@ export const messages: Record<string, string> = {
   'print.noHeader': 'Aucun',
   'print.historyUnavailable': 'Impression depuis la direction : l’historique des impressions reste sur l’appareil de l’enseignant. Choisissez le document complet ou les séances à tirer.',
   'print.noContent': 'Aucun contenu à afficher',
+  'print.balanceHint': 'Le moteur équilibrera automatiquement la dernière page pour ce choix.',
 };

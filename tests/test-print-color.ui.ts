@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import React from 'react';
+import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { PrintView } from '../src/features/editor/PrintView';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
@@ -32,4 +33,11 @@ test('le PDF applique le choix couleur et conserve les familles des badges dans 
     }
   }
   assert.equal(JSON.stringify(lessons), original);
+});
+
+test('les segments de la fenêtre d’impression ne coupent jamais les libellés', () => {
+  const css = readFileSync('src/features/editor/modals/PrintModal.css', 'utf8');
+  assert.match(css, /\.print-settings-modal \.paper-segments \[role='radio'\] \{[^}]*white-space: nowrap;/, 'libellés sur une seule ligne');
+  assert.match(css, /\.print-settings-modal \.paper-segments \[role='radio'\] \{[^}]*min-width: max-content;/, 'largeur minimale du libellé respectée');
+  assert.match(css, /@media \(max-width: 639px\)[\s\S]*?\.print-settings-modal \.paper-segments \{ width: 100%; \}/, 'le contrôle passe pleine largeur sur mobile');
 });
