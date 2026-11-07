@@ -11,6 +11,7 @@ import { companionHelpCopy } from './companionHelpCopy';
 import { CompanionText } from './CompanionText';
 import { AssistantTips } from './AssistantTips';
 import { BookOpen, Search } from '@/components/ui/icons';
+import { X } from 'lucide-react';
 import { AssistantExplorer, explorerLabels, type AssistantWorkspace } from './AssistantExplorer';
 import './companion.css';
 
@@ -88,6 +89,7 @@ export function AssistantPopover({
   const helpRequest = useRef<AbortController | null>(null);
   const id = useId();
   const labels = companionLabels(locale);
+  const assistantLabel = locale === 'ar' ? 'المساعد' : 'Assistant';
   const [exploring, setExploring] = useState(false);
   const explorerTrigger = useRef<HTMLButtonElement>(null);
   const explore = explorerLabels(locale);
@@ -179,8 +181,17 @@ export function AssistantPopover({
         data-state={robotAction ?? mood}
       >
         {open && (
-          <div className="assistant-panel__body">
-            <h2 id={`${id}-title`} className="sr-only">{exploring ? explore.open : message.title}</h2>
+          <>
+            <div className="assistant-panel__header">
+              <div className="assistant-panel__heading">
+                <span className="assistant-panel__eyebrow" aria-hidden="true">{message.context || assistantLabel}</span>
+                <h2 id={`${id}-title`} className="assistant-panel__title">{exploring ? explore.open : message.title}</h2>
+              </div>
+              <button type="button" className="assistant-panel__close" onClick={() => close(true)} aria-label={labels.close}>
+                <X size={15} aria-hidden="true" />
+              </button>
+            </div>
+            <div className="assistant-panel__body">
             {!exploring && <>
               <div className="assistant-panel__message">
                 <p id={`${id}-detail`} className="assistant-panel__detail" aria-live="polite" aria-atomic="true">
@@ -223,7 +234,8 @@ export function AssistantPopover({
               </details>
             )}
             {helpError && <p role="alert" className="assistant-panel__detail">{companionHelpCopy(locale).error}</p>}
-          </div>
+            </div>
+          </>
         )}
       </div>
     </div>

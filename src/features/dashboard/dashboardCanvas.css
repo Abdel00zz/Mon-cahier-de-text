@@ -57,9 +57,10 @@
   background: var(--serenite-glass); box-shadow: 0 10px 26px -18px rgba(35, 28, 68, .18);
 }
 .dashboard-top-header {
-  display: flex; flex-direction: row-reverse; align-items: flex-start; justify-content: space-between;
-  gap: .75rem; width: 100%; padding-block: 2px 4px;
+  display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
+  gap: .5rem; width: 100%; padding-block: 2px 4px;
 }
+.dashboard-top-header > .dashboard-actions-bar { width: 100%; }
 .dashboard-header-actions {
   display: flex; align-items: center; gap: .5rem; transform: none;
 }
