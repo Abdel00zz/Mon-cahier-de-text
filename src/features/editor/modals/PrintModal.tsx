@@ -140,27 +140,27 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       blockDismiss={isPrinting}
       onClose={onClose}
       title={
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
-            <Printer className="h-5 w-5 stroke-[2.2]" />
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-2xs">
+            <Printer className="h-4.5 w-4.5 stroke-[2.2]" />
           </span>
-          <span className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
+          <span className="text-sm sm:text-base font-bold tracking-tight text-foreground">
             {t('print.title')}
           </span>
         </div>
       }
       maxWidth="2xl"
-      className="print-settings-modal sm:max-w-3xl sm:rounded-2xl"
-      headerClassName="border-b-0 bg-background"
-      bodyClassName="px-5 py-4 sm:px-7 sm:py-5 [&_button]:min-h-11"
-      footerClassName="border-t-0 bg-background"
+      className="print-settings-modal sm:max-w-2xl sm:rounded-2xl"
+      headerClassName="border-b border-border/50 bg-background px-4 py-3 sm:px-5 sm:py-3.5"
+      bodyClassName="px-4 py-3.5 sm:px-5 sm:py-4"
+      footerClassName="border-t border-border/50 bg-background px-4 py-2.5 sm:px-5 sm:py-3"
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
           <Button
             type="button"
             disabled={isPrinting || (mode === 'custom' && selectedDates.size === 0) || (mode === 'new' && newDates.length === 0)}
             onClick={() => onPrint(mode, { pageNumbers, colorContent, headerMode, textSize, lineSpacing }, mode === 'custom' ? Array.from(selectedDates) : undefined)}
-            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 min-h-11 text-xs sm:text-sm shadow-sm active:scale-[0.96] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-4 min-h-10 text-xs sm:text-sm shadow-xs active:scale-[0.97] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]"
           >
             {isPrinting ? t('print.preparing') : <>{t('print.print')} · {mode === 'new'
               ? sessionCountLabel(newDates.length)
@@ -171,13 +171,13 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         </div>
       }
     >
-      <fieldset disabled={isPrinting} aria-label={t('print.title')} aria-busy={isPrinting} className="min-w-0 space-y-4">
+      <fieldset disabled={isPrinting} aria-label={t('print.title')} aria-busy={isPrinting} className="min-w-0 space-y-2.5">
         {/* Sortie physique du document inspirée du motif Receipt Printer #1 */}
         {isPrinting && (
-          <div className="receipt-slot-container flex flex-col items-center justify-center py-4 px-3 rounded-2xl bg-[#fafaf8] dark:bg-[#181816] border border-[#e4e4e0] dark:border-[#2e2e28] shadow-xs animate-in fade-in duration-200">
+          <div className="receipt-slot-container flex flex-col items-center justify-center py-3 px-3 rounded-xl bg-[#fafaf8] dark:bg-[#181816] border border-[#e4e4e0] dark:border-[#2e2e28] shadow-2xs animate-in fade-in duration-200">
             <div className="receipt-slot w-[220px]">
               <div className="receipt-printer-head w-full" />
-              <div className="receipt-paper w-[196px] p-3 text-xs font-mono space-y-1.5 rounded-b-md">
+              <div className="receipt-paper w-[196px] p-2.5 text-xs font-mono space-y-1 rounded-b-md">
                 <div className="flex justify-between items-center text-[#5e5e5a] dark:text-[#a8a8a2] text-[10px]">
                   <span>{t('print.title')}</span>
                   <span>{new Date().toLocaleDateString(locale === 'ar' ? 'ar-MA' : 'fr-FR')}</span>
@@ -203,26 +203,26 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         {!historyKnown && <p className="text-xs text-muted-foreground">{t('print.historyUnavailable')}</p>}
 
         {/* Choix du mode */}
-        <div className="rounded-2xl border border-border/70 bg-background p-3 sm:p-4 shadow-xs space-y-3">
+        <div className="rounded-xl border border-border/70 bg-background p-3 shadow-2xs space-y-2">
           <Segmented<PrintMode>
             value={mode}
             onChange={setMode}
             ariaLabel={t('print.typeAria')}
-            className={`grid w-full ${historyKnown ? 'grid-cols-3' : 'grid-cols-2'}`}
+            className={`print-mode-segments grid w-full ${historyKnown ? 'grid-cols-3' : 'grid-cols-2'}`}
             options={printModes.map(item => ({
               value: item.value,
               disabled: item.disabled || isPrinting,
-              label: <span className="flex min-w-0 flex-wrap items-center justify-center gap-1.5"><item.icon className="h-4 w-4 shrink-0" aria-hidden /><span className="whitespace-normal">{item.label}</span></span>,
+              label: <span className="flex min-w-0 flex-wrap items-center justify-center gap-1.5"><item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden /><span className="whitespace-normal">{item.label}</span></span>,
             }))}
           />
-          <div className="px-1">
-            <div className="flex items-center gap-2">
-              <p className="text-xs sm:text-sm font-bold text-foreground">{activeMode.title}</p>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-0.5">
+            <div className="flex flex-wrap items-baseline gap-2 min-w-0">
+              <p className="text-xs font-bold text-foreground">{activeMode.title}</p>
               {activeMode.badge && <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-700 dark:text-emerald-300">{activeMode.badge}</span>}
+              <span className="text-[11px] text-muted-foreground">{activeMode.subtitle}</span>
             </div>
-            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{activeMode.subtitle}</p>
             {mode !== 'all' && (
-              <p className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-relaxed text-muted-foreground">
+              <p className="flex items-center gap-1 text-[10.5px] text-muted-foreground/85">
                 <span aria-hidden="true" className="text-primary">✦</span>
                 <span>{t('print.balanceHint')}</span>
               </p>
@@ -232,60 +232,65 @@ export const PrintModal: React.FC<PrintModalProps> = ({
 
         {/* Aperçu des nouvelles dates */}
         {mode === 'new' && newDates.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-1.5 rounded-2xl border border-border/70 bg-background p-3 shadow-xs">
+          <div className="flex flex-wrap justify-center gap-1.5 rounded-xl border border-border/70 bg-background p-2.5 shadow-2xs">
             {newDates.slice(0, 12).map(date => (
-              <span key={date} className="rounded-xl bg-muted/60 border border-border/70 px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs">
+              <span key={date} className="rounded-lg bg-muted/60 border border-border/70 px-2 py-0.5 text-[11px] font-bold text-foreground tabular-nums">
                 {formatDateDDMMYYYY(date)}
               </span>
             ))}
             {newDates.length > 12 && (
-              <span className="rounded-xl bg-muted/40 px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+              <span className="rounded-lg bg-muted/40 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
                 {t('print.otherCount', { count: number.format(newDates.length - 12) })}
               </span>
             )}
           </div>
         )}
 
-        {/* Sélection à la séance : liste cochable de toutes les dates */}
+        {/* Sélection à la séance : grille compacte à 2 colonnes */}
         {mode === 'custom' && allDates.length > 0 && (
-          <div className="space-y-2.5 rounded-2xl border border-border/70 bg-background p-4 shadow-xs">
+          <div className="space-y-2 rounded-xl border border-border/70 bg-background p-3 shadow-2xs">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs sm:text-sm font-bold text-foreground">
+              <span className="text-xs font-bold text-foreground">
                 {t('print.sessionsToPrint', { selected: number.format(selectedDates.size), total: number.format(allDates.length) })}
               </span>
-              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                <button type="button" onClick={() => setSelectedDates(new Set(allDates))} className="hover:text-foreground transition-colors">{t('print.all')}</button>
-                <span className="text-muted-foreground/50">|</span>
+              <div className="print-quick-actions flex items-center gap-1 text-[11px] font-bold text-muted-foreground">
+                <button type="button" onClick={() => setSelectedDates(new Set(allDates))} className="print-quick-btn hover:text-foreground transition-colors">{t('print.all')}</button>
+                <span className="text-muted-foreground/40">·</span>
                 <button
                   type="button"
                   onClick={() => setSelectedDates(new Set(newDates))}
                   disabled={newDates.length === 0}
-                  className="hover:text-foreground disabled:opacity-40 transition-colors"
+                  className="print-quick-btn hover:text-foreground disabled:opacity-40 transition-colors"
                 >
                   {t('print.newOnlyShort')}
                 </button>
-                <span className="text-muted-foreground/50">|</span>
-                <button type="button" onClick={() => setSelectedDates(new Set())} className="hover:text-foreground transition-colors">{t('print.none')}</button>
+                <span className="text-muted-foreground/40">·</span>
+                <button type="button" onClick={() => setSelectedDates(new Set())} className="print-quick-btn hover:text-foreground transition-colors">{t('print.none')}</button>
               </div>
             </div>
-            <div className="max-h-48 space-y-1.5 overflow-y-auto pe-1.5 overscroll-contain">
+            <div className="grid max-h-40 grid-cols-1 gap-1.5 overflow-y-auto pe-1 overscroll-contain sm:grid-cols-2">
               {allDates.map(date => {
                 const isNew = !printedSet.has(date);
+                const checked = selectedDates.has(date);
                 return (
                   <label
                     key={date}
-                    className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border/70 bg-background px-3 py-2 hover:bg-muted/50 transition-colors"
+                    className={`print-session-chip flex cursor-pointer items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 transition-colors ${
+                      checked
+                        ? 'border-primary/40 bg-primary/[0.04] hover:bg-primary/[0.07]'
+                        : 'border-border/70 bg-background hover:bg-muted/50'
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2 min-w-0">
                       <Checkbox
-                        checked={selectedDates.has(date)}
+                        checked={checked}
                         onCheckedChange={() => toggleDate(date)}
                       />
-                      <span className="text-xs font-bold text-foreground">{formatDateDDMMYYYY(date)}</span>
+                      <span className="text-xs font-bold text-foreground tabular-nums"><bdi dir="ltr">{formatDateDDMMYYYY(date)}</bdi></span>
                     </div>
                     {historyKnown && (
                       <span
-                        className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase border ${
+                        className={`shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase border ${
                           isNew ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 'bg-muted border-border/50 text-muted-foreground'
                         }`}
                       >
@@ -299,9 +304,9 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           </div>
         )}
 
-        {/* Mise en page : taille du texte et aération des lignes */}
-        <div className="space-y-3 rounded-2xl border border-border/70 bg-background p-4 shadow-xs">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* Mise en page regroupée : taille du texte, aération des lignes et en-tête administratif */}
+        <div className="print-layout-card space-y-2 rounded-xl border border-border/70 bg-background p-3 shadow-2xs">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-bold text-foreground">{t('print.textSize')}</span>
             <Segmented<PrintTextSize>
               value={textSize}
@@ -314,7 +319,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
               ]}
             />
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-bold text-foreground">{t('print.lineSpacing')}</span>
             <Segmented<PrintLineSpacing>
               value={lineSpacing}
@@ -327,47 +332,8 @@ export const PrintModal: React.FC<PrintModalProps> = ({
               ]}
             />
           </div>
-          <p className="text-[11px] leading-relaxed text-muted-foreground">
-            {t('print.spacingHint')}
-          </p>
-        </div>
-
-        <DescriptionVisibilityControl
-          context="print"
-          mode={config.printDescriptionMode ?? 'all'}
-          types={config.printDescriptionTypes ?? []}
-          onChange={next => onConfigChange({ printDescriptionMode: next.mode, printDescriptionTypes: next.types })}
-          className="rounded-2xl border border-border/70 bg-background p-4 shadow-xs"
-        />
-
-        {/* Options d'impression regroupées pour éviter l'empilement de grandes cartes. */}
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="print-option-row">
-            <span>
-              <span className="block text-xs font-bold text-foreground">{t('print.colorContent')}</span>
-              <span className="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">{t('print.colorContentHint')}</span>
-            </span>
-            <Switch checked={colorContent} disabled={isPrinting} aria-label={t('print.colorContent')}
-              onCheckedChange={setColorContent} className="print-option-switch" />
-          </label>
-          <label className="print-option-row">
-            <div>
-              <span className="block text-xs font-bold text-foreground">{t('print.pageNumbers')}</span>
-              <span className="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
-                {t('print.pageNumbersHint')}
-              </span>
-            </div>
-            <Switch
-              checked={pageNumbers}
-              disabled={isPrinting}
-              aria-label={t('print.pageNumbers')}
-              onCheckedChange={setPageNumbers}
-              className="print-option-switch"
-            />
-          </label>
-
-          <div className="space-y-2 rounded-xl border border-border/70 bg-background/75 p-4 shadow-xs">
-            <span className="block text-xs font-bold text-foreground">{t('print.header')}</span>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-bold text-foreground">{t('print.header')}</span>
             <Segmented<PrintHeaderMode>
               value={headerMode}
               ariaLabel={t('print.header')}
@@ -379,6 +345,44 @@ export const PrintModal: React.FC<PrintModalProps> = ({
               ]}
             />
           </div>
+          <p className="text-[10.5px] leading-snug text-muted-foreground/80">
+            {t('print.spacingHint')}
+          </p>
+        </div>
+
+        <DescriptionVisibilityControl
+          context="print"
+          mode={config.printDescriptionMode ?? 'all'}
+          types={config.printDescriptionTypes ?? []}
+          onChange={next => onConfigChange({ printDescriptionMode: next.mode, printDescriptionTypes: next.types })}
+          className="rounded-xl border border-border/70 bg-background p-3 shadow-2xs"
+        />
+
+        {/* Options binaires en duo symétrique */}
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="print-option-row">
+            <span className="min-w-0">
+              <span className="block text-xs font-bold text-foreground">{t('print.colorContent')}</span>
+              <span className="mt-0.5 block text-[10.5px] leading-snug text-muted-foreground">{t('print.colorContentHint')}</span>
+            </span>
+            <Switch checked={colorContent} disabled={isPrinting} aria-label={t('print.colorContent')}
+              onCheckedChange={setColorContent} className="print-option-switch" />
+          </label>
+          <label className="print-option-row">
+            <div className="min-w-0">
+              <span className="block text-xs font-bold text-foreground">{t('print.pageNumbers')}</span>
+              <span className="mt-0.5 block text-[10.5px] leading-snug text-muted-foreground">
+                {t('print.pageNumbersHint')}
+              </span>
+            </div>
+            <Switch
+              checked={pageNumbers}
+              disabled={isPrinting}
+              aria-label={t('print.pageNumbers')}
+              onCheckedChange={setPageNumbers}
+              className="print-option-switch"
+            />
+          </label>
         </div>
       </fieldset>
     </Modal>

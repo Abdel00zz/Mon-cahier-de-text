@@ -29,8 +29,10 @@
   height: var(--input-height, 22px);
 }
 
-.checkbox svg,
-.radio svg {
+.checkbox > svg,
+.radio > svg,
+.checkbox .tick,
+.radio .inner {
   fill: var(--svg-fill, none);
   stroke: var(--svg-stroke, none);
   stroke-width: var(--svg-stroke-width, 0);
@@ -64,8 +66,8 @@
 
 .checkbox input:checked + svg,
 .radio input:checked + svg,
-.checkbox[data-state="checked"] svg,
-.radio[data-state="checked"] svg {
+.checkbox[data-state="checked"] > svg,
+.radio[data-state="checked"] > svg {
   --svg-fill: var(--toggle-active);
   --svg-stroke: var(--toggle-border-active);
 }
@@ -73,13 +75,19 @@
 .checkbox .tick {
   --svg-width: 12px;
   --svg-height: 10px;
-  --svg-fill: none;
-  --svg-stroke: var(--toggle-inner);
+  --svg-fill: none !important;
+  --svg-stroke: var(--toggle-inner) !important;
   --svg-stroke-width: 2.2px;
   --svg-top: 6px;
   --svg-left: 5px;
   stroke-dasharray: 14px;
   stroke-dashoffset: var(--svg-offset, 14px);
+}
+
+.checkbox > [data-state] > .tick {
+  position: static;
+  top: auto;
+  left: auto;
 }
 
 .checkbox input:checked + svg + .tick,

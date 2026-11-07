@@ -17,6 +17,133 @@
 .print-document .editor-indent-1 { margin-inline-start: var(--editor-indent-1) !important; }
 .print-document .editor-indent-2 { margin-inline-start: var(--editor-indent-2) !important; }
 .print-document .editor-indent-3 { margin-inline-start: var(--editor-indent-3) !important; }
+/* ══════════════════════════════════════════════════════════════════════════
+   Mise en page éditoriale type Adobe InDesign :
+   - Grille de colonnes de marqueurs à chasse fixe (Hanging Indent / Tab Stop)
+   - Alignement optique sur la ligne de base (Baseline Grid)
+   - Hiérarchie typographique de manuel universitaire
+   ══════════════════════════════════════════════════════════════════════════ */
+.print-document .editor-type-section {
+    margin-inline-start: 0 !important;
+    padding: 3.5pt 0 2pt !important;
+    display: grid !important;
+    grid-template-columns: 1.9em minmax(0, 1fr);
+    align-items: center !important;
+    column-gap: 0.45em !important;
+    font-size: calc(var(--print-size-body) * 1.04 * var(--print-fill));
+    font-weight: 700;
+    color: var(--print-ink);
+    line-height: 1.25;
+    letter-spacing: -0.005em;
+}
+.print-document .editor-section-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.65em;
+    min-width: 1.65em;
+    height: 1.55em;
+    padding: 0;
+    border: 0.6pt solid var(--print-ink);
+    border-radius: 0 !important;
+    background-color: #f3f4f6;
+    color: var(--print-ink);
+    font-family: var(--content-font-latin), Arial, sans-serif;
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    justify-self: start;
+    align-self: center;
+}
+.print-document .editor-type-subsection {
+    margin-inline-start: var(--editor-indent-1) !important;
+    padding: 2.5pt 0 1pt !important;
+    display: grid !important;
+    grid-template-columns: 1.65em minmax(0, 1fr);
+    align-items: baseline !important;
+    column-gap: 0.3em !important;
+    font-size: calc(var(--print-size-cell) * 1.02 * var(--print-fill));
+    font-weight: 700;
+    color: var(--print-ink);
+    line-height: 1.28;
+}
+.print-document .editor-type-subsection > bdi {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--print-ink);
+}
+.print-document .editor-type-subsubsection {
+    margin-inline-start: var(--editor-indent-2) !important;
+    padding: 1.5pt 0 1pt !important;
+    display: grid !important;
+    grid-template-columns: 1.65em minmax(0, 1fr);
+    align-items: baseline !important;
+    column-gap: 0.3em !important;
+    font-size: calc(var(--print-size-cell) * var(--print-fill));
+    font-weight: 600;
+    font-style: italic;
+    color: #374151;
+    line-height: 1.28;
+}
+.print-document .editor-type-subsubsection > bdi {
+    font-variant-numeric: tabular-nums;
+}
+/* Chaque élément (PROPR, THM, DEF, EXO, REM) s'aligne sur le taquet de texte
+   de son parent et utilise un retrait suspendu (hanging indent) pour que les
+   intitulés longs sur 2 lignes reviennent sous le début du texte, jamais sous
+   le cartouche [PROPR 1]. */
+.print-document .print-lesson-item {
+    display: block;
+    padding-inline-start: 4.4em;
+    text-indent: -4.4em;
+    line-height: calc(var(--print-spacing-line) * var(--print-fill));
+}
+.print-document .print-lesson-item.editor-indent-1 {
+    margin-inline-start: var(--editor-indent-2) !important;
+}
+.print-document .print-lesson-item.editor-indent-2 {
+    margin-inline-start: var(--editor-indent-3) !important;
+}
+.print-document .print-lesson-item.editor-indent-3 {
+    margin-inline-start: 16mm !important;
+}
+.print-document .print-item-kind {
+    display: inline-block;
+    width: 5.2em;
+    min-width: 5.2em;
+    margin-inline-end: 0.55em;
+    padding: 0.14em 0.32em 0.11em;
+    border: 0.5pt solid #7c858e;
+    border-radius: 0 !important;
+    background-color: #f8f9fa;
+    color: #1f2937;
+    font-size: 6.8pt;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: center;
+    text-indent: 0;
+    vertical-align: 0.06em;
+    font-variant-numeric: tabular-nums;
+}
+.print-document .print-item-title {
+    font-weight: 600;
+    color: var(--print-ink);
+    text-indent: 0;
+}
+.print-document .print-item-description {
+    margin-inline-start: 0 !important;
+    text-indent: 0 !important;
+    border-width: 0.5pt !important;
+    padding: 2.5pt 6pt !important;
+}
+.print-document .print-session-chapter-item,
+.print-document .print-chapter-row .print-col-content {
+    padding-block: 3pt 2pt !important;
+    letter-spacing: 0.015em;
+}
 
 
 

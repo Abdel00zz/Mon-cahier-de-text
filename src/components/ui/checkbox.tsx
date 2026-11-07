@@ -47,7 +47,7 @@ const Checkbox = React.forwardRef<
       <CheckboxPrimitive.Indicator className="absolute inset-0 flex items-center justify-center text-primary-foreground pointer-events-none">
         <svg
           viewBox="0 0 12 10"
-          className="h-3 w-3 stroke-current fill-none stroke-[2.4] stroke-linecap-round stroke-linejoin-round"
+          className="tick h-3 w-3 stroke-current fill-none stroke-[2.4] stroke-linecap-round stroke-linejoin-round"
           aria-hidden="true"
         >
           <motion.path

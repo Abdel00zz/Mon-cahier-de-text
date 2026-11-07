@@ -6,34 +6,66 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 10px 12px;
   border: 1px solid hsl(var(--border) / .7);
-  border-radius: 16px;
+  border-radius: 12px;
   background: hsl(var(--background));
   cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
 }
 /* Only the SVG rail changes color. Painting the outer touch target creates
    a second pill around the switch and obscures its on/off state. */
 .print-settings-modal .print-option-switch {
   flex-shrink: 0;
-  min-width: 58px;
-  min-height: 44px;
+  min-width: 50px;
+  min-height: 36px;
   background: transparent;
 }
 .print-settings-modal .print-option-row:has([data-state='checked']) {
   border-color: hsl(var(--primary) / .35);
+  background: hsl(var(--primary) / .02);
 }
-.print-settings-modal .paper-segments { min-width: 0; }
+.print-settings-modal .paper-segments {
+  min-width: 0;
+  padding: 3px;
+  border-radius: 10px;
+}
 .print-settings-modal .paper-segments [role='radio'] {
   flex: 1 1 0;
   min-width: max-content;
+  min-height: 32px;
+  padding-inline: 10px;
   white-space: nowrap;
   text-align: center;
+  border-radius: 7px;
+  font-size: 11.5px;
+}
+.print-settings-modal .print-mode-segments [role='radio'] {
+  min-height: 36px;
+  font-size: 12px;
 }
 .print-settings-modal .paper-segments [role='radio'][data-state='on'] {
   color: hsl(var(--primary));
   border-color: hsl(var(--primary) / .3);
+}
+.print-settings-modal .print-quick-btn {
+  min-width: auto !important;
+  min-height: 24px !important;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.print-settings-modal .print-quick-btn:hover:not(:disabled) {
+  background: hsl(var(--muted) / .7);
+}
+.print-settings-modal .print-session-chip {
+  min-height: 36px;
+}
+.print-settings-modal .print-session-chip [role='checkbox'] {
+  min-width: 22px !important;
+  min-height: 22px !important;
+  width: 22px;
+  height: 22px;
 }
 
 .receipt-slot {
