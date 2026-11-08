@@ -1,2 +1,2 @@
-export * from './calendarData';
-export * from './calendarDates';
+export * from './calendarData.js';
+export * from './calendarDates.js';

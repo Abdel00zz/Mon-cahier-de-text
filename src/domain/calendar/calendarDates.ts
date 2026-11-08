@@ -1,5 +1,5 @@
 import type { ScheduleSlot } from '../../types.js';
-import { getBundledCalendar, isValidISODate, type AnneeScolaire, type HolidayCalendar } from './calendarData';
+import { getBundledCalendar, isValidISODate, type AnneeScolaire, type HolidayCalendar } from './calendarData.js';
 
 const toISODate = (d: Date): string => {
     const year = d.getFullYear();

@@ -1,0 +1,364 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   COUCHE FUTURISTE — Console de direction
+   ═══════════════════════════════════════════════════════════════════════════
+
+   Cette couche s'importe APRÈS admin-workspace.css et redéfinit uniquement
+   les surfaces, les puces et la typographie. Aucun composant n'est modifié,
+   aucun élément DOM n'est ajouté : le balisage reste celui de TeacherList.
+
+   Direction retenue — « instrument de bord », pas « tableau de bord » :
+
+   1. GÉOMÉTRIE SERRÉE. Rayons de 10 px au lieu de 20 px, filets de 1 px.
+      Une console de pilotage se lit comme un instrument : des angles nets,
+      pas des bulles.
+
+   2. UNE SEULE COULEUR. Le bleu d'action est la seule teinte saturée de la
+      page. Les états (retard, critique, bloqué) ne colorent plus un fond :
+      ils colorent un POINT de 5 px et le chiffre. C'est la règle 60-30-10
+      appliquée strictement — 10 % d'accent, jamais plus.
+
+   3. CHIFFRES EN CHASSE FIXE. `tabular-nums` + `font-feature-settings tnum`
+      sur tous les nombres : une colonne de compteurs ne danse plus quand
+      une valeur passe de 9 à 10.
+
+   4. MICRO-ÉTIQUETTES. 10 px, capitales, interlettrage large, gris. Elles
+      nomment, elles ne crient pas. Le chiffre reste le seul élément lourd.
+
+   5. ZÉRO EFFET. Pas de halo radial, pas de dégradé, pas de translation au
+      survol. L'élévation se lit au filet et à l'ombre d'un pixel, pas au
+      mouvement. Une console qui bouge sous le curseur est une console qu'on
+      n'ose pas cliquer.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#admin-root {
+  /* Jetons propres à la couche : ils ne remplacent pas la palette Apple,
+     ils resserrent sa géométrie. */
+  --admin-radius: 10px;
+  --admin-radius-sm: 7px;
+  --admin-hairline: hsl(var(--foreground) / .075);
+  --admin-hairline-strong: hsl(var(--foreground) / .13);
+  --admin-surface: hsl(var(--card));
+  --admin-sunken: hsl(var(--foreground) / .028);
+  --admin-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+}
+
+/* ── Barre de commande ──────────────────────────────────────────────────────
+   Une seule action pleine (le bulletin), tout le reste en fantôme. Avant,
+   deux boutons saturés (bleu + noir) se disputaient le regard et aucun ne
+   gagnait : la hiérarchie était inversée. */
+.admin-commandbar {
+  min-height: 3.75rem;
+  border-bottom: 1px solid var(--admin-hairline);
+  background: hsl(var(--background) / .82);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+.admin-commandbar__action {
+  min-height: 2.25rem;
+  padding-inline: .85rem;
+  border-radius: 980px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: hsl(var(--muted-foreground));
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: -.005em;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+.admin-commandbar__action:hover {
+  background: var(--admin-sunken);
+  border-color: var(--admin-hairline);
+  color: hsl(var(--foreground));
+}
+.admin-commandbar__action:active { transform: none; }
+/* Les icônes restent neutres : la couleur ne sert qu'à l'état actif. */
+.admin-commandbar__action--schedule .admin-commandbar__icon,
+.admin-commandbar__action--journal .admin-commandbar__icon,
+.admin-commandbar__action--policy .admin-commandbar__icon {
+  color: currentColor;
+  opacity: .7;
+}
+.admin-commandbar__action--primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: transparent;
+  box-shadow: none;
+}
+.admin-commandbar__action--primary:hover {
+  background: hsl(211 100% 41%);
+  color: hsl(var(--primary-foreground));
+}
+/* « Gérer les vacances » était un aplat noir : il redevient une action
+   secondaire, l'encre pleine étant réservée au texte. */
+.admin-commandbar__action--ink {
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  border-color: transparent;
+  box-shadow: none;
+}
+.admin-commandbar__action--ink:hover {
+  background: var(--admin-sunken);
+  border-color: var(--admin-hairline);
+  color: hsl(var(--foreground));
+}
+
+/* ── En-tête ──────────────────────────────────────────────────────────────── */
+.admin-overview__header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--admin-hairline);
+}
+.admin-overview__header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -.032em;
+}
+/* Le sur-titre « DIRECTION ADMINISTRATIVE » devient une micro-étiquette. */
+.admin-overview__header > div > p:first-child {
+  font-size: .625rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  color: hsl(var(--muted-foreground));
+}
+.admin-overview__header-actions button,
+.admin-overview__header-actions a {
+  min-height: 2.25rem;
+  border-radius: 980px;
+  font-size: .75rem;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+/* ── Cartes d'indicateurs ───────────────────────────────────────────────────
+   Le halo radial est supprimé : c'était un dégradé de 7 rem recalculé au
+   redimensionnement, pour un effet décoratif qui baissait le contraste du
+   chiffre posé dessus. À la place, un filet supérieur d'accent — 2 px qui
+   disent « cet indicateur est vivant » sans toucher au fond. */
+.admin-metric-card {
+  min-height: 6.75rem;
+  border-radius: var(--admin-radius);
+  border: 1px solid var(--admin-hairline);
+  background: var(--admin-surface);
+  box-shadow: 0 1px 1px hsl(var(--foreground) / .03);
+  padding: 1rem 1.05rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.admin-metric-card::after { content: none; }
+.admin-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline: 1.05rem;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: hsl(var(--primary));
+  opacity: .85;
+}
+.admin-metric-card:nth-child(2)::before { background: hsl(var(--destructive)); }
+.admin-metric-card:nth-child(3)::before { background: hsl(var(--warning)); }
+.admin-metric-card:nth-child(4)::before { background: hsl(var(--foreground) / .55); }
+.admin-metric-card:hover {
+  transform: none !important;
+  border-color: var(--admin-hairline-strong);
+  box-shadow: 0 2px 6px hsl(var(--foreground) / .05);
+}
+/* Micro-étiquette + chiffre en chasse fixe. */
+.admin-metric-card > span:first-child {
+  font-size: .625rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: hsl(var(--muted-foreground));
+}
+.admin-metric-card > span:nth-child(2) {
+  margin-top: .3rem;
+  font-size: 2.1rem;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'ss01' 1;
+}
+.admin-metric-card > span:nth-child(3) {
+  margin-top: .45rem;
+  font-size: .6875rem;
+  line-height: 1.35;
+  color: hsl(var(--muted-foreground));
+}
+/* État sélectionné : un filet d'accent, pas un anneau de 2 px + un fond
+   teinté qui empilait trois signaux pour un seul fait. */
+.admin-metric-card[class*='ring-2'] {
+  box-shadow: inset 0 0 0 1px hsl(var(--primary) / .45);
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+/* ── Puces de suivi ─────────────────────────────────────────────────────────
+   Avant : sept pilules pastel, chacune avec son fond teinté, son bord teinté
+   et son opacité à 90 %. Sept couleurs pour six états, aucune ne ressortait.
+   Maintenant : une seule famille neutre, la couleur ne vit que dans le point
+   et le compteur. La puce active passe à l'encre pleine. */
+.admin-filter-chips { gap: .375rem; }
+.admin-filter-chips button {
+  min-height: 1.9rem;
+  padding: .25rem .6rem;
+  border-radius: 980px;
+  border: 1px solid var(--admin-hairline);
+  background: var(--admin-surface);
+  color: hsl(var(--muted-foreground));
+  font-size: .6875rem;
+  font-weight: 600;
+  letter-spacing: -.005em;
+  opacity: 1;
+  transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
+}
+.admin-filter-chips button:hover {
+  transform: none;
+  background: var(--admin-sunken);
+  border-color: var(--admin-hairline-strong);
+  color: hsl(var(--foreground));
+}
+/* Le compteur : chasse fixe, plus dense, jamais noyé dans le libellé. */
+.admin-filter-chips button > span:last-child {
+  margin-inline-start: .1rem;
+  font-family: var(--admin-mono);
+  font-size: .6875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--foreground));
+  opacity: .75;
+}
+/* Le point d'état garde sa couleur sémantique — c'est le seul endroit où
+   elle apparaît. */
+.admin-filter-chips button > span:first-child {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+/* Puce active : encre pleine, lisible d'un coup d'œil dans une rangée de
+   sept. Aucun anneau : le contraste suffit. */
+.admin-filter-chips button[class*='ring-2'] {
+  background: hsl(var(--foreground));
+  border-color: hsl(var(--foreground));
+  color: hsl(var(--background));
+  --tw-ring-shadow: 0 0 #0000;
+}
+.admin-filter-chips button[class*='ring-2'] > span:last-child {
+  color: hsl(var(--background));
+  opacity: .9;
+}
+
+/* ── Barre de filtres ─────────────────────────────────────────────────────── */
+.admin-filter-bar {
+  padding: .375rem;
+  border-radius: var(--admin-radius);
+  border: 1px solid var(--admin-hairline);
+  background: var(--admin-surface);
+  box-shadow: none;
+}
+.admin-filter-bar :is(input, select) {
+  min-height: 2.25rem;
+  border-radius: var(--admin-radius-sm);
+  border: 1px solid transparent;
+  background: var(--admin-sunken);
+  font-size: .75rem;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+.admin-filter-bar :is(input, select):hover {
+  border-color: var(--admin-hairline);
+}
+.admin-filter-bar :is(input, select):focus {
+  border-color: hsl(var(--primary) / .5);
+  background: var(--admin-surface);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / .12);
+}
+
+/* ── Cartes enseignant ────────────────────────────────────────────────────── */
+.admin-teacher-card {
+  border-radius: var(--admin-radius);
+  border: 1px solid var(--admin-hairline);
+  background: var(--admin-surface);
+  box-shadow: 0 1px 1px hsl(var(--foreground) / .03);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.admin-teacher-card:hover {
+  transform: none !important;
+  border-color: var(--admin-hairline-strong);
+  box-shadow: 0 2px 8px hsl(var(--foreground) / .055);
+}
+/* Le pourcentage de complétion : chiffre d'instrument. */
+.admin-teacher-card .text-lg.font-black {
+  font-family: var(--admin-mono);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+/* Les badges de la carte (Accès bloqué, demandes, lectures) : même langage
+   que les puces — neutre, filet, point coloré. */
+.admin-teacher-card span[class*='rounded-full'][class*='px-2'] {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  min-height: 1.15rem;
+  padding: .1rem .45rem;
+  border-radius: 5px;
+  border: 1px solid var(--admin-hairline);
+  background: var(--admin-sunken);
+  font-family: var(--font-sans);
+  font-size: .625rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: hsl(var(--muted-foreground));
+}
+/* La barre de progression : 3 px, pas 8 px. Un indicateur, pas un ornement. */
+.admin-teacher-card > div > div[class*='h-2'] {
+  height: 3px;
+  border-radius: 9999px;
+  background: var(--admin-sunken);
+}
+.admin-teacher-card > div > div[class*='h-2'] > div {
+  border-radius: 9999px;
+}
+
+/* ── Panneau de priorités ─────────────────────────────────────────────────── */
+.admin-priority-panel {
+  border-radius: var(--admin-radius);
+  border: 1px solid var(--admin-hairline);
+  background: var(--admin-surface);
+  box-shadow: none;
+}
+.admin-priority-panel > div > div > button {
+  border-radius: var(--admin-radius-sm);
+  border-color: var(--admin-hairline);
+}
+
+/* ── État vide ────────────────────────────────────────────────────────────── */
+.admin-empty-state {
+  border-radius: var(--admin-radius);
+  border: 1px dashed var(--admin-hairline-strong);
+  background: transparent;
+}
+
+/* ── Mode sombre ──────────────────────────────────────────────────────────── */
+.dark #admin-root {
+  --admin-hairline: hsl(var(--foreground) / .1);
+  --admin-hairline-strong: hsl(var(--foreground) / .18);
+  --admin-sunken: hsl(var(--foreground) / .05);
+}
+.dark .admin-metric-card,
+.dark .admin-teacher-card,
+.dark .admin-priority-panel,
+.dark .admin-filter-bar {
+  box-shadow: 0 1px 1px hsl(0 0% 0% / .4);
+}
+.dark .admin-filter-chips button[class*='ring-2'] {
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+}
+
+/* ── Accessibilité : le mouvement n'est jamais porteur d'information ──────── */
+@media (prefers-reduced-motion: reduce) {
+  .admin-commandbar__action,
+  .admin-metric-card,
+  .admin-filter-chips button,
+  .admin-teacher-card,
+  .admin-filter-bar :is(input, select) { transition: none; }
+}

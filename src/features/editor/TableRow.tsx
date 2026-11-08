@@ -149,7 +149,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
     const contentCell = (
       <div
-        className={`relative flex min-w-0 flex-1 items-center justify-start px-1.5 py-1.5 sm:px-2 cursor-pointer ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
+        className={`relative flex min-w-0 flex-1 items-center justify-start py-1.5 pe-1.5 ps-7 sm:pe-2 sm:ps-8 cursor-pointer ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         data-reorder-direction={reorderDirection}
         tabIndex={sortable ? 0 : undefined}
@@ -163,7 +163,7 @@ const TableRowComponent: FC<TableRowProps> = ({
           handleToggle();
         }}
       >
-        {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={18} aria-hidden="true" /></button>}
+        {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={14} strokeWidth={2.25} aria-hidden="true" /></button>}
         <div className="min-w-0 w-full">
           <div className="flex w-full items-center justify-start py-1">
             <ContentRenderer data={data} indices={indices} elementType={elementType} highlight={searchQuery} showDescriptions={showDescriptions} descriptionTypes={descriptionTypes} contentNumber={getContentNumber?.(indices)} getDocumentPreview={getDocumentPreview} onOpenDocumentPreview={onOpenDocumentPreview} />
@@ -225,7 +225,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const contentCell = (
     <div
-      className={`relative min-w-0 flex-1 cursor-pointer px-1.5 py-1.5 sm:px-2 ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors duration-150 ${contentBottomBorder}`}
+      className={`relative min-w-0 flex-1 cursor-pointer py-1.5 pe-1.5 ps-7 sm:pe-2 sm:ps-8 ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       data-reorder-direction={reorderDirection}
       tabIndex={sortable ? 0 : undefined}
@@ -239,7 +239,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         handleToggle();
       }}
     >
-      {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={18} aria-hidden="true" /></button>}
+      {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={14} strokeWidth={2.25} aria-hidden="true" /></button>}
         <ContentRenderer
           data={data}
           indices={indices}

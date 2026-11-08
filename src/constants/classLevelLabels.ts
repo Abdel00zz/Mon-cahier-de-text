@@ -1,6 +1,6 @@
 import type { AppLocale } from '../types';
-import type { ClassTierKey } from './classLevelTypes';
-import { CLASS_LEVEL_GROUP_LABELS } from './classLevelCatalog';
+import type { ClassTierKey } from './classLevelTypes.js';
+import { CLASS_LEVEL_GROUP_LABELS } from './classLevelCatalog.js';
 
 export const CLASS_TIER_LABELS: Record<AppLocale, Record<ClassTierKey, string>> = {
   fr: {

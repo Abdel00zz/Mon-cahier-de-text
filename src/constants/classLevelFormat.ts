@@ -1,6 +1,6 @@
 import type { AppLocale, Cycle } from '../types';
 import { toDisplayText } from '../lib/text/textValue.js';
-import type { ClassLevelGroup, ClassLevelGroupKey, ClassLevelIdentity, ClassTierKey } from './classLevelTypes';
+import type { ClassLevelGroup, ClassLevelGroupKey, ClassLevelIdentity, ClassTierKey } from './classLevelTypes.js';
 import {
   ARABIC_DISPLAY_LEVEL_ENTRIES,
   CLASS_LEVELS_BY_CYCLE,
@@ -12,14 +12,14 @@ import {
   DISPLAY_LEVEL_KEYS,
   LEVEL_IDENTITY_KEYS,
   normalizeArabicDigits,
-} from './classLevelCatalog';
+} from './classLevelCatalog.js';
 import {
   CLASS_STREAM_FULL_NAMES,
   CLASS_STREAM_LABELS,
   CLASS_TIER_LABELS,
   COMPACT_TIER_LABELS_AR,
   PREPA_LEVEL_CODES,
-} from './classLevelLabels';
+} from './classLevelLabels.js';
 
 /**
  * Regroupe les niveaux officiels d'un cycle en paliers pédagogiques (Tronc

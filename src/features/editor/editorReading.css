@@ -53,6 +53,17 @@
     font-size: .78rem; font-weight: 700; line-height: 1;
   }
   .editor-reading-table [data-row-content] { border-radius: 0; padding: .65rem .75rem; }
+  /* Une ligne déplaçable réserve la gouttière de sa poignée à GAUCHE (et à
+     droite en RTL) : sans cette remise à niveau, le `padding` ci-dessus
+     écrasait le retrait de la cellule et la poignée recouvrait le texte.
+     Spécificité (0,2,1) — gagne sur la règle précédente sans !important. */
+  .editor-reading-table [data-row-content].editor-row-content--sortable {
+    padding-inline-start: 1.75rem;
+  }
+  .editor-reading-table [data-row-content].editor-row-content--sortable[data-reorder-direction="rtl"] {
+    padding-inline-start: .75rem;
+    padding-inline-end: 1.75rem;
+  }
   .editor-reading-table :is(.editor-type-chapter, .editor-type-top) { padding-block: .35rem; }
   .editor-reading-table .editor-lesson-row { gap: .65rem; }
   .editor-reading-table .editor-type-item-title { font-size: max(.875rem, var(--editor-fs-item-title)); }
@@ -114,6 +125,11 @@
     .editor-reading-table[data-editor-table] { padding: 0; }
     .editor-reading-table .editor-table-grid { grid-template-columns: 52px minmax(0, 1fr) 88px; }
     .editor-reading-table [data-row-content] { padding: .6rem .5rem; }
+    .editor-reading-table [data-row-content].editor-row-content--sortable { padding-inline-start: 1.5rem; }
+    .editor-reading-table [data-row-content].editor-row-content--sortable[data-reorder-direction="rtl"] {
+      padding-inline-start: .5rem;
+      padding-inline-end: 1.5rem;
+    }
     .editor-reading-table :is([data-session-cell='remark'], [data-editor-cell='remark'], [data-remark-cell]) { padding-inline: .1rem; }
     .editor-reading-table :is(.editor-type-remark, .editor-session-note) { padding-inline: .25rem; }
   }

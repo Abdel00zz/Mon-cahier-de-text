@@ -56,24 +56,59 @@
   max-height: 60dvh;
   overflow: hidden;
   padding: 4px;
-  border: 1px solid hsl(var(--border));
+  border: 1px solid hsl(var(--border) / .7);
   border-radius: 12px;
   background: hsl(var(--card));
   color: hsl(var(--foreground));
   font-family: var(--font-sans);
-  box-shadow: 0 18px 38px -12px hsl(var(--foreground) / .24), 0 2px 6px hsl(var(--foreground) / .08);
+  /* Deux ombres seulement : une diffuse qui décolle la ligne, une serrée qui
+     la pose. L'ancienne pile de trois ombres se recalculait à chaque frame de
+     déplacement ; celle-ci reste stable et se compose sur le GPU. */
+  box-shadow:
+    0 12px 28px -10px hsl(var(--foreground) / .22),
+    0 1px 2px hsl(var(--foreground) / .06);
   pointer-events: none;
   will-change: transform;
   /* Qualité du texte du ghost : lissage et rendu optimisé — la copie doit
      être AU MOINS aussi nette que la ligne source, jamais un crénelé ou un
      voile de flou sous le doigt. */
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   animation: editor-content-lift 180ms cubic-bezier(.2,.8,.2,1) both;
 }
-.editor-row-drag-ghost [data-row-content] { border: 0; cursor: grabbing; }
+/* Liseré spéculaire : une ligne claire en haut du ghost, comme une surface
+   de verre éclairée. C'est ce détail qui fait « soulevé » plutôt que
+   « dupliqué ». */
+.editor-row-drag-ghost::before {
+  content: '';
+  position: absolute;
+  inset-inline: 10px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--foreground) / .12), transparent);
+  pointer-events: none;
+}
+/* Le ghost conserve EXACTEMENT la gouttière de la ligne source : au moment du
+   soulèvement, le texte ne doit pas bouger d'un pixel — c'est ce qui fait lire
+   « la ligne se soulève » plutôt que « une copie apparaît ». La gouttière reste
+   vide puisque la poignée est retirée de la copie (voir rowDragPreview). */
+.editor-reading-table.editor-row-drag-ghost [data-row-content],
+.editor-reading-table.editor-row-drag-ghost [data-row-content].editor-row-content--sortable {
+  border: 0;
+  cursor: grabbing;
+  padding-inline-start: 1.75rem;
+  padding-inline-end: .75rem;
+}
+@media (max-width: 639px) {
+  .editor-reading-table.editor-row-drag-ghost [data-row-content],
+  .editor-reading-table.editor-row-drag-ghost [data-row-content].editor-row-content--sortable {
+    padding-inline-start: 1.5rem;
+    padding-inline-end: .5rem;
+  }
+}
 .editor-row-drag-ghost__detail { padding: 0 .75rem .35rem; color: hsl(var(--muted-foreground)); font-size: .75rem; }
-.editor-row-drag-ghost[data-valid="true"] { border-color: hsl(var(--primary) / .65); }
+.editor-row-drag-ghost[data-valid="true"] { border-color: hsl(var(--primary) / .5); }
 .editor-row-drag-ghost[data-picked="true"] { display: none; }
 @keyframes editor-drop-marker { from { opacity: .2; transform: scaleX(.92); } to { opacity: 1; transform: scaleX(1); } }
 /* Le « lift » se termine à scale EXACTEMENT 1 : un état final à 1.015 (avant)
@@ -102,37 +137,87 @@
   [data-row-content].editor-row-content--sortable { min-height: 0; box-shadow: none; }
 }
 
-/* La poignée est un calque : plus aucune largeur n'est réservée au texte. */
-/* Poignée : présente dans le DOM (tests, a11y) mais masquée tant qu'elle n'est
-   pas utile — UNIQUEMENT après un clic (ligne sélectionnée), ligne en cours
-   d'édition, ou geste en cours. Le survol souris ne la révèle plus : le geste
-   devient explicite, « je clique, la poignée apparaît, je saisis ». Les 48 px
-   réservés en bord de cellule restent récupérés pour le texte sur téléphone. */
-.editor-reorder-handle { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; display: none; place-items: center; color: hsl(var(--muted-foreground)); border-radius: 12px; /* pan-y : avant l'armement (appui long), un balayage vertical depuis la poignée fait défiler la page au lieu de piéger le doigt. */ touch-action: pan-y; cursor: grab; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; transition: color 180ms ease, background-color 180ms ease, transform 180ms ease; }
+/* ── Poignée de déplacement ────────────────────────────────────────────────
+   Un rail de préhension discret, ancré au bord GAUCHE de la cellule de
+   contenu (et au bord droit en RTL). Elle ne réserve aucune largeur : elle
+   flotte au-dessus de la marge, donc la grille ne bouge pas quand elle
+   apparaît.
+
+   Cible tactile : 44 px (Loi de Fitts), mais l'encre visible ne fait que
+   14 px — le glyphe est centré dans une zone morte transparente. On gagne en
+   précision sans alourdir la ligne.
+
+   Le fond n'est plus un voile flouté : c'était un `backdrop-filter` recalculé
+   à chaque apparition, coûteux sur un tableau long. Un aplat de carte suffit
+   et se compose sur le GPU. */
+.editor-reorder-handle {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 44px;
+  display: none;
+  place-items: center;
+  padding: 0;
+  color: hsl(var(--muted-foreground) / .55);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  /* pan-y : avant l'armement (appui long), un balayage vertical depuis la
+     poignée fait défiler la page au lieu de piéger le doigt. */
+  touch-action: pan-y;
+  cursor: grab;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms ease, opacity 160ms ease, transform 160ms ease;
+}
+/* Le glyphe porte l'encre : plus fin, plus net, et il s'anime seul. */
+.editor-reorder-handle > svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.25;
+  transition: transform 160ms ease;
+}
 [data-row-state~="selected"] .editor-reorder-handle,
 [data-row-state~="editing"] .editor-reorder-handle,
 [data-editor-dragging="true"] .editor-reorder-handle,
 [data-editor-sorting="true"] .editor-reorder-handle {
   display: grid;
-  /* La poignée survole le texte : un voile la détache sans repousser la mise en page. */
-  background: color-mix(in srgb, hsl(var(--card)) 86%, transparent);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
 }
 [data-editor-pressing="true"] .editor-reorder-handle { display: grid; }
+/* Ancrage : la poignée vit au bord GAUCHE du contenu en LTR (et à droite en
+   RTL). Le retrait de la cellule (ps-7 / ps-8) lui laisse la place, donc elle
+   ne recouvre jamais le texte. */
 [data-reorder-direction="ltr"] > .editor-reorder-handle,
-[data-content-direction="ltr"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 0; left: auto; }
+[data-content-direction="ltr"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { left: 0; right: auto; }
 [data-reorder-direction="rtl"] > .editor-reorder-handle,
-[data-content-direction="rtl"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { left: 0; right: auto; }
-.editor-reorder-handle:focus-visible { display: grid; color: hsl(var(--foreground)); background: hsl(var(--muted)); }
+[data-content-direction="rtl"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 0; left: auto; }
+/* Un seul repère : le glyphe, centré dans sa cible. Le rail séparé faisait
+   doublon avec lui et alourdissait la marge — deux traits pour dire une chose. */
+.editor-reorder-handle::before { content: none; }
+.editor-reorder-handle:focus-visible { display: grid; color: hsl(var(--foreground)); }
 /* Pointeur fin : le survol de la LIGNE ne révèle plus la poignée (c'est le
    clic qui sélectionne et la fait apparaître). Seule la poignée DÉJÀ visible
    réagit au survol, pour confirmer la cible avant la saisie. */
 @media (hover: hover) and (pointer: fine) {
-  .editor-reorder-handle:hover { color: hsl(var(--foreground)); background: hsl(var(--muted)); }
+  .editor-reorder-handle:hover { color: hsl(var(--foreground)); }
+  .editor-reorder-handle:hover > svg { transform: scale(1.08); }
 }
-.editor-reorder-handle:active { cursor: grabbing; transform: translateY(-50%) scale(.94); background: hsl(var(--primary) / .12); }
-.editor-reorder-handle:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -2px; }
+.editor-reorder-handle:active {
+  cursor: grabbing;
+  transform: translateY(-50%) scale(.92);
+  color: hsl(var(--primary));
+}
+/* Focus clavier : une teinte douce, pas un anneau. Un contour de 2 px autour
+   d'une cible de 44 px dessinait un carré lourd dans la marge du cahier. */
+.editor-reorder-handle:focus-visible {
+  outline: none;
+  color: hsl(var(--foreground));
+  background: hsl(var(--primary) / .08);
+}
+[data-editor-dragging="true"] .editor-reorder-handle { color: hsl(var(--primary)); cursor: grabbing; }
 .editor-reorder-notice { position: fixed; z-index: 50; left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); border: 1px solid hsl(var(--border)); border-radius: 12px; box-shadow: 0 4px 20px hsl(var(--foreground) / .12); background: hsl(var(--card)); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 12px; color: hsl(var(--foreground)); font-size: .875rem; }
 .editor-reorder-notice button { min-height: 44px; padding-inline: 12px; color: hsl(var(--foreground)); text-decoration: underline; }
 @media (prefers-reduced-motion: reduce) { .editor-reorder-handle { transition: none; } .editor-reorder-handle:active { transform: translateY(-50%); } }
