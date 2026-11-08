@@ -97,14 +97,14 @@
 .editor-reading-table.editor-row-drag-ghost [data-row-content].editor-row-content--sortable {
   border: 0;
   cursor: grabbing;
-  padding-inline-start: 1.75rem;
-  padding-inline-end: .75rem;
+  padding-inline-start: .75rem;
+  padding-inline-end: 1.75rem;
 }
 @media (max-width: 639px) {
   .editor-reading-table.editor-row-drag-ghost [data-row-content],
   .editor-reading-table.editor-row-drag-ghost [data-row-content].editor-row-content--sortable {
-    padding-inline-start: 1.5rem;
-    padding-inline-end: .5rem;
+    padding-inline-start: .5rem;
+    padding-inline-end: 1.5rem;
   }
 }
 .editor-row-drag-ghost__detail { padding: 0 .75rem .35rem; color: hsl(var(--muted-foreground)); font-size: .75rem; }
@@ -154,7 +154,9 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 36px;
+  right: 6px;
+  left: auto;
+  width: 28px;
   height: 44px;
   display: none;
   place-items: center;
@@ -162,7 +164,7 @@
   color: hsl(var(--muted-foreground) / .55);
   background: transparent;
   border: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   /* pan-y : avant l'armement (appui long), un balayage vertical depuis la
      poignée fait défiler la page au lieu de piéger le doigt. */
   touch-action: pan-y;
@@ -187,13 +189,12 @@
   display: grid;
 }
 [data-editor-pressing="true"] .editor-reorder-handle { display: grid; }
-/* Ancrage : la poignée vit au bord GAUCHE du contenu en LTR (et à droite en
-   RTL). Le retrait de la cellule (ps-7 / ps-8) lui laisse la place, donc elle
-   ne recouvre jamais le texte. */
+/* Ancrage : la poignée vit au bord DROIT du contenu (à droite et pas à gauche).
+   Le retrait de la cellule lui laisse la place, donc elle ne recouvre jamais le texte. */
 [data-reorder-direction="ltr"] > .editor-reorder-handle,
-[data-content-direction="ltr"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { left: 0; right: auto; }
+[data-content-direction="ltr"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 6px; left: auto; }
 [data-reorder-direction="rtl"] > .editor-reorder-handle,
-[data-content-direction="rtl"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 0; left: auto; }
+[data-content-direction="rtl"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 6px; left: auto; }
 /* Un seul repère : le glyphe, centré dans sa cible. Le rail séparé faisait
    doublon avec lui et alourdissait la marge — deux traits pour dire une chose. */
 .editor-reorder-handle::before { content: none; }
