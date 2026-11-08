@@ -340,20 +340,6 @@
       --cdt-table-cols: minmax(3.5rem, 14.5%) minmax(0, 1fr) minmax(3rem, 13.5%);
       --editor-description-indent: 0px;
       --editor-description-padding: 8px;
-      --editor-scale: max(0.73rem, calc(clamp(0.725rem, calc(0.725rem + 0.12vmin), 0.78rem) * var(--app-text-scale, 1)));
-      --editor-fs-chapter: calc(var(--editor-scale) * 1.38);
-      --editor-fs-top: calc(var(--editor-scale) * 1.24);
-      --editor-fs-section: calc(var(--editor-scale) * 1.13);
-      --editor-fs-subsection: calc(var(--editor-scale) * 1.05);
-      --editor-fs-subsubsection: calc(var(--editor-scale) * 0.98);
-      --editor-fs-item-title: calc(var(--editor-scale) * 0.92);
-      --editor-fs-description: calc(var(--editor-scale) * 0.86);
-      --editor-fs-remark: calc(var(--editor-scale) * 0.83);
-      --editor-fs-table-main: calc(var(--editor-scale) * 0.82);
-      --editor-fs-table-side: calc(var(--editor-scale) * 0.81);
-      --editor-fs-date: calc(var(--editor-scale) * 0.95);
-      --editor-fs-page: calc(var(--editor-scale) * 0.81);
-      --editor-fs-badge: calc(var(--editor-scale) * 0.80);
     }
     [data-editor-table] .editor-type-remark {
       word-break: normal;

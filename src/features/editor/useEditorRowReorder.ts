@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, TouchEvent as ReactTouchEvent, MouseEvent as ReactMouseEvent, KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { clamp } from 'es-toolkit';
 import { rows, type CanReorder, type DragState, type Reorder, type ReorderMessages, type Side } from './rowReorderTypes';
-import { createRowDragPreview } from './rowDragPreview';
+import {
+  computeEdgeScrollSpeed,
+  createRowDragPreview,
+  readVisualViewport,
+  resolveDropTarget,
+  updateGhostPreview,
+} from './rowDragPreview';
 /** Durée d'appui qui arme le déplacement sur écran tactile. Sous ce seuil,
  * un balayage vertical rend le geste au défilement natif (iOS-like). */
 const TOUCH_ARM_DELAY_MS = 220;
@@ -107,51 +112,18 @@ export function useEditorRowReorder(
       current.targetKey = undefined;
       current.side = undefined;
     };
-    const viewport = () => {
-      const vv = window.visualViewport;
-      return { left: vv?.offsetLeft ?? 0, top: vv?.offsetTop ?? 0,
-        width: vv?.width ?? window.innerWidth, height: vv?.height ?? window.innerHeight };
-    };
     const updateTarget = () => {
-      const table = rootRef.current?.getBoundingClientRect();
-      // Small gaps between rows and a drifting finger should not lose the drop.
-      // Stay inside the table: never snap through a toolbar or outside the notebook.
-      let candidate = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-editor-sort-row]');
-      if (!candidate && table && x >= table.left && x <= table.right && y >= table.top - 12 && y <= table.bottom + 12) {
-        let nearest = 13;
-        for (const row of rows(rootRef.current)) {
-          const rect = row.getBoundingClientRect();
-          const distance = Math.max(rect.top - y, y - rect.bottom, 0);
-          if (distance < nearest) { candidate = row; nearest = distance; }
-        }
-      }
-      const rect = candidate?.getBoundingClientRect();
-      const canDropBeforeChapter = source.dataset.editorSortRoot === 'true' && candidate?.dataset.editorSortChapter === 'true';
-      let inside = source.dataset.editorSortTransfer === 'true' && candidate?.dataset.editorSortContainer === 'true'
-        && !(canDropBeforeChapter && rect && y < rect.top + rect.height * 0.35);
-      let side: Side = !inside && rect && y < rect.top + rect.height / 2 ? 'before' : 'after';
-      let key = side === 'after' ? candidate?.dataset.editorSortLastKey ?? candidate?.dataset.editorSortKey : candidate?.dataset.editorSortKey;
-      if (canDropBeforeChapter && candidate && key && key !== sourceKey && !callbacks.current.canReorder?.(sourceKey, key, side)) {
-        const alternateSide: Side = side === 'after' ? 'before' : 'after';
-        const alternateKey = alternateSide === 'after' ? candidate.dataset.editorSortLastKey ?? candidate.dataset.editorSortKey : candidate.dataset.editorSortKey;
-        if (alternateKey && callbacks.current.canReorder?.(sourceKey, alternateKey, alternateSide)) {
-          side = alternateSide;
-          key = alternateKey;
-          inside = alternateSide === 'after';
-        }
-      }
-      if (candidate === current.target && side === current.side) return;
+      const res = resolveDropTarget(rootRef.current, source, sourceKey, x, y, callbacks.current.canReorder);
+      if (res.candidate === current.target && res.side === current.side) return;
       clearTarget();
-      const allowed = candidate && key && key !== sourceKey && rootRef.current?.contains(candidate)
-        && callbacks.current.canReorder?.(sourceKey, key, side);
-      if (allowed && candidate) {
-        candidate.setAttribute('data-editor-drop-side', side);
-        if (inside) candidate.setAttribute('data-editor-drop-inside', 'true');
-        current.target = candidate;
-        current.targetKey = key;
-        current.side = side;
+      if (res.allowed && res.candidate && res.key) {
+        res.candidate.setAttribute('data-editor-drop-side', res.side);
+        if (res.inside) res.candidate.setAttribute('data-editor-drop-inside', 'true');
+        current.target = res.candidate;
+        current.targetKey = res.key;
+        current.side = res.side;
       }
-      if (current.ghost) current.ghost.dataset.valid = allowed ? 'true' : 'false';
+      if (current.ghost) current.ghost.dataset.valid = res.allowed ? 'true' : 'false';
     };
     const schedule = () => {
       if (!ended && current.ghost && !frame) frame = window.requestAnimationFrame(tick);
@@ -159,33 +131,12 @@ export function useEditorRowReorder(
     const tick = (time: number) => {
       frame = 0;
       if (ended || !current.ghost) return;
-      const vp = viewport();
-      // Lift the content in its own column, as in the reference. Keeping its
-      // horizontal anchor avoids covering the neighbouring date/note controls.
-      const previewWidth = Math.min(sourceRect.width, Math.max(0, vp.width - 24));
-      const previewX = clamp(sourceRect.left, vp.left + 12, Math.max(vp.left + 12, vp.left + vp.width - previewWidth - 12));
-      const previewY = clamp(y - gripOffsetY, vp.top + 12, Math.max(vp.top + 12, vp.top + vp.height - Math.min(sourceRect.height, vp.height * .6) - 12));
-      const toolbar = document.querySelector<HTMLElement>('.editor-toolbar-row')?.getBoundingClientRect();
-      const selection = document.querySelector<HTMLElement>('.selection-bar')?.getBoundingClientRect();
-      const upper = Math.max(vp.top + 12, toolbar && toolbar.bottom > vp.top && toolbar.top < vp.top + 120 ? toolbar.bottom + 8 : vp.top + 12);
-      const lower = Math.min(vp.top + vp.height - 16, selection && selection.top > upper ? selection.top - 8 : vp.top + vp.height - 16);
-      const edge = clamp((lower - upper) / 4, 24, 72);
-      // Ease into the edge zone instead of jumping to full speed on a phone.
-      const intensity = y < upper + edge ? -clamp((upper + edge - y) / edge, 0, 1)
-        : y > lower - edge ? clamp((y - lower + edge) / edge, 0, 1) : 0;
-      const table = rootRef.current?.getBoundingClientRect();
-      const insideHorizontalBounds = table && x >= Math.max(vp.left, table.left) && x <= Math.min(vp.left + vp.width, table.right);
-      const canScroll = insideHorizontalBounds && (intensity < 0 ? table.top < upper : table.bottom > lower);
-      const speed = canScroll && !picked ? Math.sign(intensity) * intensity ** 2 * (touch ? 10 : 16) : 0;
+      const vp = readVisualViewport();
+      updateTarget();
+      updateGhostPreview(current.ghost, sourceRect, y, gripOffsetY, vp);
+      const speed = computeEdgeScrollSpeed(x, y, vp, rootRef.current?.getBoundingClientRect(), touch, picked);
       const elapsed = previousTime ? Math.min(time - previousTime, 32) : 16.7;
       previousTime = time;
-      // Measure the viewport and sticky controls before changing preview styles.
-      // Rewriting width before those reads forced layout on every pointer frame.
-      updateTarget();
-      const width = `${previewWidth}px`;
-      if (current.ghost.style.width !== width) current.ghost.style.width = width;
-      current.ghost.style.transform = `translate3d(${previewX}px, ${previewY}px, 0)`;
-      current.ghost.style.visibility = 'visible';
       if (speed) {
         const previousScroll = window.scrollY;
         window.scrollBy({ top: speed * elapsed / 16.7, behavior: 'instant' });
