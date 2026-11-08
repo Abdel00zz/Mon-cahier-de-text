@@ -41,25 +41,27 @@
   box-sizing: border-box;
   overflow: hidden;
   transition:
-    transform 300ms var(--spring-golden),
-    background-color 220ms ease,
-    border-color 220ms ease,
-    box-shadow 250ms ease,
-    border-radius 320ms cubic-bezier(.2, .8, .2, 1);
-}
-
-.class-card:hover,
-.class-card--active,
-.class-card[data-session-active="true"] {
-  border-radius: 1.65rem;
+    transform 240ms var(--spring-golden),
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 220ms ease;
 }
 
 [dir="rtl"] .class-card {
-  padding: 0.92rem 1.15rem 0.92rem 0.55rem;
+  padding: 0.85rem 1.1rem 0.85rem 0.5rem;
 }
 
 [dir="ltr"] .class-card {
-  padding: 0.92rem 0.55rem 0.92rem 1.15rem;
+  padding: 0.85rem 0.5rem 0.85rem 1.1rem;
+}
+
+@media (max-width: 380px) {
+  [dir="rtl"] .class-card {
+    padding: 0.75rem 0.95rem 0.75rem 0.4rem;
+  }
+  [dir="ltr"] .class-card {
+    padding: 0.75rem 0.4rem 0.75rem 0.95rem;
+  }
 }
 
 .class-card__open {

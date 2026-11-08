@@ -577,11 +577,10 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
   font-variant-numeric: tabular-nums;
 }
 
-/* Cadres de contenu : contour fin, rayon doux, texte romain par défaut. */
+/* Cadres de contenu : contour fin continu sur les 4 côtés, rayon doux, texte romain par défaut. */
 .editor-item-description {
   --frame-tone: hsl(var(--primary));
   border: 1px solid color-mix(in srgb, var(--frame-tone) 26%, hsl(var(--border)));
-  border-inline-start: 0 !important;
   border-radius: 12px !important;
   background: color-mix(in srgb, var(--frame-tone) 2%, hsl(var(--card)));
   padding: .55rem .8rem;

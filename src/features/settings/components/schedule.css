@@ -83,7 +83,7 @@
  * d'affectation reste identique, la lecture devient nette.
  */
 @media (max-width: 480px) {
-  .schedule-grid { min-width: 28rem; }
+  .schedule-grid { min-width: 32rem; }
   .schedule-cell__label { font-size: .74rem; line-height: 1.25; }
 }
 .schedule-grid :is(th, td) {

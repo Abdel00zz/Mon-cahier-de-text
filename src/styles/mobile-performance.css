@@ -80,4 +80,17 @@ html[data-platform="android"] {
     transition: transform 240ms cubic-bezier(0.2, 0, 0, 1), opacity 180ms ease, box-shadow 200ms ease;
   }
 
+  /* Isolation du layout pour garantir 120 Hz constants sur Samsung S25, iPhone Pro & Pixel */
+  .dashboard-day-group,
+  .class-card,
+  .class-list-item,
+  [data-editor-table] .editor-table-grid {
+    contain: layout style;
+  }
+
+  html[data-keyboard="open"],
+  html[data-keyboard="open"] body {
+    scroll-behavior: auto !important;
+  }
+
 }

@@ -421,14 +421,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            style={{ paddingBottom: '118px' }}
+            style={{ paddingBottom: 'calc(5.25rem + env(safe-area-inset-bottom, 0px))' }}
             className="keep-dashboard-canvas min-h-dvh text-foreground font-sans antialiased pt-0 sm:pt-6"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto w-full max-w-[40rem] px-5 pt-2 sm:pt-4 lg:max-w-[78rem] lg:px-8 xl:max-w-[86rem] pl-safe pr-safe">
+                <div className="relative z-10 mx-auto w-full max-w-[40rem] px-5 pt-2 sm:pt-4 md:max-w-[48rem] md:px-6 lg:max-w-[78rem] lg:px-8 xl:max-w-[86rem] pl-safe pr-safe">
                     {/* En-tête : Titre à droite (Readex Pro 600), actions et bouton + à gauche en RTL */}
-                    <header className="dashboard-top-header mb-4 pt-1" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+                    <header className="dashboard-top-header mb-2.5 sm:mb-4 pt-1" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
                         <DashboardActions
                             mode={currentDisplay}
                             onModeChange={setClassDisplayMode}
@@ -534,7 +534,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1], delay: reduceMotion ? 0 : Math.min(groupIndex, 5) * 0.08 }}
                                             style={{
-                                                marginTop: '1.8rem',
+                                                marginTop: groupIndex === 0 ? '0.35rem' : '1.35rem',
                                             }}
                                         >
                                             {/* Titre de groupe par jour (« غدا », « الإثنين ») — épuré sans puce ni ligne */}

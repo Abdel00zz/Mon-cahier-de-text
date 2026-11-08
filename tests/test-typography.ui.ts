@@ -258,6 +258,6 @@ test('cadres de contenu : vert italique, autres droits, contour moderne sans bar
   assert.match(css, /\.editor-item-description \{[\s\S]*?font-style: normal/, 'les cadres neutres restent en romain');
   assert.match(css, /data-content-type='activité'[\s\S]*?font-style: italic/, 'les activités passent en italique');
   assert.doesNotMatch(css, /editor-item-description::before/, 'plus de barre verticale');
-  assert.doesNotMatch(css, /border-inline-start: 3\.5px/, 'plus d’accent latéral épais');
+  assert.doesNotMatch(css, /border-inline-start:\s*(3\.5px|0)/, 'contour continu sur les 4 côtés sans coupure à gauche ni barre épaisse');
   assert.match(css, /border-radius: 12px !important/, 'contour à rayon doux');
 });
