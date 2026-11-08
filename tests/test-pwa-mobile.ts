@@ -4,7 +4,6 @@ import { isForegroundOnline, millisecondsUntilNextMoroccoDay, startForegroundPol
 import { getBundledCalendar, todayInMorocco } from '../src/domain/calendar/calendar';
 import { detectSessionAlerts } from '../src/domain/notifications/sessionAlertEngine';
 import { scheduleSafePwaReload, startSafePwaAction } from '../src/platform/safeUpdate';
-import { openNotificationTarget, type NotificationWindow } from '../src/platform/notificationNavigation';
 import { readCachedLessons } from '../src/infrastructure/storage/notebookStorage';
 import type { AppConfig, ClassInfo } from '../src/types';
 import { createElement } from 'react';
@@ -267,25 +266,6 @@ test('séance : réveil au début, rappel et fin, sans balayage toutes les 15 se
   assert.equal(at('08:50:00').nextCheckDelay, 60100);
   assert.equal(at('08:55:00').nextCheckDelay, 300100);
   assert.ok(at('11:00:00', { ...fixtureConfig, timetable: [] }).nextCheckDelay > 12 * 3600_000);
-});
-
-test('clic natif : préfère le cahier déjà ouvert, ignore administration et domaines externes', async () => {
-  const calls: string[] = [];
-  const client = (url: string): NotificationWindow => ({ url, focused: false, visibilityState: 'hidden',
-    focus: async () => { calls.push(`focus:${url}`); }, postMessage: message => { calls.push(`route:${message.url}`); } });
-  const windows = [client('https://app.test/admin.html'), client('https://other.test/'), client('https://app.test/#/'), client('https://app.test/#/classe/c1')];
-  await openNotificationTarget('/#/classe/c1', 'https://app.test', windows, async url => { calls.push(`open:${url}`); });
-  assert.deepEqual(calls, ['focus:https://app.test/#/classe/c1']);
-  calls.length = 0;
-  await openNotificationTarget('/#/classe/c2', 'https://app.test', windows.slice(0, 3), async url => { calls.push(`open:${url}`); });
-  assert.deepEqual(calls, ['focus:https://app.test/#/', 'route:/#/classe/c2']);
-});
-
-test('clic natif : fenêtre fermée/échec du focus ouvre une nouvelle fenêtre sûre', async () => {
-  const calls: string[] = [];
-  const dead: NotificationWindow = { url: 'https://app.test/', focused: true, visibilityState: 'visible', focus: async () => { throw Error('closed'); }, postMessage: () => {} };
-  await openNotificationTarget('https://evil.test/', 'https://app.test', [dead], async url => { calls.push(url); });
-  assert.deepEqual(calls, ['https://app.test/#/']);
 });
 
 test('mémoire des cahiers : cache borné, éviction sans suppression du stockage, contenu changé relu', context => {

@@ -9,8 +9,7 @@ import type { TableRowProps } from './tableRowTypes';
 export { DateCard, MultiDateCard } from './tableRowCells';
 import './editorRowStates.css';
 import { GripVertical } from 'lucide-react';
-
-const TABLE_GRID_CLASS = 'editor-table-grid';
+import { TABLE_GRID_CLASS } from './editorConstants';
 
 const TableRowComponent: FC<TableRowProps> = ({
   data,
@@ -150,7 +149,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
     const contentCell = (
       <div
-        className={`relative flex min-w-0 flex-1 items-center justify-start px-2 py-1.5 sm:px-3 cursor-pointer ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
+        className={`relative flex min-w-0 flex-1 items-center justify-start px-1.5 py-1.5 sm:px-2 cursor-pointer ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         data-reorder-direction={reorderDirection}
         tabIndex={sortable ? 0 : undefined}
@@ -226,7 +225,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const contentCell = (
     <div
-      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors duration-150 ${contentBottomBorder}`}
+      className={`relative min-w-0 flex-1 cursor-pointer px-1.5 py-1.5 sm:px-2 ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       data-reorder-direction={reorderDirection}
       tabIndex={sortable ? 0 : undefined}

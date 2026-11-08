@@ -19,7 +19,6 @@ import {
   computeProgressionStats,
   computeTeacherSnapshot,
 } from '../src/domain/curriculum/progression';
-import { isSuccessfulTestResponse } from '../src/infrastructure/push/pushResponse';
 import { assertValidTeacherSnapshot } from '../api/_lib/validate.js';
 import { isHoliday, isVacation } from '../src/domain/calendar/calendar.js';
 
@@ -154,15 +153,6 @@ test('rappel ciblé : une classe ouvre son cahier, estimation prudente, aucun fa
     assert.equal(summarizeForTeacher([{ ...item, severity: 'ok' }], locale), null);
     assert.ok(!summarizeForTeacher([{ ...item, gapSessions: 0 }], locale)!.body.includes('0'));
   }
-});
-
-test('test Push : un HTTP 2xx sans livraison reste un échec métier', () => {
-  assert.equal(isSuccessfulTestResponse(true, { ok: false, sent: 0 }), false);
-  assert.equal(isSuccessfulTestResponse(true, { ok: true, sent: 0 }), false);
-  assert.equal(isSuccessfulTestResponse(true, { ok: true }), false);
-  assert.equal(isSuccessfulTestResponse(true, null), false);
-  assert.equal(isSuccessfulTestResponse(false, { ok: true, sent: 1 }), false);
-  assert.equal(isSuccessfulTestResponse(true, { ok: true, sent: 1 }), true);
 });
 
 test('push déclaratif : secours Safari et format ancien identiques, navigation limitée, Unicode borné', () => {

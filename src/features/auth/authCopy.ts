@@ -1,11 +1,19 @@
 import type { AppLocale } from '@/types';
 
 export type AuthLocale = Extract<AppLocale, 'ar' | 'fr'>;
+export type AuthCopy = (typeof AUTH_COPY)[AuthLocale];
 
 export const AUTH_COPY = {
   fr: {
     brand: "Mon cahier de textes",
     backToHome: "Retour à la connexion",
+    brandBack: "Mon cahier de textes — retour à la connexion",
+    hasAccount: "Déjà un compte ?",
+    firstVisit: "Vous débutez ?",
+    adminSpace: "Espace administration",
+    requiredField: "Ce champ est requis.",
+    emailInvalid: "Adresse e-mail invalide.",
+    phoneInvalid: "Numéro incomplet. Format attendu : 06 12 34 56 78.",
     returnToPreparation: "Modifier ma classe",
     savePreparationDetail:
       "Dernière étape : créez votre compte pour conserver votre classe et ouvrir votre cahier.",
@@ -16,6 +24,14 @@ export const AUTH_COPY = {
     accountBlocked:
       "Votre accès a été suspendu par votre établissement. Contactez la direction pour le rétablir.",
     welcomeDetail: "Connectez-vous pour retrouver vos classes et vos séances.",
+    porchTitle: "Votre classe, prête avant la cloche.",
+    porchText:
+      "Planifiez la semaine, capturez le déroulé de chaque séance et suivez les évaluations — même sans connexion.",
+    porchPoints: [
+      "Emploi du temps, repos hebdomadaire et vacances intégrés",
+      "Fonctionne hors connexion, se synchronise dès que possible",
+      "Impression propre, prête pour l’administration",
+    ],
     login: "Se connecter",
     createAccount: "Créer un compte",
     name: "Nom",
@@ -57,6 +73,13 @@ export const AUTH_COPY = {
   ar: {
     brand: "دفتر نصوصي",
     backToHome: "العودة إلى تسجيل الدخول",
+    brandBack: "دفتر نصوصي — العودة إلى تسجيل الدخول",
+    hasAccount: "لديك حساب؟",
+    firstVisit: "أول زيارة لك؟",
+    adminSpace: "فضاء الإدارة",
+    requiredField: "هذا الحقل مطلوب.",
+    emailInvalid: "البريد الإلكتروني غير صالح.",
+    phoneInvalid: "رقم غير مكتمل. الصيغة المتوقعة: 06 12 34 56 78.",
     returnToPreparation: "تعديل قسمي",
     savePreparationDetail:
       "الخطوة الأخيرة: أنشئ حسابك لحفظ قسمك وفتح دفتر نصوصك.",
@@ -67,6 +90,14 @@ export const AUTH_COPY = {
     accountBlocked:
       "تم إيقاف ولوجك من طرف إدارتك. تواصل مع الإدارة لاستعادة الدخول.",
     welcomeDetail: "سجّل دخولك للعودة إلى أقسامك وحصصك.",
+    porchTitle: "قسمك، جاهز قبل أن يُقرع الجرس.",
+    porchText:
+      "خطّط أسبوعك، دوّن مسار كل حصة وتابع الفروض — حتى دون اتصال.",
+    porchPoints: [
+      "جدول الحصص وراحة الأسبوع والعطل مدمجة",
+      "يعمل دون اتصال، ويزامن حالما يتوفّر",
+      "طباعة نظيفة، جاهزة للإدارة",
+    ],
     login: "تسجيل الدخول",
     createAccount: "إنشاء حساب جديد",
     name: "الاسم العائلي",

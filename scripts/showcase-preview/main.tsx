@@ -22,7 +22,6 @@ import { ClassCard } from '../../src/features/dashboard/ClassCard';
 import { MainTable } from '../../src/features/editor/MainTable';
 import { ScheduleTab } from '../../src/features/settings/components/ScheduleTab';
 import { BookOpen, CalendarDays, LayoutGrid, Sparkles } from '../../src/components/ui/icons';
-import { MotionFilmCanvas } from './MotionFilmCanvas';
 import { assignClassColors } from '../../src/domain/classes/classColors';
 import { buildLessonRows } from '../../src/domain/notebook/lessonRows';
 import type { AppConfig, ClassInfo, ClassEvaluationEntry, LessonsData } from '../../src/types';
@@ -84,7 +83,7 @@ function PreviewTable() {
  useNotebookOpeningFocus('showcase', rows, params.has('resume'), priorityFocus, setFocusKey);
  return <MainTable lessonsData={lessons} visibleRows={rows} absenceSessions={buildAbsenceSessions(config, classes[0].id, lessons)} contentDirection={ar?'rtl':'ltr'} onClearSearch={noop} onOpenAddContentModal={noop} showDescriptions={false} selectedKeys={new Set()} onToggleSelect={noop} onOpenContentEditor={noop} newlyAddedIds={[]} focusKey={focusKey} getSessionAnnotation={date => annotations.get(date ?? '')}/>;
 }
-const tabs = [{ id: 'classes', label: ar ? 'أقسامي الدراسية' : 'Mes classes', icon: LayoutGrid }, { id: 'editor', label: ar ? 'دفتر النصوص' : 'Mon cahier', icon: BookOpen }, { id: 'schedule', label: ar ? 'استعمال الزمن' : 'Emploi du temps', icon: CalendarDays }, { id: 'motion', label: ar ? 'شريط الحركة' : 'Film & Motion', icon: Sparkles }];
+const tabs = [{ id: 'classes', label: ar ? 'أقسامي الدراسية' : 'Mes classes', icon: LayoutGrid }, { id: 'editor', label: ar ? 'دفتر النصوص' : 'Mon cahier', icon: BookOpen }, { id: 'schedule', label: ar ? 'استعمال الزمن' : 'Emploi du temps', icon: CalendarDays } ];
 function Capture() {
  const [search, setSearch] = useState('');
  const [opening, setOpening] = useState(0);
@@ -121,7 +120,6 @@ function Capture() {
   {screen==='admin-roster'&&<TeacherDetail phone="0600000000" onBack={noop} onManageTimetable={noop}/>}
   {screen==='schedule'&&<div className="rounded-2xl bg-white border border-stone-200 p-5 shadow-sm"><ScheduleTab classes={classes} config={config} onChange={noop}/></div>}
   {screen==='gallery'&&<UiGallery page={params.get('page') ?? 'landing'} config={config} classes={evaluationClasses} lessons={lessons}/>}
-  {screen==='motion'&&<div className="w-full flex justify-center py-2"><MotionFilmCanvas initialFrame={Number(params.get('frame') ?? 0)} autoPlay={params.has('play')}/></div>}
   </div>
  </div></LocaleProvider>;
 }
@@ -135,8 +133,6 @@ if (import.meta.env.DEV) {
   const width = device === 'phone' ? 390 : 820;
   const height = device === 'phone' ? 844 : 1180;
   root.render(<div style={{ padding: 16, background: '#f4f1eb', minHeight: height + 32 }}><iframe title={`${device} UI preview`} src={framedUrl.href} style={{ display: 'block', margin: 'auto', width, height, border: 0, background: '#fbfaf7' }}/></div>);
- } else if (screen === 'motion-raw') {
-  root.render(<div style={{ width: 1920, height: 1080, margin: 0, padding: 0, overflow: 'hidden' }}><MotionFilmCanvas initialFrame={Number(params.get('frame') ?? 0)} autoPlay={false} /></div>);
  } else if (screen === 'application') {
   initAppViewport();
   root.render(<AuthProvider><SyncProvider><App /></SyncProvider></AuthProvider>);

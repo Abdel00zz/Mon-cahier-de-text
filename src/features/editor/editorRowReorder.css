@@ -4,10 +4,18 @@
   cursor: pointer;
   touch-action: pan-y pinch-zoom;
   -webkit-tap-highlight-color: transparent;
+  /* Sélection de texte hors jeu : un appui maintenu arme le déplacement,
+     il ne doit pas ouvrir le sélecteur de texte (Android) ni la loupe (iOS).
+     Les zones réellement éditables (.cursor-text, contenteditable) repassent
+     en sélection textuelle juste en dessous. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
   transition: background-color 180ms ease;
 }
 .editor-row-content--sortable:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -3px; }
-.editor-row-content--sortable .cursor-text { user-select: text; -webkit-user-select: text; }
+.editor-row-content--sortable .cursor-text,
+.editor-row-content--sortable [contenteditable='true'] { user-select: text; -webkit-user-select: text; -webkit-touch-callout: default; }
 [data-editor-sorting="true"] { user-select: none; -webkit-user-select: none; }
 [data-editor-pressing="true"] .editor-row-content--sortable { background: hsl(var(--primary) / .07); }
 [data-editor-dragging="true"] { background: hsl(var(--primary) / .045); }
@@ -17,6 +25,10 @@
 [data-editor-sorting="true"] [data-editor-sort-row] > * { transition: translate 220ms cubic-bezier(.2,.8,.2,1); }
 [data-editor-drop-side="before"] > * { translate: 0 4px; }
 [data-editor-drop-side="after"] > * { translate: 0 -4px; }
+/* Retour haptique visuel sur tap mobile : les cellules marquent l'appui sans
+   délai (avant : seul `:hover` répondait, inefficace sur écran tactile). La
+   profondeur reste discrète pour ne pas parasiter la lecture du cahier. */
+.editor-row-content--sortable:active { background: hsl(var(--primary) / .06); }
 [data-editor-drop-side]::after {
   content: '';
   position: absolute;
@@ -52,6 +64,11 @@
   box-shadow: 0 18px 38px -12px hsl(var(--foreground) / .24), 0 2px 6px hsl(var(--foreground) / .08);
   pointer-events: none;
   will-change: transform;
+  /* Qualité du texte du ghost : lissage et rendu optimisé — la copie doit
+     être AU MOINS aussi nette que la ligne source, jamais un crénelé ou un
+     voile de flou sous le doigt. */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   animation: editor-content-lift 180ms cubic-bezier(.2,.8,.2,1) both;
 }
 .editor-row-drag-ghost [data-row-content] { border: 0; cursor: grabbing; }
@@ -59,7 +76,21 @@
 .editor-row-drag-ghost[data-valid="true"] { border-color: hsl(var(--primary) / .65); }
 .editor-row-drag-ghost[data-picked="true"] { display: none; }
 @keyframes editor-drop-marker { from { opacity: .2; transform: scaleX(.92); } to { opacity: 1; transform: scaleX(1); } }
-@keyframes editor-content-lift { from { opacity: .5; scale: 1; } to { opacity: 1; scale: 1.015; } }
+/* Le « lift » se termine à scale EXACTEMENT 1 : un état final à 1.015 (avant)
+   laissait le ghost sur une échelle non entière — le texte rendait flou en
+   permanence sous le doigt, comme une image sous-résolue. On part désormais
+   légèrement en dessous (0.985) et on atterrit pile sur le pixel natif. */
+@keyframes editor-content-lift { from { opacity: .4; scale: .985; } to { opacity: 1; scale: 1; } }
+
+/* Glissement : la ligne saisie abandonne VISUELLEMENT son état « sélectionnée »
+   pendant le geste — l'aplat d'accent et le filet d'édition masquaient le
+   repère de dépôt et faisaient « selected + dragged » empilés. La sélection
+   réelle revient intacte dès la fin du geste (rien ne change dans l'état
+   React). Spécificité (0,3,0) : bat `editorRowStates.css` sans !important. */
+[data-editor-sorting="true"] [data-editor-dragging="true"] [data-row-state] {
+  background-color: transparent;
+  outline: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .editor-row-content--sortable, .editor-row-drag-ghost, [data-editor-sorting="true"] [data-editor-sort-row] > * { transition: none; }
   [data-editor-drop-side] > * { translate: none; }
@@ -71,16 +102,32 @@
   [data-row-content].editor-row-content--sortable { min-height: 0; box-shadow: none; }
 }
 
-[data-row-content].editor-row-content--sortable[data-reorder-direction="ltr"],
-[data-content-direction="ltr"] [data-row-content].editor-row-content--sortable:not([data-reorder-direction]) { padding-right: 48px; }
-[data-row-content].editor-row-content--sortable[data-reorder-direction="rtl"],
-[data-content-direction="rtl"] [data-row-content].editor-row-content--sortable:not([data-reorder-direction]) { padding-left: 48px; }
-.editor-reorder-handle { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; display: grid; place-items: center; color: hsl(var(--muted-foreground)); border-radius: 12px; /* pan-y : avant l'armement (appui long), un balayage vertical depuis la poignée fait défiler la page au lieu de piéger le doigt. */ touch-action: pan-y; cursor: grab; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; transition: color 180ms ease, background-color 180ms ease, transform 180ms ease; }
+/* La poignée est un calque : plus aucune largeur n'est réservée au texte. */
+/* Poignée : présente dans le DOM (tests, a11y) mais masquée tant qu'elle n'est
+   pas utile — UNIQUEMENT après un clic (ligne sélectionnée), ligne en cours
+   d'édition, ou geste en cours. Le survol souris ne la révèle plus : le geste
+   devient explicite, « je clique, la poignée apparaît, je saisis ». Les 48 px
+   réservés en bord de cellule restent récupérés pour le texte sur téléphone. */
+.editor-reorder-handle { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; display: none; place-items: center; color: hsl(var(--muted-foreground)); border-radius: 12px; /* pan-y : avant l'armement (appui long), un balayage vertical depuis la poignée fait défiler la page au lieu de piéger le doigt. */ touch-action: pan-y; cursor: grab; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; transition: color 180ms ease, background-color 180ms ease, transform 180ms ease; }
+[data-row-state~="selected"] .editor-reorder-handle,
+[data-row-state~="editing"] .editor-reorder-handle,
+[data-editor-dragging="true"] .editor-reorder-handle,
+[data-editor-sorting="true"] .editor-reorder-handle {
+  display: grid;
+  /* La poignée survole le texte : un voile la détache sans repousser la mise en page. */
+  background: color-mix(in srgb, hsl(var(--card)) 86%, transparent);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+[data-editor-pressing="true"] .editor-reorder-handle { display: grid; }
 [data-reorder-direction="ltr"] > .editor-reorder-handle,
 [data-content-direction="ltr"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 0; left: auto; }
 [data-reorder-direction="rtl"] > .editor-reorder-handle,
 [data-content-direction="rtl"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { left: 0; right: auto; }
-.editor-reorder-handle:focus-visible { color: hsl(var(--foreground)); background: hsl(var(--muted)); }
+.editor-reorder-handle:focus-visible { display: grid; color: hsl(var(--foreground)); background: hsl(var(--muted)); }
+/* Pointeur fin : le survol de la LIGNE ne révèle plus la poignée (c'est le
+   clic qui sélectionne et la fait apparaître). Seule la poignée DÉJÀ visible
+   réagit au survol, pour confirmer la cible avant la saisie. */
 @media (hover: hover) and (pointer: fine) {
   .editor-reorder-handle:hover { color: hsl(var(--foreground)); background: hsl(var(--muted)); }
 }
@@ -89,4 +136,7 @@
 .editor-reorder-notice { position: fixed; z-index: 50; left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); border: 1px solid hsl(var(--border)); border-radius: 12px; box-shadow: 0 4px 20px hsl(var(--foreground) / .12); background: hsl(var(--card)); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 12px; color: hsl(var(--foreground)); font-size: .875rem; }
 .editor-reorder-notice button { min-height: 44px; padding-inline: 12px; color: hsl(var(--foreground)); text-decoration: underline; }
 @media (prefers-reduced-motion: reduce) { .editor-reorder-handle { transition: none; } .editor-reorder-handle:active { transform: translateY(-50%); } }
-@media print { .editor-reorder-handle, .editor-reorder-notice { display: none; } [data-row-content].editor-row-content--sortable { padding-left: inherit; padding-right: inherit; } }
+@media print {
+  .editor-reorder-handle, .editor-reorder-notice { display: none !important; }
+  [data-row-content].editor-row-content--sortable { padding-left: inherit; padding-right: inherit; }
+}

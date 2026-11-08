@@ -53,7 +53,7 @@ import {
     type ServerClassesBlob,
 } from '../infrastructure/sync/pullHelpers';
 import { dequal } from 'dequal';
-export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
+type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
 interface SyncContextValue {
     syncStatus: SyncStatus;

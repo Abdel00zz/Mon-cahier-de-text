@@ -3,7 +3,7 @@ import { normalizeOfficialClassName } from '../../constants';
 import { readStoredClasses } from '../../infrastructure/storage/localClassStorage';
 
 type AppView = 'dashboard' | 'editor' | 'settings' | 'help';
-export interface AppRoute { view: AppView; activeClass: ClassInfo | null; }
+interface AppRoute { view: AppView; activeClass: ClassInfo | null; }
 export const DASHBOARD_ROUTE: AppRoute = { view: 'dashboard', activeClass: null };
 export const DASHBOARD_HASH = '#/';
 export const SETTINGS_HASH = '#/parametres';

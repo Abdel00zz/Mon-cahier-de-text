@@ -300,32 +300,3 @@ export function TeacherTeamIllustration(props: IllustrationProps) {
     <path d="M22 224H218" className="figure-muted-line" />
   </Figure>;
 }
-
-const REVIEWER: Look = { skin: 2, outfit: 3, hair: 'scarf' };
-
-/** An upcoming deadline is a concrete preparation task, rather than an alarm. */
-export function DeadlinePreparationIllustration(props: IllustrationProps) {
-  return <Figure {...props}>
-    <rect x="128" y="42" width="88" height="120" rx="10" className="figure-paper" />
-    <path d="M145 69H198M145 87H190M145 105H180" className="figure-line figure-muted-line" />
-    <circle cx="185" cy="148" r="27" className="figure-soft" />
-    <path d="M185 132V148L195 154" className="figure-line" />
-    <Person x={-18} y={43} scale={.8} look={REVIEWER} breathe
-      back={<g className="figure-point"><Arm d="M156 172Q184 162 198 120" hand={[198, 112]} look={REVIEWER} /></g>} />
-  </Figure>;
-}
-
-const GUIDE: Look = { skin: 3, outfit: 1, hairTone: 3 };
-
-/** Reviewing a class: a teacher alongside a simple progression chart. */
-export function ProgressReviewIllustration(props: IllustrationProps) {
-  return <Figure {...props}>
-    <rect x="110" y="48" width="116" height="132" rx="12" className="figure-paper" />
-    <path d="M130 154H208" className="figure-muted-line" />
-    <rect x="132" y="121" width="16" height="27" rx="4" className="figure-neutral" />
-    <rect x="158" y="100" width="16" height="48" rx="4" className="figure-soft" />
-    <rect x="184" y="74" width="16" height="74" rx="4" className="figure-accent" />
-    <Person x={-29} y={54} scale={.75} look={GUIDE} face="calm" breathe
-      back={<g className="figure-point"><Arm d="M156 172Q186 157 204 128" hand={[211, 121]} look={GUIDE} /></g>} />
-  </Figure>;
-}

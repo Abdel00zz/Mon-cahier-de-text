@@ -8,24 +8,25 @@
    le paysage gagne en largeur sans faire regrossir brutalement le texte. */
 @layer components {
   [data-editor-table] {
-    --editor-fs-chapter: 22px;
-    --editor-fs-top: 19px;
-    --editor-fs-section: 18px;
-    --editor-fs-subsection: 17px;
-    --editor-fs-subsubsection: 16px;
-    --editor-fs-item-title: 15px;
-    --editor-fs-description: 14px;
-    --editor-fs-remark: 13px;
-    --editor-fs-table-main: 12.5px;
-    --editor-fs-table-side: 11.5px;
-    --editor-fs-date: 13px;
-    --editor-fs-page: 11.5px;
-    --editor-fs-badge: 11px;
+    --editor-fs-chapter: 21px;
+    --editor-fs-top: 18px;
+    --editor-fs-section: 17px;
+    --editor-fs-subsection: 16px;
+    --editor-fs-subsubsection: 15px;
+    --editor-fs-item-title: 14px;
+    --editor-fs-description: 13px;
+    --editor-fs-remark: 12.5px;
+    --editor-fs-table-main: 12px;
+    --editor-fs-table-side: 11px;
+    --editor-fs-date: 12.5px;
+    --editor-fs-page: 11px;
+    --editor-fs-badge: 10.5px;
     --editor-badge-min-width: 30px;
     --editor-badge-padding-inline: 5px;
+    --editor-badge-padding-block: 1px;
     --editor-lesson-gap: 6px;
     --editor-lesson-indent: 0px;
-    --editor-description-indent: 12px;
+    --editor-description-indent: 6px;
     --editor-description-padding: 8px;
   }
 
@@ -271,7 +272,7 @@
     .editor-document-highlight:active { transform: none; }
   }
 
-  .editor-kind-badge { min-width: 0 !important; padding-inline: var(--editor-badge-padding-inline) !important; padding-block: 1px !important; border-radius: 5px; font-weight: 650; letter-spacing: 0.01em; vertical-align: baseline; }
+  .editor-kind-badge { min-width: 0 !important; padding-inline: var(--editor-badge-padding-inline) !important; padding-block: var(--editor-badge-padding-block, 1px) !important; border-radius: 5px; font-weight: 650; letter-spacing: 0.01em; vertical-align: baseline; }
 
   .editor-lesson-row {
     gap: var(--editor-lesson-gap);
@@ -293,37 +294,38 @@
     line-height: 1.6;
   }
 
-  /* Échelle typographique strictement proportionnelle selon la hiérarchie pédagogique :
-     Chapitre (1.45) > Bloc/Évaluation (1.25) > Section (1.16) > Sous-section (1.08)
-     > Sous-sous-section (1.02) > Titre de contenu Déf/Prop/Exo (0.96)
-     > Description/Corps (0.90) > Remarque (0.84) > En-tête/Page (0.75) > Badge (0.72). */
+  /* Échelle typographique strictement proportionnelle selon la hiérarchie pédagogique
+     (base réduite de ~5 % — textes plus compacts) :
+     Chapitre (1.38) > Bloc/Évaluation (1.19) > Section (1.10) > Sous-section (1.03)
+     > Sous-sous-section (0.97) > Titre de contenu Déf/Prop/Exo (0.93)
+     > Description/Corps (0.86) > Remarque (0.80) > En-tête/Page (0.71) > Badge (0.65). */
   [data-editor-table] {
     --editor-scale: max(0.875rem, calc(clamp(0.9375rem, calc(0.875rem + 0.2vw), 1rem) * var(--app-text-scale, 1)));
     --cdt-table-cols: minmax(5rem, 20%) minmax(0, 1fr) minmax(3.5rem, 19%);
-    --editor-fs-chapter: calc(var(--editor-scale) * 1.45);
-    --editor-fs-top: calc(var(--editor-scale) * 1.25);
-    --editor-fs-section: calc(var(--editor-scale) * 1.16);
-    --editor-fs-subsection: calc(var(--editor-scale) * 1.08);
-    --editor-fs-subsubsection: calc(var(--editor-scale) * 1.02);
-    --editor-fs-item-title: calc(var(--editor-scale) * 0.98);
-    --editor-fs-description: calc(var(--editor-scale) * 0.90);
-    --editor-fs-remark: calc(var(--editor-scale) * 0.84);
-    --editor-fs-table-main: calc(var(--editor-scale) * 0.81);
-    --editor-fs-table-side: calc(var(--editor-scale) * 0.75);
-    --editor-fs-date: calc(var(--editor-scale) * 0.88);
-    --editor-fs-page: calc(var(--editor-scale) * 0.75);
-    --editor-fs-badge: calc(var(--editor-scale) * 0.68);
+    --editor-fs-chapter: calc(var(--editor-scale) * 1.38);
+    --editor-fs-top: calc(var(--editor-scale) * 1.19);
+    --editor-fs-section: calc(var(--editor-scale) * 1.10);
+    --editor-fs-subsection: calc(var(--editor-scale) * 1.03);
+    --editor-fs-subsubsection: calc(var(--editor-scale) * 0.97);
+    --editor-fs-item-title: calc(var(--editor-scale) * 0.93);
+    --editor-fs-description: calc(var(--editor-scale) * 0.86);
+    --editor-fs-remark: calc(var(--editor-scale) * 0.80);
+    --editor-fs-table-main: calc(var(--editor-scale) * 0.77);
+    --editor-fs-table-side: calc(var(--editor-scale) * 0.71);
+    --editor-fs-date: calc(var(--editor-scale) * 0.84);
+    --editor-fs-page: calc(var(--editor-scale) * 0.71);
+    --editor-fs-badge: calc(var(--editor-scale) * 0.65);
     --editor-badge-min-width: 0px;
     --editor-badge-padding-inline: 4px;
     --editor-lesson-gap: clamp(5px, 1vw, 10px);
-    --editor-lesson-indent: clamp(0px, calc(2vw - 8px), 12px);
-    /* Retrait hiérarchique : le chapitre tient la marge, chaque niveau
-       imbriqué s'enfonce d'un cran régulier (section, sous-section,
+    --editor-lesson-indent: clamp(0px, calc(2vw - 14px), 6px);
+    /* Retrait hiérarchique resserré : le chapitre tient la marge, chaque
+       niveau imbriqué s'enfonce d'un cran régulier (section, sous-section,
        sous-sous-section). Le cran de marge suffit : aucun filet vertical,
        à l'écran comme sur le papier. */
-    --editor-indent-1: 4px;
-    --editor-indent-2: 8px;
-    --editor-indent-3: 14px;
+    --editor-indent-1: 2px;
+    --editor-indent-2: 5px;
+    --editor-indent-3: 8px;
   }
 
   /* Une grille partagée par l'en-tête, les lignes et les cellules fusionnées.
@@ -335,11 +337,27 @@
     overflow-wrap: anywhere;
   }
 
-  @media (max-width: 639px) {
+  /* Grille compacte jusqu'à 767px : 640-767px héritait de la grille large
+     (20% de date, 19% de remarque) qui mangeait la moitié de la largeur utile. */
+  @media (max-width: 767px) {
     [data-editor-table] {
       --cdt-table-cols: minmax(3.5rem, 14.5%) minmax(0, 1fr) minmax(3rem, 13.5%);
       --editor-description-indent: 0px;
-      --editor-description-padding: 8px;
+      --editor-description-padding: 6px;
+      --editor-scale: max(0.73rem, calc(clamp(0.725rem, calc(0.725rem + 0.12vmin), 0.78rem) * var(--app-text-scale, 1)));
+      --editor-fs-chapter: calc(var(--editor-scale) * 1.31);
+      --editor-fs-top: calc(var(--editor-scale) * 1.18);
+      --editor-fs-section: calc(var(--editor-scale) * 1.07);
+      --editor-fs-subsection: calc(var(--editor-scale) * 1.00);
+      --editor-fs-subsubsection: calc(var(--editor-scale) * 0.93);
+      --editor-fs-item-title: calc(var(--editor-scale) * 0.87);
+      --editor-fs-description: calc(var(--editor-scale) * 0.82);
+      --editor-fs-remark: calc(var(--editor-scale) * 0.79);
+      --editor-fs-table-main: calc(var(--editor-scale) * 0.78);
+      --editor-fs-table-side: calc(var(--editor-scale) * 0.77);
+      --editor-fs-date: calc(var(--editor-scale) * 0.90);
+      --editor-fs-page: calc(var(--editor-scale) * 0.77);
+      --editor-fs-badge: calc(var(--editor-scale) * 0.76);
     }
     [data-editor-table] .editor-type-remark {
       word-break: normal;
@@ -360,9 +378,9 @@
 
   @media (min-width: 640px) {
     [data-editor-table] {
-      --editor-indent-1: 16px;
-      --editor-indent-2: 32px;
-      --editor-indent-3: 48px;
+      --editor-indent-1: 10px;
+      --editor-indent-2: 20px;
+      --editor-indent-3: 30px;
     }
   }
 
@@ -371,10 +389,10 @@
      pour que la hiérarchie du cahier se lise d'un seul regard. */
   @media (pointer: coarse) and (orientation: landscape) {
     [data-editor-table] {
-      --editor-indent-1: 22px;
-      --editor-indent-2: 42px;
-      --editor-indent-3: 62px;
-      --editor-lesson-indent: 16px;
+      --editor-indent-1: 12px;
+      --editor-indent-2: 24px;
+      --editor-indent-3: 36px;
+      --editor-lesson-indent: 8px;
     }
   }
 
@@ -382,6 +400,16 @@
     [data-editor-table] {
       /* vmin garde l’échelle stable lors d’une rotation du téléphone. */
       --editor-scale: max(0.875rem, calc(clamp(0.9375rem, calc(0.875rem + 0.2vmin), 1rem) * var(--app-text-scale, 1)));
+    }
+  }
+
+  /* Remarque : aperçu borné sur téléphone, le tap ouvre la saisie complète. */
+  @media (max-width: 639px) and (pointer: coarse) {
+    [data-editor-cell="remark"] :is(.editor-session-note, .editor-type-remark) {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
     }
   }
 
@@ -393,19 +421,19 @@
          d’un pixel qui rendait les niveaux indiscernables). Le réglage de
          taille de l’application reste appliqué par-dessus. */
       --editor-scale: max(0.73rem, calc(clamp(0.725rem, calc(0.725rem + 0.12vmin), 0.78rem) * var(--app-text-scale, 1)));
-      --editor-fs-chapter: calc(var(--editor-scale) * 1.38);
-      --editor-fs-top: calc(var(--editor-scale) * 1.24);
-      --editor-fs-section: calc(var(--editor-scale) * 1.13);
-      --editor-fs-subsection: calc(var(--editor-scale) * 1.05);
-      --editor-fs-subsubsection: calc(var(--editor-scale) * 0.98);
-      --editor-fs-item-title: calc(var(--editor-scale) * 0.92);
-      --editor-fs-description: calc(var(--editor-scale) * 0.86);
-      --editor-fs-remark: calc(var(--editor-scale) * 0.83);
-      --editor-fs-table-main: calc(var(--editor-scale) * 0.82);
-      --editor-fs-table-side: calc(var(--editor-scale) * 0.81);
-      --editor-fs-date: calc(var(--editor-scale) * 0.95);
-      --editor-fs-page: calc(var(--editor-scale) * 0.81);
-      --editor-fs-badge: calc(var(--editor-scale) * 0.80);
+      --editor-fs-chapter: calc(var(--editor-scale) * 1.31);
+      --editor-fs-top: calc(var(--editor-scale) * 1.18);
+      --editor-fs-section: calc(var(--editor-scale) * 1.07);
+      --editor-fs-subsection: calc(var(--editor-scale) * 1.00);
+      --editor-fs-subsubsection: calc(var(--editor-scale) * 0.93);
+      --editor-fs-item-title: calc(var(--editor-scale) * 0.87);
+      --editor-fs-description: calc(var(--editor-scale) * 0.82);
+      --editor-fs-remark: calc(var(--editor-scale) * 0.79);
+      --editor-fs-table-main: calc(var(--editor-scale) * 0.78);
+      --editor-fs-table-side: calc(var(--editor-scale) * 0.77);
+      --editor-fs-date: calc(var(--editor-scale) * 0.90);
+      --editor-fs-page: calc(var(--editor-scale) * 0.77);
+      --editor-fs-badge: calc(var(--editor-scale) * 0.76);
     }
   }
 }

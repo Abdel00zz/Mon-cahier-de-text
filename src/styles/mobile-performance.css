@@ -83,7 +83,6 @@ html[data-platform="android"] {
   /* Isolation du layout pour garantir 120 Hz constants sur Samsung S25, iPhone Pro & Pixel */
   .dashboard-day-group,
   .class-card,
-  .class-list-item,
   [data-editor-table] .editor-table-grid {
     contain: layout style;
   }

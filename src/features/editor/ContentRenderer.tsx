@@ -39,6 +39,19 @@ interface ContentRendererProps {
 
 /** Champs qu'un JSON importé peut remplir n'importe comment. */
 
+/** Comparateur memo : liste fixe de props (indices exclu, comparé par sa clé). */
+const COMPARATOR_KEYS = [
+  'data',
+  'elementType',
+  'isPrint',
+  'showDescriptions',
+  'descriptionTypes',
+  'highlight',
+  'contentNumber',
+  'getDocumentPreview',
+  'onOpenDocumentPreview',
+] as const;
+
 export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, isPrint = false, showDescriptions, descriptionTypes = [], highlight, contentNumber, getDocumentPreview, onOpenDocumentPreview }) => {
   const { t } = useLocale();
   
@@ -273,13 +286,15 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           <Badge
             variant="outline"
             dir={textDirectionAttribute(badgeText) ?? 'ltr'}
-            className={`editor-kind-badge editor-type-badge me-1.5 inline-flex shrink-0 select-none whitespace-nowrap px-1 align-baseline transition-colors duration-150 cursor-default ${badgeClass} ${isPrint ? 'badge-print' : ''}`}
+            className={`editor-kind-badge editor-type-badge me-1.5 inline-flex shrink-0 whitespace-nowrap px-1 align-baseline transition-colors duration-150 cursor-default ${badgeClass}`}
             data-content-type={normalizedType}
             data-content-number={displayNumber ?? ''}
             data-tippy-content={fullTooltip}
           >
             <span>{badgeText}</span>
             {displayNumber ? <bdi dir="ltr" className="ms-px font-bold lg:ms-0.5">{displayNumber}</bdi> : null}
+            {/* Lecteurs d'écran : la nature en toutes lettres, pas seulement l'abréviation. */}
+            <span className="sr-only">{fullTooltip}</span>
           </Badge>
           {/* Titre : wrap multilingue / saut de ligne supporté */}
           <span
@@ -314,7 +329,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           {/* Description : encadré mathématique sobre sans arrondi sous le titre (masqué si un document dédié existe pour éliminer tout sous-titre redondant) */}
           {allowDescription && !itemDocumentPreview && (
             <div
-              className="editor-item-description editor-type-description text-start mt-1.5 block px-2.5 py-1 text-foreground whitespace-pre-wrap break-words"
+              className="editor-item-description editor-type-description text-start mt-1 block px-1.5 py-1 text-foreground whitespace-pre-wrap break-words"
               data-content-type={normalizedType}
               dir={textDirectionAttribute(item.description)}
             >
@@ -346,11 +361,11 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 }, (previous, next) => {
   // Rebuilding the row projection after a date edit recreates coordinates.
   // Equal coordinates do not require typesetting every unchanged lesson again.
-  const keys = new Set([...Object.keys(previous), ...Object.keys(next)] as (keyof ContentRendererProps)[]);
-  for (const key of keys) {
-    if (key === 'indices') {
-      if (indicesKey(previous.indices) !== indicesKey(next.indices)) return false;
-    } else if (!Object.is(previous[key], next[key])) return false;
+  // Liste fixe : aucune allocation de Set/tableau à chaque comparaison — le
+  // comparateur tourne pour CHAQUE ligne à CHAQUE frappe dans le tableau.
+  if (indicesKey(previous.indices) !== indicesKey(next.indices)) return false;
+  for (const key of COMPARATOR_KEYS) {
+    if (!Object.is(previous[key], next[key])) return false;
   }
   return true;
 });

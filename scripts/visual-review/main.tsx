@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as Icons from '@/components/ui/icons';
 import * as Figures from '@/components/ui/DynamicIllustration';
-import { SquareActionButton } from '@/components/ui/SquareActionButton';
-import { Toolbar } from '@/features/editor/Toolbar';
 import { SelectionBar } from '@/features/editor/SelectionBar';
+import { Toolbar } from '@/features/editor/Toolbar';
 import { SupportWhatsAppBlock } from '@/components/support/SupportWhatsAppBlock';
 import { translateLocaleMessage } from '@/i18n/messages';
 import { LocaleProvider } from '@/i18n/LocaleProvider';
@@ -37,7 +36,6 @@ function Review() {
         <h2>{translateLocaleMessage('ar', 'emptyNotebook.label')}</h2>
         <SupportWhatsAppBlock locale="ar" hint={translateLocaleMessage('ar', 'support.serviceHint')} label={translateLocaleMessage('ar', 'support.serviceWhatsApp')} />
       </section>
-      <section className="review-actions"><SquareActionButton icon={Icons.CalendarPlus} title="Planifier une séance" subtitle="Vos prochaines séances, en un geste." onClick={()=>setToast('Une nouvelle séance est prête à être planifiée.')}/><SquareActionButton icon={Icons.FileInput} title="Importer le programme" subtitle="Retrouvez votre progression." onClick={()=>setToast('Votre programme peut être importé.')}/><SquareActionButton icon={Icons.Palette} title="Personnaliser" subtitle="Un espace qui vous ressemble." onClick={()=>setDark(!dark)}/></section>
       <section><div className="review-section-heading"><h2>Éditeur · sauvegarde accessible</h2><button className="review-toggle" onClick={()=>setArabic(!arabic)}>{arabic ? 'Français' : 'العربية'}</button></div>
         <LocaleProvider locale={arabic ? 'ar' : 'fr'} manageDocument={false}><div dir={arabic ? 'rtl' : 'ltr'}>
           <button className="review-toggle mb-4" onClick={()=>setSelection(!selection)}>Tester la sélection</button>

@@ -1,7 +1,7 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, TriangleAlert } from '@/components/ui/icons';
-import { AUTH_COPY, type AuthLocale } from './authCopy';
+import { AUTH_COPY, type AuthCopy } from './authCopy';
 
 export const FIELD_CLASS =
   "auth-field placeholder:text-muted-foreground";
@@ -14,6 +14,9 @@ export const PasswordInput = ({
   autoComplete,
   required,
   minLength,
+  readOnly,
+  invalid,
+  errorId,
   copy,
 }: {
   id: string;
@@ -22,12 +25,18 @@ export const PasswordInput = ({
   autoComplete: string;
   required?: boolean;
   minLength?: number;
-  copy: (typeof AUTH_COPY)[AuthLocale];
+  readOnly?: boolean;
+  invalid?: boolean;
+  errorId?: string;
+  copy: AuthCopy;
 }) => {
   const [visible, setVisible] = useState(false);
   const [capsLock, setCapsLock] = useState(false);
   const detectCaps = (event: React.KeyboardEvent<HTMLInputElement>) =>
     setCapsLock(event.getModifierState("CapsLock"));
+  const describedBy = [capsLock ? id + "-caps" : null, errorId ?? null]
+    .filter(Boolean)
+    .join(" ") || undefined;
   return (
     <div>
       <div className="relative">
@@ -44,17 +53,20 @@ export const PasswordInput = ({
           enterKeyHint={autoComplete === 'current-password' ? 'go' : 'next'}
           required={required}
           minLength={minLength}
+          readOnly={readOnly}
+          aria-invalid={invalid || undefined}
+          aria-describedby={describedBy}
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
-          aria-describedby={capsLock ? id + "-caps" : undefined}
           className={FIELD_CLASS + " auth-password"}
         />
         <button
           type="button"
-          onClick={() => setVisible((value) => !value)}
+          onClick={() => setVisible((current) => !current)}
+          // Le focus et le curseur restent dans le champ sur tactile.
+          onPointerDown={(event) => event.preventDefault()}
           aria-label={visible ? copy.hidePassword : copy.showPassword}
-          aria-pressed={visible}
           aria-controls={id}
           className="auth-password-toggle focus-visible:outline-2 focus-visible:outline-offset-2"
         >
@@ -65,16 +77,18 @@ export const PasswordInput = ({
           )}
         </button>
       </div>
-      {capsLock && (
-        <p
-          id={id + "-caps"}
-          role="status"
-          className="mt-2 flex items-center gap-2 text-xs text-amber-800 dark:text-amber-300"
-        >
+      {/* Région live montée en permanence : seule sa visibilité change. */}
+      <p
+        id={id + "-caps"}
+        role="status"
+        hidden={!capsLock}
+        className="mt-2 text-xs text-amber-800 dark:text-amber-300"
+      >
+        <span className="flex items-center gap-2">
           <TriangleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
           {copy.capsLock}
-        </p>
-      )}
+        </span>
+      </p>
     </div>
   );
 };

@@ -155,18 +155,19 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       bodyClassName="px-4 py-3.5 sm:px-5 sm:py-4"
       footerClassName="border-t border-border/50 bg-background px-4 py-2.5 sm:px-5 sm:py-3"
       footer={
-        <div className="flex items-center justify-end gap-2.5 w-full">
+        <div className="print-footer-actions flex items-center gap-2.5 w-full">
           <Button
             type="button"
             disabled={isPrinting || (mode === 'custom' && selectedDates.size === 0) || (mode === 'new' && newDates.length === 0)}
             onClick={() => onPrint(mode, { pageNumbers, colorContent, headerMode, textSize, lineSpacing }, mode === 'custom' ? Array.from(selectedDates) : undefined)}
-            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-4 min-h-10 text-xs sm:text-sm shadow-xs active:scale-[0.97] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            className="print-cta rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-4 min-h-10 text-xs sm:text-sm shadow-xs active:scale-[0.97] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]"
           >
-            {isPrinting ? t('print.preparing') : <>{t('print.print')} · {mode === 'new'
+            <Printer aria-hidden="true" />
+            <span>{isPrinting ? t('print.preparing') : <>{t('print.print')} · {mode === 'new'
               ? sessionCountLabel(newDates.length)
               : mode === 'custom'
                 ? sessionCountLabel(selectedDates.size)
-                : t('print.complete')}</>}
+                : t('print.complete')}</>}</span>
           </Button>
         </div>
       }

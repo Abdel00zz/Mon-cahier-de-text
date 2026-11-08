@@ -1,6 +1,6 @@
 export type AuthMode = "login" | "register" | "reset";
 export type AuthView = "onboarding" | "auth";
-export interface AuthRoute {
+interface AuthRoute {
   view: AuthView;
   mode: AuthMode;
 }

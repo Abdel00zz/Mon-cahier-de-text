@@ -2,7 +2,7 @@ import type { AppLocale } from '../types';
 
 interface TipText { text: string; keyword: string; quotation?: true }
 interface TipSource { label: string; url: string }
-export interface PedagogicalTip { id: string; source: TipSource; copy: Record<AppLocale, TipText> }
+interface PedagogicalTip { id: string; source: TipSource; copy: Record<AppLocale, TipText> }
 
 /**
  * 60 teacher-facing insights in Educational Psychology & Cognitive Neuroscience

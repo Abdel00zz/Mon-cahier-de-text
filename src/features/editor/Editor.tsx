@@ -143,16 +143,21 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   useEffect(() => {
     let active = true;
-    void preloadEditorFonts().then(() => {
-      if (active) setEditorFontsReady(true);
-    }).catch(error => {
-      logger.error('Failed to load notebook fonts; using browser fallbacks.', error);
-      if (active) {
-        toast.error(t('editorNotice.fontLoadFallback'));
-        setEditorFontsReady(true);
-      }
-    });
-    return () => { active = false; };
+    let ceiling = 0;
+    // Plafond : les polices ne retardent jamais l'affichage du cahier lu
+    // synchronement — au pire 1,5 s puis repli navigateur, sans bloquer le
+    // premier rendu derrière `AppBootSkeleton`.
+    const timeout = new Promise<void>(resolve => { ceiling = window.setTimeout(resolve, 1500); });
+    void Promise.race([preloadEditorFonts(), timeout])
+      .catch((error: unknown) => {
+        logger.error('Failed to load notebook fonts; using browser fallbacks.', error);
+        if (active) toast.error(t('editorNotice.fontLoadFallback'));
+      })
+      .finally(() => {
+        window.clearTimeout(ceiling);
+        if (active) setEditorFontsReady(true);
+      });
+    return () => { active = false; window.clearTimeout(ceiling); };
   }, [t]);
 
   const [editorState, setEditorState] = useImmer({

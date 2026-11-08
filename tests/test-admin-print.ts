@@ -276,6 +276,6 @@ test('admin print preserves independent absence dates and freezes the selected s
   assert.match(teacherDetail, /absenceSessions.filter\(session => chosen.includes\(session.date\)\)/);
   assert.match(teacherDetail, /config=\{printSnapshot.config\}/);
   assert.match(teacherDetail, /absenceSessions=\{printSnapshot.absenceSessions\}/);
-  const api = sourceOf('api/admin.ts');
+  const api = read('api/_admin/teachers.ts');
   for (const field of ['absences', 'timetable']) assert.ok(api.includes(`${field}: settings.${field}`));
 });

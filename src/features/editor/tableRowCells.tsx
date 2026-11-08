@@ -208,7 +208,7 @@ export const RemarkCell: FC<{
       title={cellTitle}
       aria-label={cellTitle}
       data-remark-cell="true"
-      className={`flex min-h-[44px] h-full flex-1 w-full flex-col justify-center items-start text-start ${editable ? 'cursor-pointer rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
+      className={`flex min-h-[44px] h-full flex-1 w-full flex-col justify-center items-start text-start ${editable ? 'cursor-pointer touch-manipulation rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
     >
       {(!isMergedCell || merge!.indexInGroup === Math.floor(merge!.count / 2)) && (() => {
         const fullRemark = merge?.sharedRemark ?? value;

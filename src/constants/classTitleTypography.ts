@@ -24,7 +24,7 @@ import type { AppLocale } from '@/types';
 type TitleScript = 'latin' | 'arabic';
 
 /** Rôle du titre, du plus discret au plus affirmé. */
-export type TitleFontRole = 'card' | 'list' | 'page';
+type TitleFontRole = 'card' | 'list' | 'page';
 
 /** Graisse par rôle, sans gras synthétique en arabe. */
 const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number; tracking: string }>> = {

@@ -86,8 +86,8 @@ test('les activités arrivent avec leur compte d’élèves, jamais leurs noms',
 });
 
 test('le serveur publie cette projection dans la fiche professeur', () => {
-    const api = readFileSync('api/admin.ts', 'utf8');
-    assert.match(api, /import \{ adminActivities, adminAssessmentDocuments \} from '\.\.\/src\/domain\/evaluations\/adminDocuments\.js'/);
+    const api = readFileSync('api/_admin/teachers.ts', 'utf8');
+    assert.match(api, /import \{ adminActivities, adminAssessmentDocuments \} from '\.\.\/\.\.\/src\/domain\/evaluations\/adminDocuments\.js'/);
     assert.match(api, /\.\.\.pickTeacherWork\(classesBlob\?\.settings, classesBlob\?\.classes \?\? \[\]\)/);
     // La charge est ajoutée à côté des dates et des réglages d'impression.
     assert.match(api, /assessmentDates: classesBlob\?\.settings\?\.assessmentDates \?\? \{\},[\s\S]*?\.\.\.pickTeacherWork/);

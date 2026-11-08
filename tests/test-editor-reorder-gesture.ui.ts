@@ -55,10 +55,11 @@ function sensor(context: TestContext) {
   const frames = new Map<number, (time: number) => void>();
   let frameId = 0;
   const win = { ...hub(), innerWidth: 375, innerHeight: 800, scrollY: 0,
-    setTimeout: (fn: (...args: any[]) => void, ms?: number) => setTimeout(fn, ms),
-    clearTimeout: (id?: any) => clearTimeout(id),
     requestAnimationFrame: (callback: (time: number) => void) => { frames.set(++frameId, callback); return frameId; },
     cancelAnimationFrame: (id: number) => { frames.delete(id); }, scrollBy: () => {},
+    // Passthrough vers les timers globaux : mock.timers contrôle l'armement tactile.
+    setTimeout: (callback: () => void, delay?: number) => globalThis.setTimeout(callback, delay),
+    clearTimeout: (id: number) => globalThis.clearTimeout(id),
   };
   const doc = { ...hub(), hidden: false, querySelector: () => null,
     elementFromPoint: (_x: number, y: number) => y >= 200 ? target : source,
@@ -105,6 +106,48 @@ test('contenu tactile : un tap sélectionne normalement et un balayage garde le 
   assert.equal(s.win.count(), 0);
 });
 
+test('poignée tactile : un balayage vertical rend le geste au défilement natif', context => {
+  const s = sensor(context);
+  let prevented = false;
+  s.start();
+  s.win.emit('touchmove', { touches: [s.point(185)], cancelable: true, preventDefault: () => { prevented = true; } });
+  context.mock.timers.tick(400);
+  assert.equal(s.ghosts.length, 0, 'aucun aperçu tant que le geste reste vertical');
+  assert.equal(prevented, false, 'le défilement natif reste maître du geste');
+  assert.equal(s.moves.length, 0);
+  s.end(200);
+  assert.equal(s.moves.length, 0);
+  assert.equal(s.win.count(), 0, 'tous les écouteurs sont libérés après renonciation');
+  assert.equal(s.source.attrs.has('data-editor-pressing'), false);
+});
+
+test('poignée tactile : une intention horizontale arme le déplacement sans attendre', context => {
+  const s = sensor(context);
+  s.start();
+  s.win.emit('touchmove', { touches: [{ identifier: 1, clientX: 190, clientY: 132 }], cancelable: true, preventDefault: () => {} });
+  assert.equal(s.ghosts.length, 1, 'le geste horizontal saisit le contenu immédiatement');
+  s.end(132);
+  assert.equal(s.moves.length, 0, 'relâcher sans destination ne modifie rien');
+  // Le relâché immobile passe en mode « choisir une destination » : la session
+  // reste vivante pour le deuxième tap, puis Échap la libère entièrement.
+  s.win.emit('keydown', { key: 'Escape', preventDefault: () => {}, stopPropagation: () => {} });
+  context.mock.timers.tick(400);
+  assert.equal(s.ghosts.length, 0);
+  assert.equal(s.win.count(), 0);
+});
+
+test('poignée tactile : un tap bref prépare le dépôt au deuxième tap', context => {
+  const s = sensor(context);
+  s.start(); s.end();
+  assert.equal(s.ghosts.length, 1, 'le contenu reste pris après un tap bref');
+  assert.equal(s.moves.length, 0);
+  s.actions.onPointerDown({ target: s.surface, pointerType: 'touch' } as unknown as React.PointerEvent<HTMLElement>);
+  s.actions.onClickCapture({ target: s.surface, clientX: 150, clientY: 230,
+    preventDefault: () => {}, stopPropagation: () => {} } as unknown as React.MouseEvent<HTMLElement>);
+  assert.deepEqual(s.moves, [['source', 'target', 'after']]);
+  assert.equal(s.ghosts.length, 0); assert.equal(s.win.count(), 0);
+});
+
 test('poignée tactile : glisser dépose et le clic final ne change pas la sélection', context => {
   const s = sensor(context);
   s.start(); context.mock.timers.tick(260);
@@ -125,7 +168,8 @@ test('aperçu suit le doigt, indique la destination valide et disparaît après 
   const s = sensor(context);
   s.source.dataset.editorSortLabel = 'Les fractions';
   s.source.dataset.editorSortDetail = '14/09/2026';
-  s.start(); context.mock.timers.tick(260);
+  s.start();
+  context.mock.timers.tick(260); // l'armement précède la création de l'aperçu
   const ghost = s.ghosts[0] as { children: Array<{ textContent: string }>; style: Record<string, string>; dataset: Record<string, string>; attrs: Map<string, string> };
   assert.equal(ghost.attrs.get('aria-hidden'), 'true');
   assert.equal(ghost.attrs.has('inert'), true, 'la copie visuelle ne prend jamais le focus');

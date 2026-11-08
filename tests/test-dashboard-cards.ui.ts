@@ -4,7 +4,6 @@ import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ClassCard } from '../src/features/dashboard/ClassCard';
-import { ClassListItem } from '../src/features/dashboard/ClassListItem';
 import { DashboardActions } from '../src/features/dashboard/DashboardActions';
 import { CLASS_DISPLAY_MODES, isClassDisplayMode, nextClassDisplayMode } from '../src/features/dashboard/classDisplayMode';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
@@ -140,12 +139,7 @@ test('les cartes de classe ne montrent plus le jour, l’heure ou la durée du p
     onConfigure: () => {},
     scheduleStatus,
   }));
-  const listItem = render(React.createElement(ClassListItem, {
-    classInfo: makeClass('scheduled-row', '1AC 1'),
-    onSelect: () => {},
-    onConfigure: () => {},
-  }));
-  for (const html of [card, listItem]) {
+  for (const html of [card]) {
     assert.doesNotMatch(html, /class-card__schedule-capsule|class-card__schedule-day|class-card__schedule-time|class-card__schedule-multihour/,
       'aucun badge d’horaire ne subsiste en mode carte ou liste');
     assert.doesNotMatch(html, /Lundi|10h00|2h/, 'le jour, l’heure et la durée ne sont plus affichés sur la classe');

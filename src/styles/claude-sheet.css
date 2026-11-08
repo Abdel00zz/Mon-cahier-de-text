@@ -205,7 +205,10 @@
   padding: 0 4px;
 }
 
-/* ── 10. STEPPER CIRCUIT STYLE GOOGLE ONE (Modal 2) ── */
+/* ── 10. PROGRESSION MULTISTEP NUMÉROTÉE (motif « Progress Steps ») ──
+   Cercles blancs à bordure, piste de 4px qui se remplit entre les nœuds.
+   Atteinte = bordure accent ; courante = pastille pleine. Aucun halo,
+   aucune échelle : la légèreté du motif d'origine, aux tokens du projet. */
 .claude-circuit-steps {
   display: flex;
   align-items: flex-start;
@@ -216,17 +219,19 @@
   margin: 0;
 }
 
+/* Rail vide : 4px, exactement entre les centres des nœuds
+   (l'inset est posé en inline style par le composant : 50/n %). */
 .claude-circuit-track {
   position: absolute;
-  top: 24px;
-  inset-inline: 1.75rem;
-  height: 2px;
+  top: 21px;
+  height: 4px;
   overflow: hidden;
   border-radius: 999px;
   background-color: var(--cm-border);
   z-index: 1;
 }
 
+/* Remplissage : pousse depuis le début logique (droite en RTL). */
 .claude-circuit-fill {
   position: absolute;
   inset-block: 0;
@@ -234,7 +239,7 @@
   height: 100%;
   border-radius: inherit;
   background-color: var(--cm-accent);
-  transition: width 350ms cubic-bezier(.34, 1.56, .64, 1);
+  transition: width 400ms ease;
 }
 
 .claude-circuit-step {
@@ -254,29 +259,33 @@
 
 .claude-circuit-step[data-state='complete'] { cursor: pointer; }
 
+/* Nœud : 30px, bordure 3px — la géométrie du motif d'origine. Le numéro
+   vit dans le cercle ; seuls contour, fond et encre changent d'état. */
 .claude-circuit-node {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background-color: var(--cm-sheet);
-  border: 2px solid var(--cm-border);
+  border: 3px solid var(--cm-border);
   color: var(--cm-text-muted);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   display: grid;
   place-items: center;
-  transition: all 250ms ease;
+  transition: border-color 400ms ease, background-color 400ms ease, color 400ms ease;
 }
 
-.claude-circuit-step[data-state='current'] .claude-circuit-node {
-  border-color: var(--cm-accent);
-  background-color: var(--cm-accent);
-  color: #FFFFFF;
-  transform: scale(1.12);
-  box-shadow: 0 0 0 4px rgba(198, 97, 63, 0.18);
-}
-
+/* Étape atteinte : SEULE la bordure s'allume (et l'encre suit, pour le
+   contraste) — le cercle reste blanc, comme dans le motif d'origine. */
 .claude-circuit-step[data-state='complete'] .claude-circuit-node {
+  border-color: var(--cm-accent);
+  color: var(--cm-accent);
+}
+
+/* Étape courante : l'unique pastille pleine — le marqueur « où suis-je ».
+   Pas d'échelle, pas de halo : la position suffit. */
+.claude-circuit-step[data-state='current'] .claude-circuit-node {
   border-color: var(--cm-accent);
   background-color: var(--cm-accent);
   color: #FFFFFF;
@@ -296,6 +305,13 @@
 .claude-circuit-step[data-state='current'] .claude-circuit-label {
   color: var(--cm-text);
   font-weight: 600;
+}
+
+/* Pointeur fin : survol discret du nœud atteint (retour cliquable). */
+@media (hover: hover) and (pointer: fine) {
+  .claude-circuit-step[data-state='complete'] button:hover .claude-circuit-node {
+    background-color: color-mix(in srgb, var(--cm-accent) 10%, var(--cm-sheet));
+  }
 }
 
 /* ── 11. CARTES DE CHOIX SANS FLÈCHES (Step 1 & Step 2) ── */

@@ -1,26 +1,6 @@
 /* Carved details use semantic ink, so destructive and disabled states stay legible. */
 .app-icon { display: inline-block; flex-shrink: 0; vertical-align: middle; }
 .app-icon .icon-wash { fill: currentColor; fill-opacity: .22; }
-/* Objects sit directly on their surface; the button remains the touch target. */
-.action-tile .action-tile-icon {
-  width: 46px;
-  height: 46px;
-  flex-basis: 46px;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  transition: transform 220ms cubic-bezier(.2,.8,.2,1);
-}
-.action-tile .action-tile-icon .app-icon { width: 30px; height: 30px; }
-@media (hover: hover) {
-  .action-tile:hover:not(:disabled) .action-tile-icon { transform: translateY(-2px) rotate(-3deg); }
-}
-.action-tile:active:not(:disabled) .action-tile-icon { transform: scale(.94); }
-@media (prefers-reduced-motion: reduce) {
-  .action-tile .action-tile-icon { transition: none; }
-  .action-tile:hover:not(:disabled) .action-tile-icon, .action-tile:active:not(:disabled) .action-tile-icon { transform: none; }
-}
 @media (forced-colors: active) {
   .app-icon .icon-wash { fill: Canvas; fill-opacity: 1; stroke: currentColor; stroke-width: 1; }
 }

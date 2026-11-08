@@ -12,8 +12,8 @@ import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { DateCard, MultiDateCard, TableRow } from './TableRow';
 import { SessionDocuments } from './SessionDocuments';
 import { sortAttributes } from './tableSortAttributes';
+import { TABLE_GRID_CLASS } from './editorConstants';
 
-const TABLE_GRID_CLASS = 'editor-table-grid';
 const NO_DESCRIPTION_TYPES: string[] = [];
 
 interface SessionGroupRowProps {
@@ -212,11 +212,14 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                         const selected = items.filter(item => selectedKeys.has(item.key));
                         // A shared date cell still belongs to separate content rows.
                         // Honour a single selected row, otherwise the row at click height.
+                        // `e.clientY` is valide pour le toucher comme pour la souris :
+                        // autrefois filtré par `e.detail > 0`, ce garde-fou excluait le
+                        // tap mobile (detail === 0) et tombait toujours sur items[0].
                         const cells = e.currentTarget.parentElement?.querySelectorAll<HTMLElement>('[data-session-cell="content"]');
-                        const hit = e.detail > 0 ? Array.from(cells ?? []).find(cell => {
+                        const hit = Array.from(cells ?? []).find(cell => {
                             const rect = cell.getBoundingClientRect();
                             return e.clientY >= rect.top && e.clientY <= rect.bottom;
-                        })?.dataset.sessionContentKey : undefined;
+                        })?.dataset.sessionContentKey;
                         const item = selected.length === 1 ? selected[0] : items.find(item => item.key === hit) ?? items[0];
                         onOpenDateModal(item.indices, typeof item.data?.date === 'string' ? item.data.date : undefined);
                     }
@@ -272,7 +275,7 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                     title={t('remark.editTitle')}
                     aria-label={t('remark.editTitle')}
                     data-remark-cell="true"
-                    className="flex min-h-11 h-full flex-1 w-full cursor-pointer flex-col items-start justify-center text-start gap-1.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="flex min-h-11 h-full flex-1 w-full cursor-pointer touch-manipulation flex-col items-start justify-center text-start gap-1.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 >
                     {(() => {
                       const { homeworkLine, otherRemark } = splitRemarkContent(displayRemark);

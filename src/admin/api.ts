@@ -133,7 +133,7 @@ export const blockTeacher = (phone: string, blocked: boolean): Promise<{ ok: boo
 export const deleteTeacher = (phone: string): Promise<{ ok: boolean; deletedClasses: number }> =>
     postAdmin({ action: 'deleteTeacher', phone });
 
-export type ManagedClassInput = {
+type ManagedClassInput = {
     id?: string;
     name: string;
     subject: string;

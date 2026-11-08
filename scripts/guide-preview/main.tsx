@@ -19,7 +19,6 @@ import { computeDynamicCanvasStyle } from '../../src/features/dashboard/dashboar
 import { ClassCard } from '../../src/features/dashboard/ClassCard';
 import { pickDepartmentPalette } from '../../src/features/dashboard/departmentPalette';
 import { AddClassCard } from '../../src/features/dashboard/AddClassCard';
-import { ClassListItem } from '../../src/features/dashboard/ClassListItem';
 import { CreateClassModal } from '../../src/features/dashboard/modals/CreateClassModal';
 import { dashboardTitleStyle } from '../../src/constants/classTitleTypography';
 import { ClassAssistant } from '../../src/features/assistant/ClassAssistant';
@@ -40,7 +39,6 @@ import { StudentNamesEditor } from '../../src/features/evaluations/components/St
 import { PageTransitionLoader } from '../../src/components/ui/PageSkeleton';
 import { FeedbackPreview } from './FeedbackPreview';
 import { ModalGallery } from './ModalGallery';
-import { LandingPage } from '../../src/features/auth/LandingPage';
 import { AuthPage } from '../../src/features/auth/AuthPage';
 import { AuthProvider } from '../../src/contexts/AuthContext';
 import { defaultNotificationSettings } from '../../src/hooks/useConfigManager';
@@ -400,7 +398,6 @@ function Preview() {
   return <>
     {screen === 'guide' && <><button className="m-6 p-3" onClick={() => setOpen(true)}>Ouvrir le guide / فتح الدليل</button><GuideModal isOpen={open} onClose={() => setOpen(false)} initialReference={params.has('chapter') ? { chapterId: params.get('chapter')!, sectionId: params.get('section') ?? undefined } : undefined} /></>}
     {screen === 'loading' && <PageTransitionLoader />}
-    {screen === 'landing' && <LandingPage locale={locale} onLogin={() => location.assign(`?screen=auth&lang=${locale}`)} onRegister={() => location.assign(`?screen=auth&lang=${locale}`)} />}
     {screen === 'auth' && <AuthProvider><AuthPage locale={locale} onLocaleChange={lang => location.assign(`?screen=auth&lang=${lang}`)} /></AuthProvider>}
     {screen !== 'guide' && screen !== 'loading' && <main className="mx-auto w-full max-w-[1280px] p-4 sm:p-6 min-h-[720px] bg-background text-foreground" dir={isAr ? 'rtl' : 'ltr'}>
       {screen === 'absences' && <AbsencesTab config={config} classes={classes} onConfigChange={onChange} visible />}

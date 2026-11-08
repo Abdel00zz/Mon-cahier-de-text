@@ -33,7 +33,7 @@ const extendedFamilyColor = (family: string): string => {
   return `class-hue:${100 + hash % 999000}`;
 };
 
-export const TONE_HUES: Record<typeof KEEP_TONES[number], number> = {
+const TONE_HUES: Record<typeof KEEP_TONES[number], number> = {
   sand: 43, coral: 24, lime: 77, mint: 155, sky: 204, indigo: 236, lavender: 276, rose: 348,
 };
 export const hueOf = (color: string): number => color.startsWith('class-hue:')

@@ -41,7 +41,7 @@
 .dark [data-editor-table] .editor-free-content { border-color: var(--dark-rule); }
 
 /* ── Cartes, pages et paramètres : élévation et liseré spéculaire ─────── */
-.dark :is(.class-card, .class-list-item, .hub-card, .settings-overview__section--dropdown, .settings-section) {
+.dark :is(.class-card, .hub-card, .settings-overview__section--dropdown, .settings-section) {
   box-shadow: var(--dark-specular), 0 1px 2px rgb(0 0 0 / .35), 0 12px 28px -22px rgb(0 0 0 / .65);
 }
 .dark .settings-overview__section--dropdown {

@@ -10,7 +10,7 @@ type OverviewSort = (typeof SORT_KEYS)[number];
 const SEVERITY_FILTERS = ['all', 'ok', 'notice', 'warning', 'critical', 'inactive', 'messages', 'blocked'] as const;
 type OverviewSeverityFilter = (typeof SEVERITY_FILTERS)[number];
 
-export interface OverviewFilters {
+interface OverviewFilters {
     /** Clé d'établissement, ou `null` pour tous. */
     school: string | null;
     cycle: string;

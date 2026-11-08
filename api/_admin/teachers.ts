@@ -1,0 +1,556 @@
+import { sumBy } from 'es-toolkit';
+import { randomUUID } from 'node:crypto';
+import type { ApiRequest, ApiResponse } from '../_lib/http.js';
+import { HttpError, getQueryParam } from '../_lib/http.js';
+import { appendConversationMessage, normalizeAdminMessages, readInboxSnapshot, recentAdminMessages } from '../_lib/adminMessages.js';
+import { pendingAdminMessages, pendingTeacherRequests } from '../../src/domain/messages/conversation.js';
+import { getRedis, KEYS, isFirestoreStore } from '../_lib/redis.js';
+import { firebaseAuth, teacherUid } from '../_lib/firebaseAdmin.js';
+import { accountFirebaseUid } from '../_lib/authAccounts.js';
+import { beginAccountWrite } from '../_lib/atomicWrite.js';
+import { deleteNativeDevices, sendNativeToOwner } from '../_lib/nativePush.js';
+import { withStarterDiagnostic } from '../../src/domain/notebook/starterDiagnostic.js';
+import { adminActivities, adminAssessmentDocuments } from '../../src/domain/evaluations/adminDocuments.js';
+import { normalizeStudentNames, rostersForClasses } from '../../src/domain/evaluations/studentRoster.js';
+import { composeAdminLessonImport, prepareImportedLessons, summarizeImportedLessons } from '../../src/domain/notebook/importPipeline.js';
+import { normalizeEvaluationAssignment, normalizeEvaluationPolicy, resolveEvaluationPolicy } from '../../src/domain/evaluations/evaluationPolicy.js';
+import { assertBodySize } from '../_lib/validate.js';
+import type { AdminMessage, AppConfig, ClassInfo, ClassSnapshot, Cycle, EvaluationPolicy, EvaluationPolicyAssignment, TeacherSnapshot } from '../../src/types.js';
+import type { AdminBody, ClassesBlob, LessonsBlob, StoredUser } from './shared.js';
+import { VALID_CYCLES, cleanClassSettings, requirePhone, requiredText, updateSnapshotClass, validISO } from './shared.js';
+
+/** Fiche enseignant, classes, cahiers, blocage et notification. */
+
+/* ── Actions de gestion (bloquer / supprimer / notifier un enseignant) ────── */
+
+/** Sous-ensemble des réglages nécessaires à l'impression d'un cahier par la direction. */
+export const pickPrintSettings = (settings: Partial<AppConfig> | undefined, displayName?: string) => {
+    if (!settings) return null;
+    return {
+        establishmentName: settings.establishmentName ?? '',
+        defaultTeacherName: settings.defaultTeacherName?.trim() || displayName?.trim() || '',
+        academyRegion: settings.academyRegion,
+        educationProvince: settings.educationProvince,
+        schoolYearStart: settings.schoolYearStart,
+        printDescriptionMode: settings.printDescriptionMode,
+        printDescriptionTypes: settings.printDescriptionTypes,
+        contentNumbering: settings.contentNumbering,
+        sessionRemarkOverrides: settings.sessionRemarkOverrides,
+        assessmentDates: settings.assessmentDates,
+        manualAssessments: settings.manualAssessments,
+        removedAssessments: settings.removedAssessments,
+        absences: settings.absences,
+        timetable: settings.timetable,
+        timetableClock: settings.timetableClock,
+    };
+};
+
+/**
+ * Documents rédigés et activités du professeur, tels que la direction les relit.
+ * Projection pure (`src/domain/evaluations/adminDocuments.ts`) : source bornée,
+ * documents vides écartés, noms des élèves jamais transportés.
+ */
+export const pickTeacherWork = (settings: Partial<AppConfig> | undefined, classes: ClassInfo[]) => {
+    const classIds = classes.map(classInfo => classInfo.id);
+    return {
+        documents: adminAssessmentDocuments(settings, classIds),
+        activities: adminActivities(settings, classIds),
+    };
+};
+
+export const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
+    const phone = getQueryParam(req, 'phone');
+    if (!phone) throw new HttpError(400, 'Paramètre phone manquant.');
+
+    const redis = await getRedis();
+    const pipeline = redis.pipeline();
+    pipeline.get(KEYS.user(phone));
+    pipeline.get(KEYS.classes(phone));
+    pipeline.hget(KEYS.adminSnapshots, phone);
+    pipeline.get(KEYS.adminMessages(phone));
+    // La fiche relit les documents avec la politique que CE compte applique (indicateur rouge/vert fidèle) :
+    // lue dans le MÊME aller-retour que le reste, pas dans un second.
+    pipeline.get(KEYS.adminEvaluationPolicy);
+    pipeline.get(KEYS.adminEvaluationPolicyForUser(phone));
+    const [user, classesBlob, snapshot, messages, globalPolicy, policyAssignment] = (await pipeline.exec()) as [
+        StoredUser | null,
+        ClassesBlob | null,
+        TeacherSnapshot | null,
+        AdminMessage[] | null,
+        EvaluationPolicy | null,
+        EvaluationPolicyAssignment | null,
+    ];
+
+    if (!user && !snapshot) throw new HttpError(404, 'Enseignant introuvable.');
+
+    const evaluationPolicy = resolveEvaluationPolicy(normalizeEvaluationPolicy(globalPolicy), normalizeEvaluationAssignment(policyAssignment));
+
+    res.status(200).json({
+        evaluationPolicy,
+        user: user
+            ? {
+                id: user.id ?? user.phone,
+                phone: user.phone,
+                email: user.email,
+                nom: user.nom,
+                prenom: user.prenom,
+                createdAt: user.createdAt,
+                // Seul /api/sync tient cette date à jour, dans la projection admin.
+                lastSyncAt: snapshot?.lastSyncAt ?? null,
+                blocked: user.blocked === true,
+            }
+            : null,
+        classes: classesBlob?.classes ?? [],
+        schedules: classesBlob?.schedules ?? [],
+        classMeta: classesBlob?.classMeta ?? {},
+        snapshot: snapshot ?? null,
+        assessmentDates: classesBlob?.settings?.assessmentDates ?? {},
+        classRosters: rostersForClasses(classesBlob?.settings?.classRosters, (classesBlob?.classes ?? []).map(item => item.id)),
+        // Documents rédigés et activités : la direction relit ce que le
+        // professeur a écrit, avec le MÊME moteur de composition que sa feuille.
+        ...pickTeacherWork(classesBlob?.settings, classesBlob?.classes ?? []),
+        printSettings: pickPrintSettings(classesBlob?.settings, snapshot?.displayName),
+        adminMessages: recentAdminMessages(messages),
+    });
+};
+
+/** Rafraîchissement léger des accusés, sans recharger classes ni cahiers. */
+export const handleTeacherMessages = async (req: ApiRequest, res: ApiResponse) => {
+    const phone = getQueryParam(req, 'phone');
+    if (!phone) throw new HttpError(400, 'Paramètre phone manquant.');
+    const redis = await getRedis();
+    const pipeline = redis.pipeline();
+    pipeline.get(KEYS.user(phone));
+    pipeline.get(KEYS.adminMessages(phone));
+    const [user, messages] = (await pipeline.exec()) as [StoredUser | null, AdminMessage[] | null];
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+    res.status(200).json({ adminMessages: recentAdminMessages(messages) });
+};
+
+export const handleSaveClassRoster = async (body: AdminBody, res: ApiResponse) => {
+    assertBodySize(body);
+    const phone = requirePhone(body);
+    const classId = requiredText(body.classId, 'Classe', 120);
+    if (!Array.isArray(body.studentNames) || body.studentNames.length > 200 || body.studentNames.some(name => typeof name !== 'string')) {
+        throw new HttpError(400, 'Liste des élèves invalide (200 noms maximum).');
+    }
+    let names: string[];
+    try { names = normalizeStudentNames(body.studentNames); }
+    catch (error) { throw new HttpError(400, error instanceof Error ? error.message : 'Liste invalide.'); }
+    if (!Number.isSafeInteger(body.expectedRosterVersion) || body.expectedRosterVersion! < 0) throw new HttpError(400, 'Version de liste invalide.');
+    const redis = await getRedis();
+    const write = await beginAccountWrite(redis, phone);
+    const blob = await redis.get<ClassesBlob>(KEYS.classes(phone));
+    if (!blob?.classes.some(item => item.id === classId) || blob.deletedClasses?.[classId]) throw new HttpError(404, 'Classe introuvable pour cet enseignant.');
+    const current = blob.settings?.classRosters?.[classId];
+    if ((current?.version ?? 0) !== body.expectedRosterVersion) throw new HttpError(409, 'La liste a été modifiée. Rechargez la fiche avant de publier.');
+    const roster = { names, updatedAt: new Date().toISOString(), version: (current?.version ?? 0) + 1, ...(current?.appliedEdits ? { appliedEdits: current.appliedEdits } : {}) };
+    write.set(KEYS.classes(phone), {
+        ...blob, updatedAt: roster.updatedAt,
+        settings: { ...blob.settings, classRosters: { ...blob.settings?.classRosters, [classId]: roster } },
+    });
+    await write.exec();
+    res.status(200).json({ ok: true, classId, roster });
+};
+
+export const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    if (typeof body.classId !== 'string' || typeof body.assessmentId !== 'string' || !body.classId || !body.assessmentId
+        || body.classId.length > 120 || body.assessmentId.length > 180) throw new HttpError(400, 'Classe et devoir requis.');
+    if (body.date && !validISO(body.date)) throw new HttpError(400, 'Date de devoir invalide.');
+    const redis = await getRedis();
+    const write = await beginAccountWrite(redis, phone);
+    const blob = await redis.get<ClassesBlob>(KEYS.classes(phone));
+    if (!blob) throw new HttpError(404, 'Données de l\'enseignant introuvables.');
+    if (!blob.classes.some(info => info.id === body.classId)) throw new HttpError(404, 'Classe introuvable.');
+    const assessmentDates = { ...(blob.settings?.assessmentDates ?? {}) };
+    const forClass = { ...(assessmentDates[body.classId] ?? {}) };
+    if (body.date) forClass[body.assessmentId] = body.date;
+    else delete forClass[body.assessmentId];
+    assessmentDates[body.classId] = forClass;
+    const now = new Date().toISOString();
+    write.set(KEYS.classes(phone), {
+        ...blob,
+        settings: { ...(blob.settings ?? {}), assessmentDates },
+        settingsUpdatedAt: now,
+        // Filigrane : la date imposée résiste à un appareil resté hors ligne,
+        // jusqu'à ce que le professeur pousse des réglages plus récents.
+        adminAssessmentDatesUpdatedAt: { ...(blob.adminAssessmentDatesUpdatedAt ?? {}), [body.classId]: now },
+        updatedAt: now,
+    });
+    await write.exec();
+    res.status(200).json({ ok: true, assessmentDates });
+};
+
+/** Création ou édition d'une classe affectée à l'enseignant sélectionné. */
+export const handleUpsertTeacherClass = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    const input = body.classInfo;
+    if (!input || typeof input !== 'object') throw new HttpError(400, 'Informations de classe manquantes.');
+
+    const redis = await getRedis();
+    const write = await beginAccountWrite(redis, phone);
+    const pipeline = redis.pipeline();
+    pipeline.get(KEYS.user(phone));
+    pipeline.get(KEYS.classes(phone));
+    pipeline.hget(KEYS.adminSnapshots, phone);
+    const [user, storedBlob, storedSnapshot] = (await pipeline.exec()) as [
+        StoredUser | null,
+        ClassesBlob | null,
+        TeacherSnapshot | null,
+    ];
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+
+    const existingClasses = storedBlob?.classes ?? [];
+    const requestedId = typeof input.id === 'string' && input.id.trim() ? input.id.trim() : undefined;
+    const existing = requestedId ? existingClasses.find(item => item.id === requestedId) : undefined;
+    if (requestedId && !existing) throw new HttpError(404, 'Classe introuvable.');
+
+    const now = new Date().toISOString();
+    const identity: Partial<Pick<ClassInfo, 'level' | 'branch' | 'group'>> = {};
+    for (const field of ['level', 'branch', 'group'] as const) {
+        const value = input[field] ?? (input.name === existing?.name ? existing?.[field] : undefined);
+        if (value === undefined) continue;
+        if (typeof value !== 'string' || value.length > 120) throw new HttpError(400, `Identité de classe invalide (${field}).`);
+        if (value.trim()) identity[field] = value.trim();
+    }
+    const classInfo: ClassInfo = {
+        ...identity,
+        id: requestedId ?? randomUUID(),
+        name: requiredText(input.name, 'Nom de classe'),
+        subject: requiredText(input.subject, 'Matière'),
+        cycle: VALID_CYCLES.has(input.cycle as Cycle) ? input.cycle as Cycle : (existing?.cycle ?? 'college'),
+        // Nom d'usage du profil s'il existe : la classe créée par la direction
+        // doit porter le même nom que celui affiché partout pour ce professeur.
+        teacherName: storedBlob?.settings?.defaultTeacherName?.trim() || `${user.prenom} ${user.nom}`.trim(),
+        createdAt: existing?.createdAt ?? now,
+        metadataUpdatedAt: new Date(Math.max(Date.now(), Date.parse(existing?.metadataUpdatedAt ?? '') + 1 || 0)).toISOString(),
+        color: '',
+    };
+    const classes = existing
+        ? existingClasses.map(item => item.id === classInfo.id ? classInfo : item)
+        : [...existingClasses, classInfo];
+    const adminClassOverrides = { ...(storedBlob?.adminClassOverrides ?? {}), [classInfo.id]: classInfo };
+    const classMeta = { ...(storedBlob?.classMeta ?? {}), ...(!existing ? { [classInfo.id]: { updatedAt: now } } : {}) };
+    const deletedClasses = { ...(storedBlob?.deletedClasses ?? {}) };
+    delete deletedClasses[classInfo.id];
+
+    write.set(KEYS.classes(phone), {
+        classes,
+        schedules: storedBlob?.schedules ?? [],
+        timetable: storedBlob?.timetable ?? [],
+        settings: storedBlob?.settings ?? {},
+        settingsUpdatedAt: storedBlob?.settingsUpdatedAt ?? '',
+        classMeta,
+        adminClassOverrides,
+        adminAssessmentDatesUpdatedAt: storedBlob?.adminAssessmentDatesUpdatedAt ?? {},
+        adminLessonsUpdatedAt: storedBlob?.adminLessonsUpdatedAt ?? {},
+        deletedClasses,
+        updatedAt: now,
+    } satisfies ClassesBlob);
+    if (!existing) {
+        write.set(KEYS.lessons(phone, classInfo.id), {
+            lessonsData: withStarterDiagnostic([], storedBlob?.settings?.applicationLocale ?? 'fr'), updatedAt: now,
+        });
+    }
+    const nextSnapshot = updateSnapshotClass(storedSnapshot, classInfo, now);
+    if (nextSnapshot) write.hset(KEYS.adminSnapshots, { [phone]: nextSnapshot });
+    await write.exec();
+
+    res.status(200).json({ ok: true, classInfo, created: !existing });
+};
+
+/** Suppression d'une classe depuis la direction, avec tombstone pour les appareils hors ligne. */
+export const handleDeleteTeacherClass = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    const classId = requiredText(body.classId, 'Classe');
+    const redis = await getRedis();
+    const write = await beginAccountWrite(redis, phone);
+    const pipeline = redis.pipeline();
+    pipeline.get(KEYS.user(phone));
+    pipeline.get(KEYS.classes(phone));
+    pipeline.hget(KEYS.adminSnapshots, phone);
+    const [user, storedBlob, storedSnapshot] = (await pipeline.exec()) as [
+        StoredUser | null,
+        ClassesBlob | null,
+        TeacherSnapshot | null,
+    ];
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+    if (!storedBlob?.classes.some(item => item.id === classId)) throw new HttpError(404, 'Classe introuvable.');
+
+    const now = new Date().toISOString();
+    const classes = storedBlob.classes.filter(item => item.id !== classId);
+    const classMeta = { ...(storedBlob.classMeta ?? {}) };
+    delete classMeta[classId];
+    const adminClassOverrides = { ...(storedBlob.adminClassOverrides ?? {}) };
+    delete adminClassOverrides[classId];
+    const adminLessonsUpdatedAt = { ...(storedBlob.adminLessonsUpdatedAt ?? {}) };
+    delete adminLessonsUpdatedAt[classId];
+    const adminAssessmentDatesUpdatedAt = { ...(storedBlob.adminAssessmentDatesUpdatedAt ?? {}) };
+    delete adminAssessmentDatesUpdatedAt[classId];
+    const deletedClasses = { ...(storedBlob.deletedClasses ?? {}), [classId]: { deletedAt: now } };
+    const nextSnapshot = storedSnapshot
+        ? { ...storedSnapshot, classes: storedSnapshot.classes.filter(item => item.id !== classId) }
+        : null;
+
+    write.set(KEYS.classes(phone), {
+        ...storedBlob,
+        classes,
+        schedules: (storedBlob.schedules ?? []).filter(entry => entry.classId !== classId),
+        timetable: (storedBlob.timetable ?? []).filter(entry => entry.classId !== classId),
+        settings: cleanClassSettings(storedBlob.settings, classId),
+        settingsUpdatedAt: now,
+        classMeta,
+        adminClassOverrides,
+        adminAssessmentDatesUpdatedAt,
+        adminLessonsUpdatedAt,
+        deletedClasses,
+        updatedAt: now,
+    } satisfies ClassesBlob);
+    write.del(KEYS.lessons(phone, classId));
+    if (nextSnapshot) write.hset(KEYS.adminSnapshots, { [phone]: nextSnapshot });
+    await write.exec();
+
+    res.status(200).json({ ok: true, classId });
+};
+
+/**
+ * Cahier complet d'une classe (lecture seule) : permet à l'admin d'inspecter
+ * les chapitres, la dernière séance saisie et son contenu exact.
+ */
+export const handleClassLessons = async (req: ApiRequest, res: ApiResponse) => {
+    const phone = getQueryParam(req, 'phone');
+    const classId = getQueryParam(req, 'classId');
+    if (!phone || !classId) throw new HttpError(400, 'Paramètres phone et classId requis.');
+    const redis = await getRedis();
+    const blob = await redis.get<{ lessonsData: unknown; updatedAt: string }>(KEYS.lessons(phone, classId));
+    if (!blob) throw new HttpError(404, 'Aucun cahier synchronisé pour cette classe.');
+    res.status(200).json(blob);
+};
+
+/**
+ * Importe un JSON dans le seul cahier explicitement sélectionné. La classe est
+ * vérifiée côté serveur : un identifiant fabriqué ne peut donc pas créer ou
+ * écraser un cahier hors de la fiche affichée.
+ */
+export const handleImportClassLessons = async (body: AdminBody, res: ApiResponse) => {
+    assertBodySize(body);
+    const phone = requirePhone(body);
+    const classId = requiredText(body.classId, 'Classe');
+    if (body.importMode !== 'replace' && body.importMode !== 'append') {
+        throw new HttpError(400, 'Mode d’import invalide.');
+    }
+    if (body.expectedUpdatedAt !== null && typeof body.expectedUpdatedAt !== 'string') {
+        throw new HttpError(400, 'Version du cahier manquante. Rechargez la fiche puis réessayez.');
+    }
+
+    let prepared: ReturnType<typeof prepareImportedLessons>;
+    try {
+        prepared = prepareImportedLessons(body.lessonsPayload);
+    } catch (error) {
+        throw new HttpError(400, error instanceof Error ? error.message : 'Structure JSON invalide.');
+    }
+    if (prepared.lessonsData.length === 0) {
+        throw new HttpError(400, 'Le JSON ne contient aucun bloc de cours exploitable.');
+    }
+
+    const redis = await getRedis();
+    const write = await beginAccountWrite(redis, phone);
+    const lookup = redis.pipeline();
+    lookup.get(KEYS.user(phone));
+    lookup.get(KEYS.classes(phone));
+    lookup.get(KEYS.lessons(phone, classId));
+    lookup.hget(KEYS.adminSnapshots, phone);
+    const [user, classesBlob, existingLessons, storedSnapshot] = (await lookup.exec()) as [
+        StoredUser | null,
+        ClassesBlob | null,
+        LessonsBlob | null,
+        TeacherSnapshot | null,
+    ];
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+    const classInfo = classesBlob?.classes.find(item => item.id === classId);
+    if (!classesBlob || !classInfo || classesBlob.deletedClasses?.[classId]) {
+        throw new HttpError(404, 'Classe introuvable pour cet enseignant.');
+    }
+    if ((existingLessons?.updatedAt ?? null) !== body.expectedUpdatedAt) {
+        throw new HttpError(409, 'Ce cahier a changé depuis son ouverture. Rechargez-le avant de confirmer l’import.');
+    }
+
+    const { lessonsData, contentDirection } = composeAdminLessonImport(prepared, existingLessons, body.importMode);
+    const now = new Date().toISOString();
+
+    // La taille finale compte aussi l'ancien cahier en mode ajout.
+    assertBodySize({ lessonsData, contentDirection, updatedAt: now });
+
+    const stats = summarizeImportedLessons(lessonsData);
+    const previousClassSnapshot = storedSnapshot?.classes.find(item => item.id === classId);
+    const schedule = classesBlob.schedules?.find(item => item.classId === classId);
+    const nextClassSnapshot: ClassSnapshot = {
+        id: classInfo.id,
+        name: classInfo.name,
+        subject: classInfo.subject,
+        cycle: classInfo.cycle,
+        totalItems: stats.totalItems,
+        plannedCount: stats.plannedCount,
+        completionRate: stats.completionRate,
+        sessionsCount: stats.sessionsCount,
+        lastDate: stats.lastDate,
+        weekdays: previousClassSnapshot?.weekdays ?? schedule?.slots.map(slot => slot.weekday) ?? [],
+        sessionsPerWeek: previousClassSnapshot?.sessionsPerWeek
+            ?? (schedule ? sumBy(schedule.slots, slot => slot.sessions ?? 1) : 0),
+        updatedAt: now,
+    };
+    const snapshotBase: TeacherSnapshot = storedSnapshot ?? {
+        phone,
+        establishmentName: typeof classesBlob.settings?.establishmentName === 'string'
+            ? classesBlob.settings.establishmentName.trim().slice(0, 200)
+            : '',
+        contactPhone: user.phone,
+        ...(user.email ? { email: user.email } : {}),
+        blocked: user.blocked === true,
+        pendingMessages: 0,
+        pendingRequests: 0,
+        lastMessageAt: null,
+        nom: user.nom,
+        prenom: user.prenom,
+        lastSyncAt: null, // aucun push enseignant encore observé
+        classes: [],
+    };
+    const nextSnapshot: TeacherSnapshot = {
+        ...snapshotBase,
+        classes: snapshotBase.classes.some(item => item.id === classId)
+            ? snapshotBase.classes.map(item => item.id === classId ? nextClassSnapshot : item)
+            : [...snapshotBase.classes, nextClassSnapshot],
+    };
+
+    // La révision vérifiée atomiquement protège aussi la lecture expectedUpdatedAt.
+    write.set(KEYS.lessons(phone, classId), { lessonsData, contentDirection, updatedAt: now } satisfies LessonsBlob);
+    write.set(KEYS.classes(phone), {
+        ...classesBlob,
+        classMeta: { ...(classesBlob.classMeta ?? {}), [classId]: { updatedAt: now } },
+        adminLessonsUpdatedAt: { ...(classesBlob.adminLessonsUpdatedAt ?? {}), [classId]: now },
+        updatedAt: now,
+    } satisfies ClassesBlob);
+    write.hset(KEYS.adminSnapshots, { [phone]: nextSnapshot });
+    await write.exec();
+
+    res.status(200).json({
+        ok: true,
+        classId,
+        mode: body.importMode,
+        importedTopLevel: prepared.report.topLevelCount,
+        importedItems: prepared.report.itemCount,
+        totalTopLevel: lessonsData.length,
+        contentDirection,
+        updatedAt: now,
+    });
+};
+
+/* ── Actions de gestion (bloquer / supprimer / notifier un enseignant) ────── */
+
+/** Bloque ou débloque un compte : le login est refusé tant que blocked=true. */
+export const handleBlockTeacher = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    const redis = await getRedis();
+    // Contrat d'écriture de compte : la révision est lue AVANT toute lecture
+    // dont dépend l'écriture. Un `redis.set` direct pouvait être écrasé par un
+    // push ou une inscription concurrents, et perdre le blocage.
+    const write = await beginAccountWrite(redis, phone);
+    const [user, storedSnapshot] = await Promise.all([
+        redis.get<StoredUser & { passwordHash?: string }>(KEYS.user(phone)),
+        redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, phone),
+    ]);
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+    // Jamais de blocage « par défaut » : un champ absent ou mal typé ne doit pas suspendre un compte.
+    if (typeof body.blocked !== 'boolean') throw new HttpError(400, 'Réglage de blocage invalide.');
+    const blocked = body.blocked;
+    write.set(KEYS.user(phone), { ...user, blocked });
+    if (storedSnapshot) {
+        write.hset(KEYS.adminSnapshots, { [phone]: { ...storedSnapshot, blocked } });
+    }
+    await write.exec();
+    if (isFirestoreStore(redis)) await firebaseAuth().updateUser(accountFirebaseUid(user), { disabled: blocked });
+    res.status(200).json({ ok: true, blocked });
+};
+
+/** Suppression définitive : compte + classes + tous les cahiers + snapshot + push. */
+export const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    const redis = await getRedis();
+    const pipeline = await beginAccountWrite(redis, phone);
+    const [classesBlob, user] = await Promise.all([
+        redis.get<ClassesBlob>(KEYS.classes(phone)),
+        redis.get<StoredUser>(KEYS.user(phone)),
+    ]);
+
+    pipeline.del(KEYS.user(phone));
+    pipeline.del(KEYS.classes(phone));
+    for (const cls of classesBlob?.classes ?? []) {
+        pipeline.del(KEYS.lessons(phone, cls.id));
+    }
+    pipeline.hdel(KEYS.adminSnapshots, phone);
+    pipeline.del(KEYS.adminMessages(phone));
+    pipeline.del(KEYS.inboxClock(phone));
+    pipeline.del(KEYS.adminTimetableClockForUser(phone));
+    pipeline.del(KEYS.adminEvaluationPolicyForUser(phone));
+    await pipeline.exec();
+    await deleteNativeDevices(redis, phone);
+    if (isFirestoreStore(redis)) {
+        await firebaseAuth().deleteUser(user ? accountFirebaseUid(user) : teacherUid(phone)).catch(error => {
+            if (error.code !== 'auth/user-not-found') throw error;
+        });
+    }
+    res.status(200).json({ ok: true, deletedClasses: classesBlob?.classes.length ?? 0 });
+};
+
+/** Notification push directe de l'admin vers le téléphone d'un enseignant. */
+export const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    const content = typeof body.message === 'string' ? body.message.trim().slice(0, 1_200) : '';
+    if (!content) throw new HttpError(400, 'Message manquant.');
+    const title = typeof body.title === 'string' && body.title.trim()
+        ? body.title.trim().slice(0, 80)
+        : 'Message de la direction';
+
+    const redis = await getRedis();
+    // Même contrat que l'accusé de lecture côté professeur (api/messages.ts) :
+    // sans révision partagée, une publication simultanée à un accusé pouvait
+    // perdre l'un des deux messages.
+    const write = await beginAccountWrite(redis, phone);
+    const [user, storedMessages, storedSnapshot] = await Promise.all([
+        redis.get<StoredUser>(KEYS.user(phone)),
+        redis.get<AdminMessage[]>(KEYS.adminMessages(phone)),
+        redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, phone),
+    ]);
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+
+    const previousMessages = normalizeAdminMessages(storedMessages);
+    const request = body.replyTo === undefined ? undefined : previousMessages.find(item => item.id === body.replyTo && item.sender === 'teacher' && !item.event);
+    if (body.replyTo !== undefined && !request) throw new HttpError(404, 'Demande introuvable pour cet enseignant.');
+    const message: AdminMessage = {
+        sender: 'admin',
+        ...(request ? { replyTo: request.id, classId: request.classId, className: request.className } : {}),
+        id: `admin-${randomUUID()}`,
+        title,
+        body: content,
+        createdAt: new Date().toISOString(),
+    };
+    const messages = appendConversationMessage(previousMessages.map(item => item.id === request?.id ? { ...item, answeredAt: message.createdAt } : item), message);
+    write.set(KEYS.adminMessages(phone), messages);
+    if (storedSnapshot) {
+        write.hset(KEYS.adminSnapshots, {
+            [phone]: {
+                ...storedSnapshot,
+                pendingMessages: pendingAdminMessages(messages).length,
+                pendingRequests: pendingTeacherRequests(messages).length,
+                lastMessageAt: messages[0]?.createdAt ?? null,
+            },
+        });
+    }
+    await write.exec();
+
+    const { unreadCount: badgeCount, badgeUpdatedAt: timestamp } = await readInboxSnapshot(redis, phone);
+    const nativeSent = await sendNativeToOwner(phone, { kind: 'admin', badgeCount, timestamp }).catch(() => 0);
+    // Le message reste disponible dans l'application même sans appareil joignable.
+    res.status(200).json({ ok: true, sent: nativeSent, nativeSent, message });
+};

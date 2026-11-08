@@ -12,7 +12,6 @@ import { messages as common } from './common';
 import { messages as confirm } from './confirm';
 import { messages as contentType } from './contentType';
 import { messages as dashboard } from './dashboard';
-import { messages as dateModal } from './dateModal';
 import { messages as dateReview } from './dateReview';
 import { messages as dateWarning } from './dateWarning';
 import { messages as descriptionVisibility } from './descriptionVisibility';
@@ -54,7 +53,6 @@ export const enMessages: Record<string, string> = {
   ...confirm,
   ...contentType,
   ...dashboard,
-  ...dateModal,
   ...dateReview,
   ...dateWarning,
   ...descriptionVisibility,

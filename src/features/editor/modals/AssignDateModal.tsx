@@ -113,7 +113,7 @@ interface RemarqueSimplifieeProps {
   t: (key: string, values?: Record<string, string | number>) => string;
 }
 
-export const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
+const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
   remark,
   onRemarkChange,
   textareaRef,

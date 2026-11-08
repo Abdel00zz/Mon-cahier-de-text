@@ -31,7 +31,7 @@ export const HAND_TYPED_ITEM = /^\s*(?:([0-9\u0660-\u0669\u06F0-\u06F9]+)[.)]|[-
  *  état partagé entre deux appels (le `lastIndex` ne fuit pas). */
 const LATEX_STRUCTURE = /\\(begin|end)\{([a-zA-Z]+\*?)\}|\\item\b[ \t]*(?:\[([^\]]*)\])?/g;
 
-export type LatexToken =
+type LatexToken =
   | { kind: 'open'; name: string }
   | { kind: 'close'; name: string }
   | { kind: 'item'; label?: string }

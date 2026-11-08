@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ChevronDown, LineChart } from 'lucide-react';
 import { fetchClassLessons } from '../api';
+import { formatDateTimeFr, formatLongDate } from '../formatAdminDate';
 import { MathText } from '../../components/ui/math-text';
 import { textDirectionAttribute } from '../../lib/text/textDirection';
 import { getBundledCalendar, todayInMorocco } from '../../domain/calendar/calendar';
@@ -23,21 +24,6 @@ const shortDate = (iso: string): string => {
     const [year, month, day] = iso.split('-').map(Number);
     const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-};
-
-const longDate = (iso: string | null): string => {
-    if (!iso) return 'aucune';
-    const [year, month, day] = iso.split('-').map(Number);
-    return new Date(year, month - 1, day).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-};
-
-const formatDateTimeFr = (iso: string | null): string => {
-    if (!iso) return 'date inconnue';
-    try {
-        return new Date(iso).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-    } catch {
-        return iso;
-    }
 };
 
 const Stat: React.FC<{ label: string; value: string; hint?: string; tone?: 'default' | 'success' | 'warning' }> = ({ label, value, hint, tone = 'default' }) => (
@@ -129,7 +115,7 @@ export const ClassProgression: React.FC<{ phone: string; classId: string; snapsh
                                 <>
                                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                         <Stat label="Séances attendues" value={String(report.expectedSessions)} hint="depuis la rentrée" />
-                                        <Stat label="Séances saisies" value={String(report.actualSessions)} hint={`depuis le ${longDate(report.firstDate)}`} />
+                                        <Stat label="Séances saisies" value={String(report.actualSessions)} hint={`depuis le ${formatLongDate(report.firstDate)}`} />
                                         <Stat
                                             label="Écart"
                                             value={report.gap === 0 ? 'à jour' : `−${report.gap}`}

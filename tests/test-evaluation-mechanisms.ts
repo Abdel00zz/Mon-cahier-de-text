@@ -66,9 +66,6 @@ test('fenêtres des éléments : la colle a son suivi, une liste vidée ne laiss
   assert.match(modals, /oralFor\?\.planned\.type === 'colle' \? 'evaluations\.colle\.title'\s*: oralFor\?\.planned\.type === 'oral' \? 'evaluations\.oral\.title' : 'evaluations\.track\.title'/, 'la colle et l’oral portent leur nom, tout autre devoir le titre commun');
   assert.match(modals, /context=\{submissionsFor \? contextOf\(selectedClassDisplayName, submissionsLabel\)/, 'la remise nomme son devoir maison');
   assert.match(modals, /const contextOf = \(\.\.\.parts: string\[\]\) => parts\.filter\(Boolean\)\.map\(bidiIsolate\)\.join\(' · '\)/, 'classe et devoir isolés : l’arabe et le latin ne se réordonnent pas');
-  const editor = readFileSync('src/features/evaluations/components/ManualAssessmentEditor.tsx', 'utf8');
-  assert.match(editor, /if \(derived && !semesterTouched\) setSemestre\(derived\)/, 'le semestre suit la date tant qu’il n’est pas choisi à la main');
-  assert.match(editor, /item\.type === type && item\.num === numValue && item\.semestre === semestre/, 'un numéro ne se répète pas dans un semestre');
   const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
   // Plus de pictogramme sur les commandes de ligne : la colle comme l’oral s’ouvrent par « Suivi ».
   assert.doesNotMatch(view, /<Presentation|<Mic\b/, 'la ligne de colle n’affiche plus aucun pictogramme');

@@ -14,7 +14,6 @@ import { ClassGroupWatermark } from './ClassGroupWatermark';
 import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
 import { useDevice } from '@/hooks/useDevice';
 import type { DepartmentPalette } from './departmentPalette';
-import './classCardLoading.css';
 
 interface ClassCardProps {
     classInfo: ClassInfo;

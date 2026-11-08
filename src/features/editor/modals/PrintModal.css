@@ -2,6 +2,29 @@
    PrintModal – Micro-interaction de sortie ticket (Receipt Printer #1)
    ══════════════════════════════════════════════════════════════ */
 
+/* ── Pied de modale : le CTA d'impression au bord DROIT physique ──
+   Avant : `justify-end` logique plaçait le bouton à GAUCHE en interface
+   arabe (RTL). `justify-content: right` est physique : le bouton reste
+   à droite quelle que soit la direction d'écriture (le repli flex-end
+   couvre les vieux moteurs en LTR). */
+.print-settings-modal .print-footer-actions {
+  justify-content: flex-end;   /* repli LTR */
+  justify-content: right;      /* physique, insensible à dir */
+}
+
+/* ── CTA d'impression : voix IBM Plex Sans Arabic (600) ──
+   Plus nette et plus « action » que Readex Pro pour un libellé court,
+   arabe comme latin (la famille couvre les deux écritures ; poids 600
+   réellement embarqué dans fonts.css). Chiffres tabulaires pour que
+   « · 3 séances » ne saute pas au re-render. */
+.print-settings-modal .print-cta {
+  font-family: 'IBM Plex Sans Arabic', 'Readex Pro', var(--font-sans);
+  font-weight: 600;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+[dir='rtl'] .print-settings-modal .print-cta { letter-spacing: 0 !important; }
+
 .print-settings-modal .print-option-row {
   display: flex;
   align-items: center;

@@ -1,22 +1,15 @@
 import "./landing.css";
-import { useId, useMemo, type ReactNode } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useId, type KeyboardEvent, type ReactNode } from "react";
 import {
   formatLocalizedClassDisplayName,
   formatLocalizedSubjectDisplayName,
-  CLASS_LEVELS_BY_CYCLE,
   SUBJECTS,
   classLevelGroupsForCycle,
   formatClassLevelGroupLabel,
 } from "@/constants";
 import {
   registrationSetupFromDraft,
+  levelsForDraft,
   type RegistrationDraft,
   type RegistrationSetup,
 } from "./registrationSetup";
@@ -26,7 +19,6 @@ import {
 } from "@/domain/classes/classGroup";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { Cycle } from "@/types";
 import { BookOpen, Check, GraduationCap, School, ShieldCheck } from '@/components/ui/icons';
 import './authMotion.css';
@@ -45,26 +37,52 @@ const CYCLE_LABELS = {
   },
 };
 
+/* Cycle, branche et classe sont des choix exclusifs : vraie sémantique
+ * radio (aria-checked, tabindex itinérant, flèches — inversées en RTL). */
+const RADIO_KEYS = new Set(["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"]);
+
+const handleRadioKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+  if (!RADIO_KEYS.has(event.key)) return;
+  const group = event.currentTarget.closest('[role="radiogroup"]');
+  const radios = group
+    ? Array.from(group.querySelectorAll<HTMLButtonElement>('[role="radio"]'))
+    : [];
+  if (!radios.length) return;
+  event.preventDefault();
+  const rtl = Boolean(event.currentTarget.closest('[dir="rtl"]'));
+  const index = radios.indexOf(event.currentTarget);
+  let next = index;
+  if (event.key === "Home") next = 0;
+  else if (event.key === "End") next = radios.length - 1;
+  else {
+    const forward = (event.key === "ArrowRight" || event.key === "ArrowDown") !== rtl;
+    next = (index + (forward ? 1 : -1) + radios.length) % radios.length;
+  }
+  const target = radios[next];
+  target?.focus();
+  if (target && target !== event.currentTarget) target.click();
+};
+
 // Keep the existing choice control stable between renders (focus is preserved).
 const Chip = ({
   active,
+  tabbable,
   onClick,
   children,
 }: {
   active: boolean;
+  tabbable: boolean;
   onClick: () => void;
   children: ReactNode;
 }) => (
   <button
     type="button"
+    role="radio"
+    aria-checked={active}
+    tabIndex={tabbable ? 0 : -1}
+    onKeyDown={handleRadioKeyDown}
     onClick={onClick}
-    aria-pressed={active}
-    className={cn(
-      "auth-choice inline-flex min-h-11 max-w-full items-center justify-center rounded-md border px-3 py-2 text-center text-sm font-bold focus-visible:outline-2 transition-all duration-150 active:scale-[0.97]",
-      active
-        ? "bg-primary/10 border-primary/50 text-primary"
-        : "bg-card border-border text-foreground hover:bg-muted",
-    )}
+    className="auth-choice"
   >
     {children}
   </button>
@@ -91,16 +109,10 @@ export function RegistrationOnboarding({
   const { cycle, levelGroup, level, subject, group } = draft;
   const update = (patch: Partial<RegistrationDraft>) =>
     onChange({ ...draft, ...patch });
-  const activeLevelGroups = useMemo(
-    () => (cycle ? classLevelGroupsForCycle(cycle) : []),
-    [cycle],
-  );
-  const activeLevels = useMemo(() => {
-    if (cycle === "college") return CLASS_LEVELS_BY_CYCLE.college;
-    return (
-      activeLevelGroups.find((item) => item.key === levelGroup)?.levels ?? []
-    );
-  }, [cycle, levelGroup, activeLevelGroups]);
+  const activeLevelGroups = cycle
+    ? classLevelGroupsForCycle(cycle)
+    : [];
+  const activeLevels = levelsForDraft(draft);
   const hasBranch = Boolean(
     cycle && cycle !== "college" && activeLevelGroups.length,
   );
@@ -108,6 +120,7 @@ export function RegistrationOnboarding({
   const invalidGroup = normalizeGroupNumber(group) === null;
   const groupLabel = ar ? "رقم الفوج" : "N° de groupe";
   const subjectLabel = ar ? "المادة الدراسية" : "Matière";
+  const subjectPlaceholder = ar ? "اختر المادة..." : "Choisir la matière...";
   const guidance = !cycle ? (ar ? 'اختر السلك الذي تدرّس فيه' : 'Choisissez votre cycle d’enseignement')
     : !level ? (ar ? 'اختر مستوى قسمك' : 'Choisissez le niveau de votre classe')
     : !subject ? (ar ? 'اختر المادة الدراسية' : 'Choisissez votre matière')
@@ -122,13 +135,10 @@ export function RegistrationOnboarding({
       </ol>
       <div className="registration-hero">
       <div>
-      <h1
-        tabIndex={-1}
-        className="text-2xl font-semibold leading-snug tracking-tight outline-none sm:text-3xl"
-      >
+      <h1 tabIndex={-1}>
         {ar ? "لنُعِدّ قسمك الأول" : "Préparons votre première classe."}
       </h1>
-      <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
+      <p className="text-muted-foreground">
         {ar
           ? "اختر قسمك ومادتك، ثم أنشئ حسابك."
           : "Choisissez votre classe et votre matière, puis créez votre compte."}
@@ -163,7 +173,7 @@ export function RegistrationOnboarding({
         }}
       >
         <div className="space-y-5 sm:space-y-6">
-          <div role="group" aria-labelledby={id + "-cycle"}>
+          <div role="radiogroup" aria-labelledby={id + "-cycle"}>
             <p
               id={id + "-cycle"}
               className="mb-3 text-sm font-bold text-muted-foreground"
@@ -171,12 +181,13 @@ export function RegistrationOnboarding({
               {ar ? "1. السلك التعليمي" : "1. Cycle"}
             </p>
             <div className="registration-cycle-grid">
-              {CYCLES.map((value) => {
+              {CYCLES.map((value, index) => {
                 const Icon = value === 'college' ? School : value === 'lycee' ? BookOpen : GraduationCap;
                 return (
                 <Chip
                   key={value}
                   active={cycle === value}
+                  tabbable={cycle ? cycle === value : index === 0}
                   onClick={() =>
                     cycle !== value &&
                     update({
@@ -198,7 +209,7 @@ export function RegistrationOnboarding({
             <div
               key={cycle}
               className="auth-reveal"
-              role="group"
+              role="radiogroup"
               aria-labelledby={id + "-branch"}
             >
               <p
@@ -208,10 +219,11 @@ export function RegistrationOnboarding({
                 {ar ? "2. الشعبة أو المسلك" : "2. Branche"}
               </p>
               <div className="flex flex-wrap justify-center gap-2">
-                {activeLevelGroups.map((item) => (
+                {activeLevelGroups.map((item, index) => (
                   <Chip
                     key={item.key}
                     active={levelGroup === item.key}
+                    tabbable={levelGroup ? levelGroup === item.key : index === 0}
                     onClick={() =>
                       levelGroup !== item.key &&
                       update({ levelGroup: item.key, level: "", subject: "" })
@@ -227,7 +239,7 @@ export function RegistrationOnboarding({
             <div
               key={cycle + levelGroup}
               className="auth-reveal"
-              role="group"
+              role="radiogroup"
               aria-labelledby={id + "-level"}
             >
               <p
@@ -243,10 +255,11 @@ export function RegistrationOnboarding({
                     : "2. Classe"}
               </p>
               <div className="flex flex-wrap justify-center gap-2">
-                {activeLevels.map((value) => (
+                {activeLevels.map((value, index) => (
                   <Chip
                     key={value}
                     active={level === value}
+                    tabbable={level ? level === value : index === 0}
                     onClick={() => update({ level: value })}
                   >
                     {formatLocalizedClassDisplayName(value, locale, {
@@ -266,33 +279,23 @@ export function RegistrationOnboarding({
                 >
                   {subjectLabel}
                 </label>
-                <Select
-                  value={subject}
-                  onValueChange={(value) => update({ subject: value })}
-                >
-                  <SelectTrigger
+                {/* Select natif : fiable sur mobile pour une longue liste de matières. */}
+                <div className="relative">
+                  <select
                     id={id + "-subject"}
-                    aria-label={subjectLabel}
-                    className="min-h-11 w-full rounded-md border-border bg-background text-base"
+                    value={subject}
+                    onChange={(event) => update({ subject: event.target.value })}
+                    className="registration-native-select"
                   >
-                    <SelectValue
-                      placeholder={
-                        ar ? "اختر المادة..." : "Choisir la matière..."
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[40vh] rounded-md">
+                    <option value="" disabled>{subjectPlaceholder}</option>
                     {SUBJECTS.map((value) => (
-                      <SelectItem
-                        key={value}
-                        value={value}
-                        className="min-h-11 text-sm font-semibold"
-                      >
+                      <option key={value} value={value}>
                         {formatLocalizedSubjectDisplayName(value, locale)}
-                      </SelectItem>
+                      </option>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </select>
+                  <svg className="registration-select-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5.5 7.5 4.5 5 4.5-5" /></svg>
+                </div>
               </div>
               {subject && (
                 <div className="auth-reveal w-28 shrink-0">
@@ -323,11 +326,16 @@ export function RegistrationOnboarding({
             </div>
           )}
         </div>
-        {prepared && <div className="registration-preview" role="status" aria-live="polite">
-          <BookOpen size={24} />
-          <div><p>{formatLocalizedClassDisplayName(prepared.className, locale)}</p><span>{formatLocalizedSubjectDisplayName(prepared.subject, locale)}</span></div>
-          <Check size={18} />
-        </div>}
+        {/* Région live permanente : la visibilité change, jamais le montage. */}
+        <div className="registration-preview" role="status" hidden={!prepared}>
+          {prepared && (
+            <>
+              <BookOpen size={24} />
+              <div><p>{formatLocalizedClassDisplayName(prepared.className, locale)}</p><span>{formatLocalizedSubjectDisplayName(prepared.subject, locale)}</span></div>
+              <Check size={18} />
+            </>
+          )}
+        </div>
       </form>
         <div className="registration-dock">
           <p aria-live="polite">{guidance}</p>

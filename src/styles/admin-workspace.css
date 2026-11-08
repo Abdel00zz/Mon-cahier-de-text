@@ -26,17 +26,29 @@
   --accent-foreground: 240 8% 12%;
   --destructive: 4 90% 58%;           /* #FF3B30 */
   --warning: 35 100% 50%;             /* #FF9500 */
+  --success: 145 62% 30%;             /* #248A3D — vert Apple (Settings) */
   --border: 240 10% 91%;              /* hairline */
   --input: 240 10% 91%;
   --ring: 211 100% 45%;
   --clr-bg: hsl(240 12% 97%);
+  /* Polices SF Pro pour TOUT l'admin : avant, --font-display retombait sur
+     Bricolage Grotesque (la police serif d'affichage du cahier enseignant).
+     Désormais les titres via var(--font-display) héritent de SF Pro Display,
+     cohérent avec le reste de l'interface Apple. */
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', 'Readex Pro', Arial, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', 'Readex Pro', Arial, sans-serif;
+  --font-content: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-secondary: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   min-height: 100dvh;
   color: hsl(var(--foreground));
   background: hsl(var(--background));
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', 'Readex Pro Variable', 'Readex Pro', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  accent-color: hsl(var(--primary));
+  scroll-padding-top: 5.5rem;
 }
+#admin-root ::selection { background: hsl(var(--primary) / .16); }
 #admin-root h1, #admin-root h2, #admin-root h3 {
   letter-spacing: -.022em;
   font-weight: 700;
@@ -44,6 +56,7 @@
 #admin-root button {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  letter-spacing: -.01em;
 }
 .admin-shell {
   min-height: 100dvh;
@@ -58,10 +71,10 @@
   z-index: 30;
   min-height: 4.25rem;
   align-items: center;
-  background: hsl(var(--background) / .78);
-  border-bottom: 1px solid hsl(var(--foreground) / .07);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: hsl(var(--background) / .72);
+  border-bottom: 1px solid hsl(var(--foreground) / .06);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 .admin-commandbar__action {
   display: inline-flex;
@@ -135,36 +148,38 @@
   position: relative;
   overflow: hidden;
   min-height: 8.6rem;
-  border-radius: 1.125rem;
-  border-color: hsl(var(--foreground) / .06);
+  border-radius: 1.25rem;
+  border-color: hsl(var(--foreground) / .055);
   background: hsl(var(--card));
-  box-shadow: 0 1px 2px hsl(var(--foreground) / .04), 0 8px 24px hsl(var(--foreground) / .05);
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .035), 0 10px 30px -6px hsl(var(--foreground) / .055);
   transition: box-shadow 220ms ease, border-color 220ms ease !important;
+  font-variant-numeric: tabular-nums;
 }
 .admin-metric-card::after {
   position: absolute;
-  top: -2.4rem;
-  inset-inline-end: -2.4rem;
-  width: 7.5rem;
-  height: 7.5rem;
+  top: -2.6rem;
+  inset-inline-end: -2.6rem;
+  width: 7rem;
+  height: 7rem;
   border-radius: 50%;
-  background: radial-gradient(circle, hsl(var(--primary) / .12), transparent 68%);
+  background: radial-gradient(circle, hsl(var(--primary) / .1), transparent 66%);
   content: '';
   pointer-events: none;
 }
-.admin-metric-card:nth-child(2)::after { background: radial-gradient(circle, hsl(var(--destructive) / .12), transparent 68%); }
-.admin-metric-card:nth-child(3)::after { background: radial-gradient(circle, hsl(var(--warning) / .14), transparent 68%); }
-.admin-metric-card:nth-child(4)::after { background: radial-gradient(circle, hsl(var(--foreground) / .1), transparent 68%); }
+.admin-metric-card:nth-child(2)::after { background: radial-gradient(circle, hsl(var(--destructive) / .1), transparent 66%); }
+.admin-metric-card:nth-child(3)::after { background: radial-gradient(circle, hsl(var(--warning) / .12), transparent 66%); }
+.admin-metric-card:nth-child(4)::after { background: radial-gradient(circle, hsl(var(--foreground) / .08), transparent 66%); }
 .admin-metric-card:hover {
   transform: none !important;
   border-color: hsl(var(--foreground) / .09);
-  box-shadow: 0 2px 4px hsl(var(--foreground) / .05), 0 14px 34px hsl(var(--foreground) / .09) !important;
+  box-shadow: 0 2px 4px hsl(var(--foreground) / .045), 0 16px 40px -8px hsl(var(--foreground) / .1) !important;
 }
 .admin-priority-panel {
-  border-radius: 1.125rem;
-  border-color: hsl(35 100% 50% / .22);
+  border-radius: 1.25rem;
+  border-color: hsl(35 100% 50% / .2);
   background: hsl(var(--card));
-  box-shadow: 0 1px 2px hsl(var(--foreground) / .04), 0 8px 24px hsl(var(--foreground) / .05);
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .035), 0 10px 30px -6px hsl(var(--foreground) / .055);
+  font-variant-numeric: tabular-nums;
 }
 .admin-priority-panel > div > div > button { text-underline-offset: 3px; }
 /* ── Filtres : champ iOS — blanc, rayon doux, anneau bleu au focus ── */
@@ -197,33 +212,35 @@
   box-shadow: 0 0 0 3.5px hsl(var(--primary) / .18);
 }
 .admin-empty-state {
-  border-radius: 1.125rem;
+  border-radius: 1.25rem;
   border-style: dashed;
-  background: hsl(var(--card) / .6);
+  background: hsl(var(--card) / .55);
 }
 .admin-teacher-grid { gap: .85rem; }
 /* ── Cartes enseignant : respiration, élévation douce au survol ── */
 .admin-teacher-card {
   min-height: 100%;
-  border-radius: 1.125rem;
-  border-color: hsl(var(--foreground) / .06);
+  border-radius: 1.25rem;
+  border-color: hsl(var(--foreground) / .055);
   background: hsl(var(--card));
-  box-shadow: 0 1px 2px hsl(var(--foreground) / .04), 0 8px 24px hsl(var(--foreground) / .05);
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .035), 0 10px 30px -6px hsl(var(--foreground) / .055);
   transition: border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease !important;
+  font-variant-numeric: tabular-nums;
 }
 .admin-teacher-card:hover {
   transform: translateY(-1px) !important;
-  border-color: hsl(var(--foreground) / .1);
+  border-color: hsl(var(--foreground) / .095);
   background: hsl(var(--card));
-  box-shadow: 0 2px 4px hsl(var(--foreground) / .05), 0 16px 36px hsl(var(--foreground) / .1) !important;
+  box-shadow: 0 2px 5px hsl(var(--foreground) / .045), 0 18px 44px -8px hsl(var(--foreground) / .11) !important;
 }
 
 .admin-detail { padding-top: 1.6rem; }
 .admin-detail__header {
-  border-radius: 1.125rem;
-  border-color: hsl(var(--foreground) / .06);
+  border-radius: 1.25rem;
+  border-color: hsl(var(--foreground) / .055);
   background: hsl(var(--card));
-  box-shadow: 0 1px 2px hsl(var(--foreground) / .04), 0 8px 24px hsl(var(--foreground) / .05);
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .035), 0 10px 30px -6px hsl(var(--foreground) / .055);
+  font-variant-numeric: tabular-nums;
 }
 /* ── Onglets : contrôle segmenté iOS ── */
 .admin-detail__tabs {
@@ -244,9 +261,10 @@
 .admin-detail__tabs [data-state='active'] svg { color: hsl(var(--primary)); }
 /* ── Connexion : carte sérique, badge squircle, bouton pilule bleu ── */
 .admin-login__card {
-  border-radius: 1.375rem;
-  border-color: hsl(var(--foreground) / .06);
-  box-shadow: 0 2px 8px hsl(var(--foreground) / .05), 0 24px 70px hsl(var(--foreground) / .13);
+  border-radius: 1.5rem;
+  border-color: hsl(var(--foreground) / .055);
+  box-shadow: 0 2px 8px hsl(var(--foreground) / .05), 0 28px 80px hsl(var(--foreground) / .14);
+  font-variant-numeric: tabular-nums;
 }
 .admin-login__card input {
   border-radius: .8rem;
@@ -282,6 +300,7 @@
   --muted-foreground: 240 5% 66%;
   --accent: 240 4% 16%;
   --destructive: 4 95% 62%;
+  --success: 145 63% 42%;             /* #30D158 — vert iOS nuit */
   --border: 240 5% 20%;
   --input: 240 5% 20%;
   --ring: 211 100% 52%;
@@ -355,3 +374,52 @@
   .admin-filter-chips button:hover,
   .admin-teacher-card:hover { transform: none !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Normalisation des couleurs hors-palette Tailwind (emerald / amber / slate)
+   vers les tokens Apple de l'admin. Ces classes utilitaires étaient codées en
+   dur dans ClassProgression, TeacherDetail, ClassJsonImportModal et
+   OfficialBulletinManager : elles fonctionnaient mais rombaient la cohérence
+   du langage Apple (pas de mode sombre admin, pas de HSL calibré).
+   Aucun élément DOM n'est ajouté — seules les déclarations de couleur sont
+   redirigées vers var(--success) / var(--warning) / var(--destructive).
+   ═══════════════════════════════════════════════════════════════════════════ */
+#admin-root .bg-emerald-500 { background-color: hsl(var(--success)); }
+#admin-root .bg-emerald-500\/10 { background-color: hsl(var(--success) / .1); }
+#admin-root .bg-emerald-500\/\[0\.07\] { background-color: hsl(var(--success) / .07); }
+#admin-root .bg-emerald-500\/\[0\.08\] { background-color: hsl(var(--success) / .08); }
+#admin-root .border-emerald-500\/20 { border-color: hsl(var(--success) / .2); }
+#admin-root .border-emerald-500\/25 { border-color: hsl(var(--success) / .25); }
+#admin-root .border-emerald-500\/30 { border-color: hsl(var(--success) / .3); }
+#admin-root .text-emerald-600,
+#admin-root .text-emerald-700 { color: hsl(var(--success)); }
+#admin-root .bg-emerald-50 { background-color: hsl(var(--success) / .08); }
+#admin-root .text-emerald-700 { color: hsl(var(--success)); }
+
+#admin-root .bg-amber-500 { background-color: hsl(var(--warning)); }
+#admin-root .bg-amber-500\/\[0\.08\] { background-color: hsl(var(--warning) / .08); }
+#admin-root .border-amber-500\/25 { border-color: hsl(var(--warning) / .25); }
+#admin-root .text-amber-700 { color: hsl(var(--warning)); }
+#admin-root .bg-amber-50 { background-color: hsl(var(--warning) / .08); }
+
+#admin-root .bg-red-50 { background-color: hsl(var(--destructive) / .08); }
+#admin-root .text-red-700 { color: hsl(var(--destructive)); }
+
+#admin-root .bg-blue-50 { background-color: hsl(var(--primary) / .08); }
+#admin-root .bg-blue-50\/70 { background-color: hsl(var(--primary) / .06); }
+
+/* Éditeur JSON sombre (OfficialBulletinManager) : garde son contraste
+   code-editor mais s'aligne sur le charcoal admin plutôt que sur slate-950
+   générique. */
+#admin-root .bg-slate-950 {
+  background-color: hsl(240 6% 9%);
+  color: hsl(240 12% 92%);
+}
+#admin-root .text-slate-100 { color: hsl(240 12% 92%); }
+#admin-root .text-slate-700 { color: hsl(240 4% 42%); }
+#admin-root .text-slate-950 { color: hsl(var(--foreground)); }
+
+/* Mode sombre : les mêmes utilitaires héritent automatiquement des tokens
+   admin sombres (--success, --warning, --destructive surclairs). Aucune
+   règle supplémentaire nécessaire : les règles ci-dessus utilisent
+   var(--success) etc., qui sont déjà redéfinies par .dark #admin-root. */

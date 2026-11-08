@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
 import { AuthProvider } from '../../src/contexts/AuthContext';
 import { AuthPage } from '../../src/features/auth/AuthPage';
-import { LandingPage } from '../../src/features/auth/LandingPage';
 import { OnboardingPage } from '../../src/features/dashboard/OnboardingPage';
 import { CreateClassModal } from '../../src/features/dashboard/modals/CreateClassModal';
 import { ConfigModal } from '../../src/features/settings/ConfigModal';
@@ -30,7 +29,6 @@ import { CalendarManager } from '../../src/admin/components/CalendarManager';
 import { OfficialBulletinManager } from '../../src/admin/components/OfficialBulletinManager';
 import { CommandPalette } from '../../src/components/ui/CommandPalette';
 import { ConfirmDialog } from '../../src/components/ui/confirm-dialog';
-import { EventDateModal } from '../../src/features/evaluations/components/EventDateModal';
 import { PwaInstallModal } from '../../src/features/assistant/PwaInstallModal';
 import { TeacherConversation } from '../../src/features/messages/TeacherConversation';
 import { ManualAssessmentEditor } from '../../src/features/evaluations/components/ManualAssessmentEditor';
@@ -56,7 +54,6 @@ export function UiGallery({ page, config, classes, lessons }: { page: string; co
     const tracking = page === 'notebook-review' || page === 'oral-review';
     let view;
     switch (page) {
-        case 'landing': view = <LandingPage locale={config.applicationLocale ?? 'ar'} onLogin={noop} onRegister={noop}/>; break;
         case 'auth': view = <AuthPage locale={config.applicationLocale ?? 'ar'} onLocaleChange={locale => change({ applicationLocale: locale })}/>; break;
         case 'onboarding': view = <OnboardingPage config={draft} classes={onboardingClasses} onConfigChange={change} onCreateClass={() => { setOnboardingClasses([classInfo]); return classInfo; }} onDeleteClass={id => setOnboardingClasses(previous => previous.filter(item => item.id !== id))} onComplete={noop} onSkip={noop}/>; break;
         case 'create-class': view = <CreateClassModal {...common} onCreate={noop} teacherSubjects={['Mathématiques']} teacherCycles={['lycee']}/>; break;
@@ -88,8 +85,6 @@ export function UiGallery({ page, config, classes, lessons }: { page: string; co
         case 'admin-bulletin': view = <OfficialBulletinManager onBack={noop}/>; break;
         case 'command-palette': view = <CommandPalette {...common} classes={classes} onSelectClass={noop} onCreateClass={noop} onOpenSettings={noop} onOpenGuide={noop} onOpenTimetable={noop} onToggleDarkMode={noop}/>; break;
         case 'delete-confirmation': view = <ConfirmDialog open onOpenChange={noop} title={isAr ? 'حذف القسم؟' : 'Supprimer la classe ?'} description={classInfo.name} onConfirm={noop}/>; break;
-        case 'event-date': view = <EventDateModal isOpen onClose={noop} initialDate="2026-10-15" title={isAr ? 'اختيار تاريخ الفرض' : 'Date de l’évaluation'} allowRange={false}/>; break;
-        case 'event-date-range': view = <EventDateModal isOpen onClose={noop} initialDate="2026-10-15" initialEndDate="2026-10-18" title={isAr ? 'فترة النشاط / الغياب' : 'Période de l’absence'} allowRange={true}/>; break;
         case 'pwa-install': view = <PwaInstallModal open locale={config.applicationLocale ?? 'ar'} platform="android" onClose={noop} onConfirmInstalled={noop}/>; break;
         case 'teacher-conversation': view = <TeacherConversation open onClose={noop} locale={config.applicationLocale ?? 'ar'} target={classInfo} context={isAr ? 'استفسار تربوي بخصوص استعمال الزمن' : 'Précision pédagogique concernant l’emploi du temps'}/>; break;
         case 'edit-manual-assessment': view = <Modal isOpen onClose={noop} title={isAr ? 'تعديل الفرض' : 'Modifier le devoir'} maxWidth="lg"><ManualAssessmentEditor today="2026-10-15" homeworkDate="2026-10-20" initialType="controle" cycle="lycee" onCancel={noop} onSave={noop}/></Modal>; break;

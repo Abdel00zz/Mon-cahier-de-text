@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { GUIDE_AR, GUIDE_FR, searchGuide } from '../src/constants/guides';
-import { resolveGuideReference } from '../src/constants/guide/navigation';
 import type { GuideReference } from '../src/constants/guide/model';
 import type { ClassGuidance } from '../src/domain/assistant/classGuidance';
 import type { CompanionDecision } from '../src/domain/assistant/companionDecision';
@@ -13,11 +12,12 @@ const ready: ClassGuidance = { ...base, step: 'ready' };
 function assertReference(reference: GuideReference | undefined): asserts reference is GuideReference {
   assert.ok(reference, 'this procedure requires contextual instructions');
   for (const entries of [GUIDE_FR, GUIDE_AR]) {
-    const result = resolveGuideReference(entries, reference);
-    assert.equal(result.chapter?.id, reference.chapterId, 'no silent fallback for known assistant actions');
-    if (reference.sectionId) assert.equal(result.section?.id, reference.sectionId);
-    assert.ok(result.chapter && entries.includes(result.chapter), 'reuse live guide content, not a second copy');
-    assert.ok(result.section && result.chapter.sections.includes(result.section));
+    const chapter = entries.find(entry => entry.id === reference.chapterId);
+    assert.ok(chapter, 'no silent fallback for known assistant actions');
+    if (reference.sectionId) {
+      const section = chapter.sections.find(item => item.id === reference.sectionId);
+      assert.ok(section, `section ${reference.sectionId} existe dans ${reference.chapterId}`);
+    }
   }
 }
 
@@ -66,15 +66,6 @@ test('success, waiting, routine reminders and findings without specific instruct
   for (const guidance of states) {
     assert.equal(companionHelpReference({ kind: 'guidance' }, guidance), undefined, guidance.step);
   }
-});
-
-test('renamed chapters and invalid anchors recover; guide updates are immediately reflected', () => {
-  assert.equal(resolveGuideReference(GUIDE_FR, { chapterId: 'removed' }).chapter?.id, 'start');
-  const result = resolveGuideReference(GUIDE_FR, { chapterId: 'editor', sectionId: 'removed' });
-  assert.equal(result.section, GUIDE_FR.find(entry => entry.id === 'editor')?.sections[0]);
-  assert.deepEqual(resolveGuideReference([], { chapterId: 'removed' }), { chapter: undefined, section: undefined });
-  const updated = GUIDE_FR.map(entry => entry.id === 'schedule' ? { ...entry, summary: 'Nouvelle explication' } : entry);
-  assert.equal(resolveGuideReference(updated, { chapterId: 'schedule' }).chapter?.summary, 'Nouvelle explication');
 });
 
 test('all help topics are searchable locally, with Arabic harakat and French accents', () => {

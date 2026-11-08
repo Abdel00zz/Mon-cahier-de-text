@@ -85,22 +85,17 @@ test('cartes : seul le statut de séance remplace la dernière ouverture ; bouto
     new URL('../src/features/dashboard/ClassCard.tsx', import.meta.url),
     'utf8',
   );
-  const list = readFileSync(
-    new URL('../src/features/dashboard/ClassListItem.tsx', import.meta.url),
-    'utf8',
-  );
   const settings = readFileSync(
     new URL('../src/features/settings/ConfigModal.tsx', import.meta.url),
     'utf8',
   );
-  for (const source of [card, list]) {
+  for (const source of [card]) {
     assert.doesNotMatch(source, /classOpeningLabel|lastOpenedAt|class-card__status|<time\b/);
     assert.match(source, /data-session-active=\{isActiveSession \? 'true' : undefined\}/);
     assert.doesNotMatch(source, /class-card__live|welcome\.nowTitle/, 'aucun badge de séance dans la carte');
   }
-  // Les actions de classe restent une liste déroulante dans les deux vues.
+  // Les actions de classe restent une liste déroulante.
   assert.match(card, /ClassActionsMenu/);
-  assert.match(list, /ClassActionsMenu/);
   // Profil modifié : deux actions dans le pied fixe, en ordre logique RTL/LTR.
   assert.match(settings, /footer=\{profile\.hasChanges \? footer : undefined\}/);
   assert.match(settings, /grid w-full grid-cols-2/);
@@ -169,19 +164,11 @@ test('cartes de classe : clic continu sur mobile/tablette et bouton Keep au surv
     new URL('../src/features/dashboard/ClassCard.tsx', import.meta.url),
     'utf8',
   );
-  const list = readFileSync(
-    new URL('../src/features/dashboard/ClassListItem.tsx', import.meta.url),
-    'utf8',
-  );
-  // Appui continu (mobile/tablette) partagé par les deux vues…
+  // Appui continu (mobile/tablette) pour ouvrir, configurer au menu dédié.
   assert.match(card, /useClassPress/);
-  assert.match(list, /useClassPress/);
-  // …et actions accessibles par la même liste déroulante dédiée.
   assert.match(card, /class-card__menu/);
-  assert.match(list, /ClassActionsMenu/);
-  // Titres : module typographique partagé côté carte, classe dédiée côté liste.
+  // Titres : module typographique partagé côté carte.
   assert.match(card, /classTitleStyle\(isRtl\)/);
-  assert.match(list, /keep-class-title/);
 });
 
 test('nom d’usage : le profil fait foi, le compte ne sert que de repli', () => {

@@ -100,14 +100,3 @@ export const ClassDraftSchema = z.object({
 });
 
 export type ClassDraftValues = z.infer<typeof ClassDraftSchema>;
-
-/** Schéma de saisie pour l'ajout / modification d'un devoir manuel. */
-export const ManualAssessmentDraftSchema = z.object({
-  type: AssessmentTypeSchema,
-  num: z.string().trim().min(1),
-  date: ISODateSchema,
-  duree: z.string().max(80),
-  semestre: z.union([z.literal(1), z.literal(2)]),
-});
-
-export type ManualAssessmentDraftValues = z.infer<typeof ManualAssessmentDraftSchema>;

@@ -10,7 +10,7 @@ const MIN_ID = 1_600_000_000;
 let planning = Promise.resolve();
 let fingerprint = '';
 
-export const nativeNotificationId = (key: string): number => {
+const nativeNotificationId = (key: string): number => {
   let hash = 2166136261;
   for (const character of key) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
   return MIN_ID + (hash >>> 0) % 200_000_000;

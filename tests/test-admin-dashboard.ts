@@ -122,9 +122,10 @@ test('la fraîcheur se lit d’un coup d’œil', () => {
 
 // ── 5. Branchements serveur ───────────────────────────────────────────────────
 test('la vue d’ensemble ne renvoie la liste que si elle a changé', () => {
+  const overview = read('api/_admin/overview.ts');
+  assert.match(overview, /createHash\('sha1'\)/, 'empreinte du contenu');
+  assert.match(overview, /since === etag \? \{ unchanged: true, etag \} : \{ teachers, etag \}/);
   const server = read('api/admin.ts');
-  assert.match(server, /createHash\('sha1'\)/, 'empreinte du contenu');
-  assert.match(server, /since === etag \? \{ unchanged: true, etag \} : \{ teachers, etag \}/);
   assert.match(server, /handleOverview\(req, res\)/, 'le routeur transmet la requête (paramètre since)');
   const client = read('src/admin/api.ts');
   assert.match(client, /since \? `&since=\$\{encodeURIComponent\(since\)\}` : ''/);
@@ -139,13 +140,14 @@ test('les écritures d’administration sont gardées au même endroit, et un bl
   const router = server.slice(server.indexOf('export default async function handler'));
   assert.ok(router.indexOf('await requireAdmin(req);') < router.indexOf('assertBodySize(body);'), 'session d’abord, taille ensuite');
   assert.ok(router.indexOf('assertBodySize(body);') < router.indexOf('Object.hasOwn(ADMIN_WRITES'), 'avant toute action');
-  assert.match(server, /typeof body\.blocked !== 'boolean'\) throw new HttpError\(400/, 'un champ absent ne bloque pas un compte');
-  assert.doesNotMatch(server, /body\.blocked !== false/);
-  assert.match(server, /body\.classId\.length > 120 \|\| body\.assessmentId\.length > 180/, 'identifiants bornés');
+  const teachers = read('api/_admin/teachers.ts');
+  assert.match(teachers, /typeof body\.blocked !== 'boolean'\) throw new HttpError\(400/, 'un champ absent ne bloque pas un compte');
+  assert.doesNotMatch(teachers, /body\.blocked !== false/);
+  assert.match(teachers, /body\.classId\.length > 120 \|\| body\.assessmentId\.length > 180/, 'identifiants bornés');
 });
 
 test('la fiche d’un enseignant se charge en un seul aller-retour', () => {
-  const server = read('api/admin.ts');
+  const server = read('api/_admin/teachers.ts');
   const detail = server.slice(server.indexOf('const handleTeacherDetail'), server.indexOf('/** Rafraîchissement léger'));
   assert.match(detail, /pipeline\.get\(KEYS\.adminEvaluationPolicy\);/);
   assert.match(detail, /pipeline\.get\(KEYS\.adminEvaluationPolicyForUser\(phone\)\);/);

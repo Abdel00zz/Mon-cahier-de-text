@@ -81,7 +81,7 @@ export const GlobalTooltip: React.FC = () => {
       const element = node instanceof HTMLElement ? node : null;
       if (!element || !element.isConnected) return null;
 
-      if (element.closest('.class-card, .class-list-item') && !element.closest('.class-card__menu, .class-list-item__menu')) {
+      if (element.closest('.class-card') && !element.closest('.class-card__menu')) {
         return null;
       }
 

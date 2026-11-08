@@ -14,6 +14,7 @@ import { loadPlanning, resolveClassAssessments, type PlannedAssessment } from '.
 import { documentIndicator, documentRequirementForAssessment, documentRequirementForEvent, documentRequirementForHomeworkCorrection, type DocumentIndicator } from '../../domain/evaluations/documentRequirement';
 import { homeworkCorrectionDocumentId } from '../../domain/evaluations/homeworkIds';
 import { completionColor, timeAgo } from '../utils';
+import { formatDateFr, formatDateTimeFr } from '../formatAdminDate';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
@@ -105,25 +106,6 @@ const summarizeChapter = (chapter: any): ChapterSummary => {
         lastDate,
         lastSessionItems: lastDate ? dated.filter(l => l.date === lastDate) : [],
     };
-};
-
-const formatDateFr = (iso: string | null): string => {
-    if (!iso) return 'Non renseignée';
-    try {
-        const [y, m, d] = iso.split('-').map(Number);
-        return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    } catch {
-        return iso;
-    }
-};
-
-const formatDateTimeFr = (iso: string | null | undefined): string => {
-    if (!iso) return 'Non renseignée';
-    try {
-        return new Date(iso).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-    } catch {
-        return iso;
-    }
 };
 
 /** Construit le AppConfig minimal attendu par PrintView à partir des réglages de l'enseignant. */

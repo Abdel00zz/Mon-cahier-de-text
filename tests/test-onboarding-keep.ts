@@ -10,7 +10,6 @@ import {
   normalizeRegistrationSetup,
   type RegistrationSetup,
 } from '../src/features/auth/registrationSetup';
-import { gettingStartedState } from '../src/features/dashboard/onboarding/gettingStarted';
 import {
   extractSyncableSettings,
   mergeSyncableSettings,
@@ -199,31 +198,6 @@ test('sans titre saisi, le cahier reste vierge : le choix de démarrage reste ou
   )!;
   const lessons = JSON.parse(storage.getItem('classData_v1_' + id)!).lessonsData;
   assert.equal(lessons.length, 0);
-});
-test('checklist progressive : vraie classe, ouverture et créneau valide', () => {
-  assert.equal(gettingStartedState({}, [classroom]).visible, false);
-  assert.deepEqual(
-    gettingStartedState({ showGettingStarted: true }, [classroom]).done,
-    [true, false, false],
-  );
-  assert.deepEqual(
-    gettingStartedState(
-      { showGettingStarted: true, firstNotebookOpened: true },
-      [classroom],
-    ).done,
-    [true, true, false],
-  );
-  assert.equal(
-    gettingStartedState({ showGettingStarted: false }, [classroom]).visible,
-    false,
-  );
-  const config = {
-    showGettingStarted: true,
-    firstNotebookOpened: true,
-    timetable: [{ classId: 'a', day: 1, startHour: 8, endHour: 9 } as never],
-  };
-  assert.equal(gettingStartedState(config, [classroom]).visible, false);
-  assert.deepEqual(gettingStartedState(config, []).done, [false, false, false]);
 });
 test('états de checklist synchronisés sans ressaisie sur un autre appareil', () => {
   const settings = extractSyncableSettings({

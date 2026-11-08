@@ -270,10 +270,10 @@ test('la politique circule : API admin, pull, appareil — et ne repart jamais d
   const admin = read('api/admin.ts');
   assert.match(admin, /saveEvaluationPolicy: handleSaveEvaluationPolicy,/, 'publication (table des écritures de la console)');
   assert.match(admin, /action === 'evaluationPolicy'/, 'lecture');
-  assert.match(admin, /validateEvaluationKindOverrides\(body\.evaluationPolicyKinds/, 'validation stricte des écarts');
-  assert.match(admin, /saveVersionedDocument\(redis, key, body\.expectedEvaluationPolicyVersion, next\)/, 'écriture versionnée, 409 en cas de conflit');
-  assert.match(admin, /pipeline\.del\(KEYS\.adminEvaluationPolicyForUser\(phone\)\)/, 'la suppression d’un compte efface ses écarts');
-  assert.match(admin, /evaluationPolicy,\r?\n\s+user: user/, 'la fiche enseignant relit les documents avec la politique du compte');
+  assert.match(read('api/_admin/calendarPolicy.ts'), /validateEvaluationKindOverrides\(body\.evaluationPolicyKinds/, 'validation stricte des écarts');
+  assert.match(read('api/_admin/calendarPolicy.ts'), /saveVersionedDocument\(redis, key, body\.expectedEvaluationPolicyVersion, next\)/, 'écriture versionnée, 409 en cas de conflit');
+  assert.match(read('api/_admin/teachers.ts'), /pipeline\.del\(KEYS\.adminEvaluationPolicyForUser\(phone\)\)/, 'la suppression d’un compte efface ses écarts');
+  assert.match(read('api/_admin/teachers.ts'), /evaluationPolicy,\r?\n\s+user: user/, 'la fiche enseignant relit les documents avec la politique du compte');
 
   const sync = read('api/sync.ts');
   assert.match(sync, /res\.status\(200\)\.json\(\{ \.\.\.blob, timetableClock, evaluationPolicy \}\)/, 'livrée au pull, résolue côté serveur');

@@ -1,6 +1,6 @@
 import { Button } from '../../components/ui/button';
 import type { AdminMessage } from '../../types';
-const formatDateTimeFr = (iso: string) => new Date(iso).toLocaleString('fr-FR');
+import { formatDateTimeFr } from '../formatAdminDate';
 
 export function AdminConversation({ messages, onReply }: { messages: AdminMessage[]; onReply: (message: AdminMessage) => void }) {
     if (!messages.length) return <section className="rounded-2xl border border-dashed bg-card p-8 text-center">

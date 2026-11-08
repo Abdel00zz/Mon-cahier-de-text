@@ -67,6 +67,12 @@
         var isAr = locale === 'ar';
         var appTitle = isAr ? 'دفتر نصوصي' : 'Mon cahier de textes';
         document.title = appTitle;
+        // Synchroniser <html lang> et <html dir> avec la locale réelle :
+        // avant, <html lang="fr"> restait figé même en interface arabe, créant
+        // un décalage d'accessibilité (lecteurs d'écran) et de police système.
+        var html = document.documentElement;
+        html.lang = isAr ? 'ar' : 'fr';
+        html.dir = isAr ? 'rtl' : 'ltr';
         var appMeta = document.querySelector('meta[name="application-name"]');
         if (appMeta) appMeta.setAttribute('content', appTitle);
         var appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');

@@ -54,10 +54,30 @@
   }
   .editor-reading-table [data-row-content] { border-radius: 0; padding: .65rem .75rem; }
   .editor-reading-table :is(.editor-type-chapter, .editor-type-top) { padding-block: .35rem; }
-  .editor-reading-table .editor-kind-badge { border-radius: 99px !important; padding: .2rem .6rem; font-family: var(--font-content); font-weight: 500; }
   .editor-reading-table .editor-lesson-row { gap: .65rem; }
   .editor-reading-table .editor-type-item-title { font-size: max(.875rem, var(--editor-fs-item-title)); }
   .editor-reading-table .editor-item-description { border-radius: .8rem; font-style: normal; box-shadow: none; }
+  /* Pastilles de type : AÉRÉES et nettes. Avant : 5px/1px de rembourrage et un
+     coli au titre (me-1.5) — le jeton paraissait comprimé, surtout en arabe.
+     Les paddings passent par VARIABLES : la règle !important qui les consomme
+     vit dans `@layer components` (editor-surface.css), et une couche inversée
+     battrait tout !important non-layerisé — alors qu'une déclaration de
+     variable NON-layerisée (ci-dessous) gagne la cascade normale. */
+  .editor-reading-table[data-editor-table] {
+    --editor-badge-padding-inline: .5rem;
+    --editor-badge-padding-block: .18rem;
+  }
+  .editor-reading-table[data-editor-table] .editor-kind-badge {
+    margin-inline-end: .5rem;
+    border-radius: 99px !important;
+    font-family: var(--font-content);
+    font-weight: 600 !important;
+    font-size: var(--editor-fs-badge, 10.5px);
+    line-height: 1.5;
+    letter-spacing: .015em;
+    font-variant-numeric: tabular-nums;
+    box-shadow: none;
+  }
 
   /* The three columns remain aligned, including merged sessions. Only their
      inner date and note objects receive a pill treatment. */
@@ -79,11 +99,11 @@
     border-radius: .75rem; background: color-mix(in srgb, var(--reading-note) 8%, transparent);
   }
   .editor-reading-table .editor-empty-date, .editor-reading-table .editor-empty-note {
-    margin: auto; color: #737373; opacity: .55;
+    margin: auto; color: #6b6b6b; opacity: .82;
     transition: opacity 160ms ease;
   }
   .dark .editor-reading-table :is(.editor-empty-date, .editor-empty-note) { color: #c2c2c2; }
-  .editor-reading-table button:is(:hover, :focus-visible) :is(.editor-empty-date, .editor-empty-note) { opacity: .9; }
+  .editor-reading-table button:is(:hover, :focus-visible) :is(.editor-empty-date, .editor-empty-note) { opacity: 1; }
   .editor-reading-table [data-absence-session] > * { padding: .5rem .25rem; }
   
   .editor-reading-table .editor-reorder-handle { border-radius: .6rem; color: var(--reading-mute); }

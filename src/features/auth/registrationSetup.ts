@@ -18,18 +18,34 @@ export interface RegistrationDraft {
   group: string;
 }
 
+const EMPTY_DRAFT: RegistrationDraft = {
+  cycle: "",
+  levelGroup: "",
+  level: "",
+  subject: "",
+  group: "1",
+};
+
+/** Niveaux proposés pour un brouillon donné — source unique partagée par l'UI et la validation. */
+export function levelsForDraft(
+  draft: Pick<RegistrationDraft, "cycle" | "levelGroup">,
+): string[] {
+  if (!draft.cycle) return [];
+  if (draft.cycle === "college") return CLASS_LEVELS_BY_CYCLE.college;
+  return (
+    classLevelGroupsForCycle(draft.cycle).find(
+      (group) => group.key === draft.levelGroup,
+    )?.levels ?? []
+  );
+}
+
 /** Use the same official levels and group rules as the dashboard. */
 export function registrationSetupFromDraft(
   draft: RegistrationDraft,
   locale: "fr" | "ar",
 ): RegistrationSetup | null {
   if (!draft.cycle) return null;
-  const levels =
-    draft.cycle === "college"
-      ? CLASS_LEVELS_BY_CYCLE.college
-      : (classLevelGroupsForCycle(draft.cycle).find(
-          (group) => group.key === draft.levelGroup,
-        )?.levels ?? []);
+  const levels = levelsForDraft(draft);
   const group = normalizeGroupNumber(draft.group);
   if (
     !levels.includes(draft.level) ||
@@ -44,6 +60,72 @@ export function registrationSetupFromDraft(
     applicationLocale: locale,
     preparationCompleted: true,
   };
+}
+
+/* Brouillon conservé en sessionStorage : uniquement les choix pédagogiques
+ * (cycle, niveau, matière), jamais de données personnelles. Survit au
+ * rechargement ou à une suspension de l'onglet pendant l'inscription. */
+const DRAFT_KEY = "registrationDraft_v1";
+
+export function saveRegistrationDraft(
+  draft: RegistrationDraft,
+  storage: Storage = sessionStorage,
+): void {
+  try {
+    if (!draft.cycle) storage.removeItem(DRAFT_KEY);
+    else storage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  } catch {
+    // stockage indisponible : le brouillon reste en mémoire
+  }
+}
+
+export function clearRegistrationDraft(storage: Storage = sessionStorage): void {
+  try {
+    storage.removeItem(DRAFT_KEY);
+  } catch {
+    // stockage indisponible
+  }
+}
+
+export function readRegistrationDraft(
+  storage: Storage = sessionStorage,
+): RegistrationDraft {
+  try {
+    const raw = storage.getItem(DRAFT_KEY);
+    if (!raw) return EMPTY_DRAFT;
+    const value: unknown = JSON.parse(raw);
+    if (!value || typeof value !== "object") return EMPTY_DRAFT;
+    const item = value as Partial<RegistrationDraft>;
+    const cycle: Cycle | "" = ["college", "lycee", "prepa"].includes(
+      item.cycle ?? "",
+    )
+      ? (item.cycle as Cycle)
+      : "";
+    if (!cycle) return EMPTY_DRAFT;
+    const levelGroup =
+      cycle !== "college" &&
+      typeof item.levelGroup === "string" &&
+      classLevelGroupsForCycle(cycle).some((group) => group.key === item.levelGroup)
+        ? item.levelGroup
+        : "";
+    const levels = levelsForDraft({ cycle, levelGroup });
+    const level =
+      typeof item.level === "string" && levels.includes(item.level)
+        ? item.level
+        : "";
+    const subject =
+      typeof item.subject === "string" &&
+      SUBJECTS.some((entry) => entry === item.subject)
+        ? item.subject
+        : "";
+    const group =
+      typeof item.group === "string" && /^\d{1,2}$/.test(item.group)
+        ? item.group
+        : EMPTY_DRAFT.group;
+    return { cycle, levelGroup, level, subject, group };
+  } catch {
+    return EMPTY_DRAFT;
+  }
 }
 
 /** Only user-entered onboarding data, held in memory until explicit registration. */
@@ -95,6 +177,24 @@ export function normalizeRegistrationSetup(
   };
 }
 
+/** Identifiant robuste même hors contexte sécurisé (randomUUID exige HTTPS). */
+const randomId = (): string =>
+  typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `cls-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+
+/** Lecture tolérante : une valeur corrompue repart d'une config vide au lieu de bloquer l'inscription. */
+const readStoredJson = (storage: Storage, key: string, fallback: unknown): unknown => {
+  try {
+    const raw = storage.getItem(key);
+    if (!raw) return fallback;
+    const parsed: unknown = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
 /** Registration only: cannot merge an anonymous draft into an existing workspace. */
 export function applyRegistrationSetup(
   value: unknown,
@@ -105,12 +205,8 @@ export function applyRegistrationSetup(
   if (!setup) return null;
   if (readWorkspaceScope(storage)?.owner !== owner)
     throw new Error("Workspace owner mismatch");
-  const config: Partial<AppConfig> = JSON.parse(
-    storage.getItem("appConfig_v1") ?? "{}",
-  );
-  const classes: ClassInfo[] = JSON.parse(
-    storage.getItem("classManager_v1") ?? "[]",
-  );
+  const config = readStoredJson(storage, "appConfig_v1", {}) as Partial<AppConfig>;
+  const classes = readStoredJson(storage, "classManager_v1", []);
   if (
     !Array.isArray(classes) ||
     classes.length ||
@@ -119,7 +215,7 @@ export function applyRegistrationSetup(
     config.selectedSubjects?.length
   )
     return null;
-  const id = crypto.randomUUID();
+  const id = randomId();
   const classInfo: ClassInfo = {
     id,
     name: setup.className,
@@ -152,7 +248,7 @@ export function applyRegistrationSetup(
               type: "chapter",
               title: setup.firstTitle,
               sections: [],
-              _tempId: crypto.randomUUID(),
+              _tempId: randomId(),
             },
           ]
           : []),
