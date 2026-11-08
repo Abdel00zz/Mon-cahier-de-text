@@ -32,7 +32,7 @@
   [data-editor-table] :is(.editor-type-description, .editor-item-description, .editor-free-content) :is(strong, b):not(.katex, .katex *) { font-weight: 600; }
   [data-editor-table] :is(.editor-type-description, .editor-item-description, .editor-free-content) :is(em, i, .italic):not(.katex, .katex *) { font-style: italic; }
   [data-editor-table] :is(.editor-type-remark, .editor-session-note) {
-    font-size: max(.75rem, var(--editor-fs-remark));
+    font-size: var(--editor-fs-remark);
     line-height: 1.6;
     word-break: normal;
     overflow-wrap: anywhere;
