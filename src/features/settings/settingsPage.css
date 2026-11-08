@@ -14,8 +14,8 @@
   display: flex;
   align-items: center;
   gap: .5rem;
-  font-size: .95rem;
-  line-height: 1.5;
+  font-size: 1rem;
+  line-height: 1.45;
   font-weight: 600;
   color: hsl(var(--muted-foreground));
   margin: 0;
@@ -77,7 +77,7 @@
 .settings-overview__trigger-icon svg { width: 1.2rem; height: 1.2rem; flex: none; stroke-width: 1.85; }
 .settings-overview__trigger-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: .15rem; }
 .settings-overview__dropdown-header h2 {
-  font-size: .95rem;
+  font-size: 1rem;
   line-height: 1.35;
   font-weight: 650;
   color: hsl(var(--foreground));

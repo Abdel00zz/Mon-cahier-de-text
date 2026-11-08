@@ -1,0 +1,78 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Mode sombre : finitions. Pas une inversion — des surfaces étagées, des
+   filets clairs et visibles, des accents désaturés et un texte adouci.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.dark {
+  --dark-rule: hsl(36 10% 34%);          /* filet structurant du cahier */
+  --dark-rule-soft: hsl(36 8% 27%);      /* filet secondaire entre lignes */
+  --dark-rule-strong: hsl(36 14% 44%);   /* colonne de date, cadre extérieur */
+  --dark-sheet: hsl(30 5% 13.5%);        /* feuille du cahier, entre fond et carte */
+  --dark-specular: inset 0 1px 0 hsl(40 20% 96% / .05);
+}
+
+/* ── Tableau de l'éditeur : lignes claires, modernes et lisibles ───────── */
+.dark [data-editor-table] {
+  --card: 30 5% 13.5%;
+  --muted: 30 5% 17%;
+  background: var(--dark-sheet);
+  border-color: var(--dark-rule-strong) !important;
+  box-shadow: var(--dark-specular), 0 18px 48px -24px rgb(0 0 0 / .7);
+}
+.dark [data-editor-table] :is(.border-b, .border-t, .border-e, .border-s, .border-y, .border-x, .border) {
+  border-color: var(--dark-rule-soft);
+}
+.dark [data-editor-table] :is(.editor-table-grid > :first-child, [data-session-cell='date']) {
+  border-inline-end-color: var(--dark-rule-strong);
+}
+.dark [data-editor-table] .editor-table-grid > :not(:last-child) { border-inline-end-color: var(--dark-rule); }
+.dark [data-editor-table] [data-editor-table-header] {
+  background: hsl(30 5% 17%);
+  border-bottom-color: var(--dark-rule-strong);
+}
+/* Survol de ligne : une lueur douce plutôt qu'un aplat. */
+@media (hover: hover) {
+  .dark [data-editor-table] .editor-table-grid:hover { background: hsl(40 20% 96% / .025); }
+}
+.dark [data-editor-table] .editor-item-description {
+  background: color-mix(in srgb, var(--frame-tone) 6%, hsl(30 5% 15%));
+  border-color: color-mix(in srgb, var(--frame-tone) 34%, var(--dark-rule));
+  box-shadow: var(--dark-specular);
+}
+.dark [data-editor-table] .editor-free-content { border-color: var(--dark-rule); }
+
+/* ── Cartes, pages et paramètres : élévation et liseré spéculaire ─────── */
+.dark :is(.class-card, .class-list-item, .hub-card, .settings-overview__section--dropdown, .settings-section) {
+  box-shadow: var(--dark-specular), 0 1px 2px rgb(0 0 0 / .35), 0 12px 28px -22px rgb(0 0 0 / .65);
+}
+.dark .settings-overview__section--dropdown {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+.dark .settings-overview .settings-overview__section--dropdown .settings-section { background: hsl(30 5% 12.5%); }
+.dark .settings-overview__chevron { background: hsl(30 5% 21%); }
+
+/* ── Emploi du temps : cellules vides lisibles, pastilles adoucies ───── */
+.dark .schedule-cell--empty .schedule-cell__content {
+  background: hsl(30 5% 13%);
+  border-color: var(--dark-rule-soft);
+}
+.dark .schedule-tab .schedule-grid thead th,
+.dark .schedule-tab .schedule-grid__day {
+  background: hsl(30 5% 17%);
+  border-color: var(--dark-rule-soft);
+  color: hsl(var(--foreground) / .88);
+}
+
+/* ── Navigation et modales : filets nets, verre sobre ───────────────── */
+.dark .mobile-tab-bar { border-top-color: var(--dark-rule-soft); }
+.dark .modal-motion-surface { border-color: var(--dark-rule-soft); }
+.dark .selection-bar { border-color: var(--dark-rule); }
+
+/* ── Saisie : champs distincts de leur surface ───────────────────────── */
+.dark :is(input, textarea, select):not([type='checkbox']):not([type='radio']):not([type='range']) {
+  border-color: hsl(var(--input));
+}
+.dark :is(input, textarea):focus-visible { border-color: hsl(var(--ring)); }
+
+/* ── Barres de défilement discrètes sur fond sombre ──────────────────── */
+.dark *::-webkit-scrollbar-thumb { background: hsl(40 8% 60% / .32); background-clip: padding-box; }

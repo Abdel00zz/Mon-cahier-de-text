@@ -87,7 +87,7 @@
     --muted-foreground: 40 7% 68%;
     --accent: 18 20% 22%;
     --accent-foreground: 18 58% 84%;
-    --border: 30 6% 19%;            /* filet chaud, ≥ 1,25:1 sur le fond */
+    --border: 30 6% 25%;            /* filet chaud visible, ≥ 1,6:1 sur le fond */
     --input: 30 6% 30%;
     --ring: 15 58% 62%;
     --destructive: 352 55% 70%; /* Rouge doux, encre sombre sur les actions. */

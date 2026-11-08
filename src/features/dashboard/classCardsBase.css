@@ -151,7 +151,7 @@
 
 .class-card__title {
   font-family: "Readex Pro", var(--font-sans) !important;
-  font-size: 1.05rem !important;
+  font-size: calc(1.05rem * var(--class-title-scale, 1) * var(--app-text-scale, 1)) !important;
   font-weight: 600 !important;
   color: var(--card-title, #14503a) !important;
   line-height: 1.5 !important;
@@ -163,7 +163,7 @@
 
 .class-card__tier-plain {
   font-family: "Readex Pro", var(--font-sans) !important;
-  font-size: 0.8rem !important;
+  font-size: calc(0.8rem * var(--app-text-scale, 1)) !important;
   font-weight: 500 !important;
   color: var(--card-secondary, #3f7f63) !important;
   line-height: 1.35;
