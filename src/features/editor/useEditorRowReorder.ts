@@ -3,6 +3,9 @@ import type { PointerEvent as ReactPointerEvent, TouchEvent as ReactTouchEvent, 
 import { clamp } from 'es-toolkit';
 import { rows, type CanReorder, type DragState, type Reorder, type ReorderMessages, type Side } from './rowReorderTypes';
 import { createRowDragPreview } from './rowDragPreview';
+/** Durée d'appui qui arme le déplacement sur écran tactile. Sous ce seuil,
+ * un balayage vertical rend le geste au défilement natif (iOS-like). */
+const TOUCH_ARM_DELAY_MS = 220;
 /** One animation frame owns pointer feedback and edge scrolling. React only
  * renders when the gesture starts/ends or the notebook order changes. */
 export function useEditorRowReorder(
@@ -91,6 +94,8 @@ export function useEditorRowReorder(
     let previousTime = 0;
     let ended = false;
     let picked = false;
+    let armed = false;
+    let armTimer = 0;
     const current: DragState = { source, sourceKey, ghost: null };
     drag.current = current;
     source.setAttribute('data-editor-pressing', 'true');
@@ -190,6 +195,7 @@ export function useEditorRowReorder(
     const dispose = () => {
       if (ended) return;
       ended = true;
+      clearTimeout(armTimer);
       window.cancelAnimationFrame(frame);
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', end);
@@ -246,6 +252,14 @@ export function useEditorRowReorder(
       announce(callbacks.current.messages.started);
       schedule();
     };
+    const armDrag = () => {
+      if (ended || armed) return;
+      armed = true;
+      clearTimeout(armTimer);
+      activate();
+      // Accusé haptique bref : le doigt sait que la ligne est saisie.
+      if (touch) { try { navigator.vibrate?.(12); } catch { /* retour haptique indisponible */ } }
+    };
     const move = (pointer: PointerEvent) => {
       if (pointer.pointerId !== pointerId || ended) return;
       pointer.preventDefault();
@@ -259,7 +273,15 @@ export function useEditorRowReorder(
       if (!point || event.touches.length !== 1) { cancel(); return; }
       x = point.clientX; y = point.clientY;
       if (!current.ghost) {
-        if (Math.hypot(x - startX, y - startY) > 8) cancel();
+        // Geste non armé : l'intention décide. Un déplacement horizontal
+        // saisit la ligne immédiatement ; un déplacement vertical rend le
+        // geste au défilement natif au lieu de piéger le doigt.
+        const deltaX = x - startX;
+        const deltaY = y - startY;
+        if (Math.hypot(deltaX, deltaY) > 10) {
+          if (Math.abs(deltaX) > Math.abs(deltaY) && event.cancelable) armDrag();
+          else cancel();
+        }
         return;
       }
       if (!event.cancelable) { cancel(); return; }
@@ -273,24 +295,14 @@ export function useEditorRowReorder(
       y = pointer.clientY;
       // Tap the handle and then choose a destination, with either mouse or touch.
       if (current.ghost && !picked && Math.hypot(x - startX, y - startY) <= 8) {
-        picked = true;
-        current.ghost.dataset.picked = 'true';
-        window.removeEventListener('pointermove', move);
-        window.removeEventListener('pointerup', end);
-        window.removeEventListener('pointercancel', cancelPointer);
-        captureElement.removeEventListener('lostpointercapture', cancelPointer);
-        if (!touch && captureElement.hasPointerCapture(pointerId)) captureElement.releasePointerCapture(pointerId);
-        window.removeEventListener('touchmove', moveTouch);
-        window.removeEventListener('touchend', endTouch);
-        window.removeEventListener('touchcancel', cancel);
-        window.removeEventListener('touchstart', multipleTouches);
-        ignoreClickUntil.current = Date.now() + 700;
-        placePicked.current = (nextX, nextY) => {
-          x = nextX; y = nextY; updateTarget();
-          if (current.targetKey) end({ pointerId, clientX: x, clientY: y });
-          else schedule();
-        };
-        announce(callbacks.current.messages.choose ?? callbacks.current.messages.started);
+        enterPicked();
+        return;
+      }
+      if (!current.ghost) {
+        // Relâché avant l'armement : un tap bref sur la poignée passe en mode
+        // « choisir une destination » ; un geste avorté libère tout.
+        if (Math.hypot(x - startX, y - startY) <= 8) { armed = true; activate(); enterPicked(); }
+        else dispose();
         return;
       }
       let moved = false;
@@ -308,13 +320,44 @@ export function useEditorRowReorder(
         }
       } finally { dispose(); }
     };
+    const enterPicked = () => {
+      picked = true;
+      clearTimeout(armTimer);
+      if (current.ghost) current.ghost.dataset.picked = 'true';
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', cancelPointer);
+      captureElement.removeEventListener('lostpointercapture', cancelPointer);
+      if (!touch && captureElement.hasPointerCapture(pointerId)) captureElement.releasePointerCapture(pointerId);
+      window.removeEventListener('touchmove', moveTouch);
+      window.removeEventListener('touchend', endTouch);
+      window.removeEventListener('touchcancel', cancel);
+      window.removeEventListener('touchstart', multipleTouches);
+      ignoreClickUntil.current = Date.now() + 700;
+      placePicked.current = (nextX, nextY) => {
+        x = nextX; y = nextY; updateTarget();
+        if (current.targetKey) end({ pointerId, clientX: x, clientY: y });
+        else schedule();
+      };
+      announce(callbacks.current.messages.choose ?? callbacks.current.messages.started);
+    };
     const endTouch = (event: TouchEvent) => {
       const point = Array.from(event.changedTouches).find(point => point.identifier === pointerId);
       if (!point) return;
+      const hadGhost = Boolean(current.ghost);
+      const wasPicked = picked;
       end({ pointerId, clientX: point.clientX, clientY: point.clientY });
+      // Un vrai dépôt ne déclenche pas le clic synthétique qui suit le toucher :
+      // la ligne sous le doigt ne bascule pas de sélection par accident.
+      if (hadGhost && !wasPicked && ended) event.preventDefault?.();
     };
     cleanup.current = dispose;
-    activate();
+    if (touch) {
+      // Le déplacement ne part pas du simple toucher : appui court maintenu
+      // (ou intention horizontale) arme le geste, un balayage vertical garde
+      // le défilement natif. La souris reste immédiate.
+      armTimer = setTimeout(armDrag, TOUCH_ARM_DELAY_MS) as unknown as number;
+    } else activate();
     if (touch) {
       window.addEventListener('touchmove', moveTouch, { passive: false });
       window.addEventListener('touchend', endTouch);

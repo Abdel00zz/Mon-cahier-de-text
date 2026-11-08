@@ -3,6 +3,7 @@
   min-height: 52px;
   cursor: pointer;
   touch-action: pan-y pinch-zoom;
+  -webkit-tap-highlight-color: transparent;
   transition: background-color 180ms ease;
 }
 .editor-row-content--sortable:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -3px; }
@@ -74,7 +75,7 @@
 [data-content-direction="ltr"] [data-row-content].editor-row-content--sortable:not([data-reorder-direction]) { padding-right: 48px; }
 [data-row-content].editor-row-content--sortable[data-reorder-direction="rtl"],
 [data-content-direction="rtl"] [data-row-content].editor-row-content--sortable:not([data-reorder-direction]) { padding-left: 48px; }
-.editor-reorder-handle { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; display: grid; place-items: center; color: hsl(var(--muted-foreground)); border-radius: 12px; touch-action: none; cursor: grab; -webkit-touch-callout: none; transition: color 180ms ease, background-color 180ms ease, transform 180ms ease; }
+.editor-reorder-handle { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; display: grid; place-items: center; color: hsl(var(--muted-foreground)); border-radius: 12px; /* pan-y : avant l'armement (appui long), un balayage vertical depuis la poignée fait défiler la page au lieu de piéger le doigt. */ touch-action: pan-y; cursor: grab; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; transition: color 180ms ease, background-color 180ms ease, transform 180ms ease; }
 [data-reorder-direction="ltr"] > .editor-reorder-handle,
 [data-content-direction="ltr"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 0; left: auto; }
 [data-reorder-direction="rtl"] > .editor-reorder-handle,
