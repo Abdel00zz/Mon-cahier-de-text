@@ -1,7 +1,7 @@
 import { clamp } from 'es-toolkit';
 import type { AppConfig, ClassInfo } from '../../types.js';
 import { getDaySessionBlocks, getDayTeachingBlocks, type SessionBlock } from '../calendar/timetable.js';
-import { getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from '../calendar/calendar.js';
+import { deviceClockMinutes, getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from '../calendar/calendar.js';
 import { dateTimeFormat } from '../../lib/formatters.js';
 import { millisecondsUntilNextMoroccoDay } from '../../platform/mobileScheduling.js';
 import { sessionReminderMinutes } from './sessionReminderTiming.js';
@@ -10,9 +10,14 @@ interface SessionAlert { id: string; kind: 'end' | 'missing'; classIds: string[]
 const reminderMinutes = (value: number | undefined, fallback: number, max = 30): number =>
   Number.isFinite(value) ? clamp(Math.round(value!), 1, max) : fallback;
 export const moroccoClockMinutes = (now: Date, zone = 'Africa/Casablanca'): number => {
-  const parts = dateTimeFormat('en', { timeZone: zone, hourCycle: 'h23', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(now);
-  const part = (type: string) => Number(parts.find(value => value.type === type)?.value ?? 0);
-  return part('hour') * 60 + part('minute') + part('second') / 60 + now.getMilliseconds() / 60_000;
+  if (!zone || zone === 'local') return deviceClockMinutes(now);
+  try {
+    const parts = dateTimeFormat('en', { timeZone: zone, hourCycle: 'h23', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(now);
+    const part = (type: string) => Number(parts.find(value => value.type === type)?.value ?? 0);
+    return part('hour') * 60 + part('minute') + part('second') / 60 + now.getMilliseconds() / 60_000;
+  } catch {
+    return deviceClockMinutes(now);
+  }
 };
 /** Pure detector, shared by reminder dispatch and optional current-class navigation. */
 export function detectSessionAlerts(config: Partial<AppConfig>, classes: ClassInfo[], calendar: HolidayCalendar, now: Date, hasDate: (id: string, date: string) => boolean) {

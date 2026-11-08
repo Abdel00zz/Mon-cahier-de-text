@@ -1,18 +1,139 @@
-.settings-overview__sections { display: grid; gap: 1.75rem; min-width: 0; }
+.settings-overview__sections { display: grid; gap: 1.5rem; min-width: 0; }
 .settings-overview__section { min-width: 0; }
-.settings-overview__section-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .4rem 1rem; margin-block-end: .65rem; padding-inline: .2rem; }
-.settings-overview__section-header h2 { display: flex; align-items: center; gap: .5rem; font-size: .95rem; line-height: 1.5; font-weight: 600; color: hsl(var(--muted-foreground)); }
+.settings-overview__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .4rem 1rem;
+  margin-block-end: .65rem;
+  padding-inline: .2rem;
+}
+.settings-overview__section-header h2 {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .95rem;
+  line-height: 1.5;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
 .settings-overview__section-header h2 svg { width: 1.1rem; height: 1.1rem; flex: none; }
 .settings-overview__save { font-size: .72rem; color: hsl(var(--muted-foreground)); }
+
+/* Catégories repliables modernes et attractives : المظهر واللغة, الغيابات والشهادات, الإشعارات */
+.settings-overview__section--dropdown {
+  border-radius: 1.15rem;
+  border: 1px solid hsl(var(--border) / .82);
+  background: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card) / .92) 100%);
+  box-shadow: 0 2px 10px -4px hsl(var(--foreground) / .045), inset 0 1px 0 hsl(var(--background) / .5);
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+.settings-overview__section--dropdown[data-expanded='true'] {
+  border-color: color-mix(in srgb, var(--tone-ink, hsl(var(--primary))) 32%, hsl(var(--border)));
+  box-shadow: 0 8px 24px -8px hsl(var(--foreground) / .075);
+}
+.settings-overview__dropdown-header { margin: 0; padding: 0; }
+.settings-overview__trigger {
+  display: flex;
+  width: 100%;
+  min-height: 3.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: .85rem;
+  padding: .9rem 1.05rem;
+  border: 0;
+  border-radius: 1.15rem;
+  background: transparent;
+  color: hsl(var(--foreground));
+  text-align: start;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 160ms ease;
+}
+.settings-overview__trigger:hover { background: hsl(var(--muted) / .35); }
+.settings-overview__trigger:active { background: hsl(var(--muted) / .55); }
+.settings-overview__trigger:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -2px; }
+.settings-overview__trigger-icon {
+  display: inline-flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: .85rem;
+  background: var(--tone-surface, hsl(var(--primary) / .1));
+  color: var(--tone-ink, hsl(var(--primary)));
+  box-shadow: inset 0 0 0 1px var(--tone-ring, hsl(var(--primary) / .18));
+  transition: transform 200ms cubic-bezier(.22, 1, .36, 1);
+}
+.settings-overview__trigger:hover .settings-overview__trigger-icon { transform: scale(1.04); }
+.settings-overview__trigger-icon svg { width: 1.2rem; height: 1.2rem; flex: none; stroke-width: 1.85; }
+.settings-overview__trigger-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: .15rem; }
+.settings-overview__dropdown-header h2 {
+  font-size: .95rem;
+  line-height: 1.35;
+  font-weight: 650;
+  color: hsl(var(--foreground));
+  margin: 0;
+}
+.settings-overview__trigger-hint {
+  font-size: .78rem;
+  line-height: 1.35;
+  color: hsl(var(--muted-foreground));
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.settings-overview__chevron {
+  display: inline-flex;
+  width: 2.15rem;
+  height: 2.15rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: .65rem;
+  background: hsl(var(--muted) / .55);
+  color: hsl(var(--muted-foreground));
+  transition: transform 240ms cubic-bezier(.22, 1, .36, 1), background-color 160ms ease, color 160ms ease;
+}
+.settings-overview__chevron svg { width: 1.05rem; height: 1.05rem; }
+.settings-overview__section--dropdown[data-expanded='true'] .settings-overview__chevron {
+  transform: rotate(180deg);
+  background: var(--tone-surface, hsl(var(--primary) / .14));
+  color: var(--tone-ink, hsl(var(--primary)));
+}
+.settings-overview__section-content {
+  padding: .85rem .95rem 1rem;
+  border-top: 1px solid hsl(var(--border) / .55);
+}
+.settings-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 240ms cubic-bezier(.22, 1, .36, 1), opacity 180ms ease;
+}
+.settings-collapse[data-expanded='true'] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.settings-collapse__inner { min-height: 0; overflow: hidden; }
 .settings-overview .settings-section { padding: 1rem; border-radius: 1rem; background: hsl(var(--card)); box-shadow: 0 1px 2px hsl(var(--foreground) / .035); }
+.settings-overview .settings-overview__section--dropdown .settings-section { background: hsl(var(--background) / .55); box-shadow: none; }
 .settings-overview .settings-section__header h3 { font-size: .875rem; }
 .settings-overview .settings-section__header svg { color: hsl(var(--muted-foreground)); }
 .settings-overview .settings-row { min-width: 0; }
 .settings-overview .settings-row__control { max-width: 100%; }
 .settings-overview .settings-panel { gap: .75rem; }
-.settings-overview .schedule-tab { padding: .75rem; border: 1px solid hsl(var(--border)); border-radius: 1rem; background: hsl(var(--card)); }
-.settings-overview .schedule-grid-frame { margin-inline: -.4rem; }
+.settings-overview .schedule-tab { padding: .15rem 0 0; border: 0; border-radius: 0; background: transparent; }
+.settings-overview .schedule-grid-frame { margin-inline: -.25rem; }
 .settings-section-skeleton { height: 12rem; border-radius: 1rem; background: hsl(var(--muted)); }
+@media (prefers-reduced-motion: reduce) {
+  .settings-collapse, .settings-overview__chevron, .settings-overview__section--dropdown, .settings-overview__trigger-icon { transition: none; }
+}
 @media (max-width: 639px) {
   .settings-overview input:not([type='checkbox']):not([type='radio']):not([type='range']),
   .settings-overview textarea, .settings-overview select { font-size: 16px; }

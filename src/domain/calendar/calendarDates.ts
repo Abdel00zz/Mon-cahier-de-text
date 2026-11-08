@@ -17,14 +17,23 @@ const asISO = (date: string | Date): string => (typeof date === 'string' ? date.
  */
 const isoFormatters = new Map<string, Intl.DateTimeFormat>();
 
-/** Date du jour dans le fuseau marocain, critique côté serveur (fonctions Vercel en UTC). */
-export const todayInMorocco = (now: Date = new Date(), cal: HolidayCalendar = getBundledCalendar()): string => {
+/** Date du jour sur l'horloge locale du téléphone ou de l'ordinateur. */
+export const deviceTodayISO = (now: Date = new Date()): string => toISODate(now);
+
+/** Heure locale de l'appareil en minutes depuis minuit (avec précision à la milliseconde). */
+export const deviceClockMinutes = (now: Date = new Date()): number =>
+    now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60 + now.getMilliseconds() / 60_000;
+
+/** Date du jour dans le fuseau demandé (ou l'horloge locale si `fuseau` est vide). */
+export const todayInMorocco = (now: Date = new Date(), cal?: HolidayCalendar): string => {
+    const zone = cal !== undefined ? cal.fuseau : getBundledCalendar().fuseau;
+    if (!zone || zone === 'local') return toISODate(now);
     try {
         // 'en-CA' produit le format YYYY-MM-DD
-        let formatter = isoFormatters.get(cal.fuseau);
+        let formatter = isoFormatters.get(zone);
         if (!formatter) {
-            formatter = new Intl.DateTimeFormat('en-CA', { timeZone: cal.fuseau });
-            isoFormatters.set(cal.fuseau, formatter);
+            formatter = new Intl.DateTimeFormat('en-CA', { timeZone: zone });
+            isoFormatters.set(zone, formatter);
         }
         return formatter.format(now);
     } catch {

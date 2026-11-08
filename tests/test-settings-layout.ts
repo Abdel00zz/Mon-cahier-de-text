@@ -64,6 +64,8 @@ test('param√®tres mobiles : six rubriques visibles dans une page, bureau en fen√
   const modal = read('src/features/settings/ConfigModal.tsx');
   assert.match(page, /<WorkspacePage/);
   assert.match(page, /PAGE_SECTIONS.map/);
+  assert.match(page, /const PAGE_ORDER = \['emploi',/, 'la page commence par Emploi du temps');
+  assert.match(page, /COLLAPSIBLE_CATEGORIES = new Set<SettingsCategory>\(\['emploi', 'apparence', 'absences', 'notifications'\]\)/);
   assert.match(page, /data-settings-section=/);
   assert.doesNotMatch(page, /<Modal|role="tabpanel"|sectionOpen/);
   assert.match(app, /asPage=\{useWorkspacePages\}/);

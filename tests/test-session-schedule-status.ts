@@ -117,3 +117,33 @@ test('session schedule status : supporte la locale arabe', () => {
     assert.equal(tomorrowStatus.dayOffset, 1);
 });
 
+test('session schedule status : suit l’horloge locale du téléphone/PC et reste en cours jusqu’à la dernière seconde avant de passer à la séance suivante', () => {
+    const timetable: TimetableEntry[] = [
+        { day: 1, slot: 0, classId: 'cls-1' }, // 07h55–08h55
+        { day: 1, slot: 2, classId: 'cls-1' }, // 10h05–11h00
+    ];
+    // Lundi 12 octobre 2026 à 08:54:59.900 en heure locale de l'appareil
+    const lastSecondLocal = new Date(2026, 9, 12, 8, 54, 59, 900);
+    const activeStatus = computeClassSessionSchedule(timetable, 0, 'cls-1', {
+        now: lastSecondLocal,
+        timeZone: 'local',
+        locale: 'fr',
+    });
+    assert.equal(activeStatus.state, 'in_progress');
+    assert.equal(activeStatus.remainingSeconds, 1);
+    assert.equal(activeStatus.remainingMinutes, 1);
+    assert.ok(activeStatus.nextTransitionMs && activeStatus.nextTransitionMs <= 200);
+
+    // À la seconde exacte 08:55:00.000, bascule immédiate sur la séance suivante (10h05)
+    const exactEndLocal = new Date(2026, 9, 12, 8, 55, 0, 0);
+    const nextStatus = computeClassSessionSchedule(timetable, 0, 'cls-1', {
+        now: exactEndLocal,
+        timeZone: 'local',
+        locale: 'fr',
+    });
+    assert.equal(nextStatus.state, 'today_later');
+    assert.equal(nextStatus.startMin, 605);
+    assert.equal(nextStatus.startTimeLabel, '10h00');
+});
+
+

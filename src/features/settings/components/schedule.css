@@ -2,10 +2,10 @@
   --schedule-enamel: var(--codex-enamel, #285b50);
   --schedule-paper: hsl(var(--card));
   --schedule-wash: color-mix(in srgb, var(--schedule-enamel) 5%, var(--schedule-paper));
-  --schedule-rule: color-mix(in srgb, var(--schedule-enamel) 18%, var(--schedule-paper));
+  --schedule-rule: color-mix(in srgb, var(--schedule-enamel) 15%, var(--schedule-paper));
   --schedule-secondary: hsl(var(--muted-foreground));
   display: grid;
-  gap: 14px;
+  gap: 10px;
   min-width: 0;
   container-type: inline-size;
 }
@@ -15,40 +15,42 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 12px;
+  justify-content: flex-end;
+  gap: 4px 10px;
 }
-.schedule-periods__label {
-  color: var(--schedule-secondary);
-  font-size: .8125rem;
-  font-weight: 500;
+.schedule-tab[dir='ltr'] .schedule-periods {
+  justify-content: flex-start;
 }
 .schedule-tab .schedule-periods [role='tablist'] {
   display: inline-flex;
-  gap: 2px;
+  gap: 4px;
   max-width: 100%;
-  padding: 2px;
-  border: 1px solid var(--schedule-rule);
-  border-radius: 12px;
-  background: var(--schedule-paper);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .schedule-tab .schedule-periods [role='tab'] {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 44px;
-  min-height: 44px;
-  padding: 4px 12px;
-  border-radius: 9px;
+  min-height: 34px;
+  padding: 4px 11px;
+  border: 0;
+  border-radius: 999px;
   color: var(--schedule-secondary);
-  font-size: .8125rem;
+  background: transparent;
+  font-size: .75rem;
   font-weight: 500;
-  line-height: 1.35;
-  white-space: normal;
-  transition: background-color 160ms ease, color 160ms ease;
+  line-height: 1.3;
+  white-space: nowrap;
+  transition: background-color 160ms ease, color 160ms ease, transform 140ms ease;
 }
 .schedule-tab .schedule-periods [role='tab'][data-state='active'] {
   color: var(--schedule-enamel);
-  font-weight: 600;
+  font-weight: 650;
   background: color-mix(in srgb, var(--schedule-enamel) 12%, var(--schedule-paper));
-  box-shadow: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--schedule-enamel) 22%, transparent);
 }
 .schedule-tab .schedule-periods [role='tab']:focus-visible,
 .schedule-cell__select:focus-visible {
@@ -70,7 +72,7 @@
   width: 100%;
   min-width: 16.25rem;
   table-layout: fixed;
-  border-spacing: 6px;
+  border-spacing: 5px;
   border-collapse: separate;
 }
 .schedule-grid[data-period='all'] { min-width: 40rem; }
@@ -81,8 +83,8 @@
  * d'affectation reste identique, la lecture devient nette.
  */
 @media (max-width: 480px) {
-  .schedule-grid { min-width: 32rem; }
-  .schedule-cell__label { font-size: .78rem; line-height: 1.3; }
+  .schedule-grid { min-width: 28rem; }
+  .schedule-cell__label { font-size: .74rem; line-height: 1.25; }
 }
 .schedule-grid :is(th, td) {
   border: 0;
@@ -92,12 +94,12 @@
 /* Chaque jour et chaque séance ont leur surface, séparée par un espace de papier. */
 .schedule-grid[data-period='all'] [data-lunch] { border-inline-start: 2px solid var(--schedule-rule); }
 .schedule-tab .schedule-grid thead th {
-  height: 44px;
-  padding: 4px;
-  border-radius: 12px;
-  background: var(--schedule-wash);
+  height: 38px;
+  padding: 3px 4px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--schedule-enamel) 4%, var(--schedule-paper));
   color: var(--schedule-secondary);
-  font-size: .75rem;
+  font-size: .6875rem;
   font-weight: 600;
   letter-spacing: .01em;
 }
@@ -107,15 +109,14 @@
   inset-inline-start: 0;
   z-index: 2;
 }
-.schedule-grid__day-heading { width: 5.25rem; }
+.schedule-grid__day-heading { width: 4.65rem; }
 .schedule-tab .schedule-grid__day {
-  padding: 5px;
-  border: 1px solid var(--schedule-rule);
-  border-radius: 12px;
-  background: var(--schedule-paper);
-  box-shadow: 0 1px 2px hsl(var(--foreground) / .035);
-  color: hsl(var(--foreground));
-  font-size: .8125rem;
+  padding: 4px 5px;
+  border: 1px solid color-mix(in srgb, var(--schedule-rule) 75%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--schedule-enamel) 2.5%, var(--schedule-paper));
+  color: hsl(var(--foreground) / .9);
+  font-size: .75rem;
   font-weight: 600;
   overflow-wrap: normal;
 }
@@ -123,8 +124,8 @@
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0 .18em;
-  line-height: 1.3;
+  gap: 0 .16em;
+  line-height: 1.25;
   font-variant-numeric: tabular-nums;
 }
 .schedule-hour-label > span { white-space: nowrap; }
@@ -132,14 +133,14 @@
 .schedule-grid .schedule-cell {
   position: relative;
   /* Donne une hauteur de référence au contenu, y compris dans les séances fusionnées. */
-  height: 58px;
+  height: 50px;
   padding: 0;
   border-radius: 12px;
   background: transparent;
   transition: background-color 160ms ease;
 }
 .schedule-cell__content {
-  min-height: 58px;
+  min-height: 50px;
   height: 100%;
   display: grid;
   place-items: center;
@@ -148,7 +149,7 @@
 }
 .schedule-cell--empty .schedule-cell__content {
   background: color-mix(in srgb, var(--schedule-enamel) 2%, var(--schedule-paper));
-  border: 1px dashed var(--schedule-rule);
+  border: 1px dashed color-mix(in srgb, var(--schedule-rule) 85%, transparent);
 }
 .schedule-cell__pickers {
   display: flex;
@@ -172,8 +173,8 @@
 }
 .schedule-cell__add {
   pointer-events: none;
-  color: color-mix(in srgb, var(--schedule-secondary) 52%, var(--schedule-paper));
-  transition: color 160ms ease;
+  color: color-mix(in srgb, var(--schedule-secondary) 46%, var(--schedule-paper));
+  transition: color 160ms ease, transform 160ms ease;
 }
 .schedule-grid .schedule-cell--assigned {
   --session-ink: var(--card-title);
@@ -198,41 +199,42 @@
 .schedule-cell__details {
   width: 100%;
   min-width: 0;
-  padding: 6px 8px;
+  padding: 4px 6px;
   pointer-events: none;
 }
 .schedule-cell__label {
   display: block;
   overflow-wrap: anywhere;
-  font-size: .8125rem;
+  font-size: .75rem;
   font-weight: 650;
-  line-height: 1.3;
+  line-height: 1.25;
   letter-spacing: -.005em;
 }
-.schedule-cell__label:lang(ar) { font-size: .875rem; }
+.schedule-cell__label:lang(ar) { font-size: .8125rem; }
 .schedule-cell__meta {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0 .4em;
-  margin-top: 3px;
+  gap: 0 .35em;
+  margin-top: 2px;
   color: color-mix(in srgb, var(--session-ink) 78%, var(--session-fill));
-  font-size: .6875rem;
-  line-height: 1.4;
+  font-size: .625rem;
+  line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
 .schedule-cell__subject { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .schedule-cell__subject::before { content: '· '; }
 
 @media (hover: hover) {
-  .schedule-tab .schedule-periods [role='tab']:hover {
+  .schedule-tab .schedule-periods [role='tab']:hover:not([data-state='active']) {
     background: var(--schedule-wash);
+    color: hsl(var(--foreground));
   }
   .schedule-grid .schedule-cell--empty:hover .schedule-cell__content {
-    background: color-mix(in srgb, var(--schedule-enamel) 7%, var(--schedule-paper));
+    background: color-mix(in srgb, var(--schedule-enamel) 6%, var(--schedule-paper));
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--schedule-enamel) 16%, transparent);
   }
-  .schedule-cell--empty:hover .schedule-cell__add { color: var(--schedule-enamel); }
+  .schedule-cell--empty:hover .schedule-cell__add { color: var(--schedule-enamel); transform: scale(1.1); }
   .schedule-grid .schedule-cell--assigned:hover .schedule-cell__content {
     background: color-mix(in srgb, var(--session-ink) 7%, var(--session-fill));
     box-shadow: inset 0 0 0 1px var(--card-border), 0 3px 8px hsl(var(--foreground) / .07);
@@ -246,9 +248,7 @@
   .schedule-grid[data-period='all'] { min-width: 52rem; }
 }
 @container (max-width: 25rem) {
-  .schedule-periods__label { display: none; }
-  .schedule-tab .schedule-periods [role='tablist'] { width: 100%; }
-  .schedule-tab .schedule-periods [role='tab'] { padding-inline: 5px; }
+  .schedule-tab .schedule-periods [role='tab'] { padding-inline: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .schedule-tab [role='tab'],

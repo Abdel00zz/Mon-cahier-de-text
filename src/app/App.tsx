@@ -149,8 +149,8 @@ const App: React.FC = () => {
     [config.defaultTeacherName, authUser],
   );
   const showsSubjectLabels = useMemo(
-    () => teachesSeveralSubjects(classes, teacherName),
-    [classes, teacherName],
+    () => teachesSeveralSubjects(classes, teacherName, config.selectedSubjects),
+    [classes, teacherName, config.selectedSubjects],
   );
   const bootProgress = useBootstrapProgress();
   const syncProgress = useSyncProgress();

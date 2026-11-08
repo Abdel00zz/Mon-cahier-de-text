@@ -9,6 +9,17 @@ export interface DashboardClassGroup {
   items: Array<{ classInfo: ClassInfo; startMin: number }>;
 }
 
+const statePriority = (schedule?: SessionScheduleStatus): number => {
+  switch (schedule?.state) {
+    case 'in_progress': return 0;
+    case 'paused': return 1;
+    case 'starting_soon': return 2;
+    case 'today_later': return 3;
+    case 'upcoming': return 4;
+    default: return 5;
+  }
+};
+
 /** A class follows its next teaching slot, never a session that already ended.
  * Incoming class order breaks ties, preserving the teacher's manual ordering. */
 export function groupDashboardClasses(
@@ -37,8 +48,17 @@ export function groupDashboardClasses(
   const result = [...groups.values()].sort((a, b) => a.order - b.order);
   for (const group of result) {
     group.showTitle = !(result.length === 1 && group.key === 'other');
-    group.items.sort((a, b) => Number(schedules.get(b.classInfo.id)?.state === 'in_progress')
-      - Number(schedules.get(a.classInfo.id)?.state === 'in_progress') || a.startMin - b.startMin);
+    group.items.sort((a, b) => {
+      const schedA = schedules.get(a.classInfo.id);
+      const schedB = schedules.get(b.classInfo.id);
+      const prioDiff = statePriority(schedA) - statePriority(schedB);
+      if (prioDiff !== 0) return prioDiff;
+      if (schedA?.state === 'in_progress' && schedB?.state === 'in_progress') {
+        const endDiff = (schedA.endMin ?? 9999) - (schedB.endMin ?? 9999);
+        if (endDiff !== 0) return endDiff;
+      }
+      return a.startMin - b.startMin;
+    });
   }
   return result;
 }

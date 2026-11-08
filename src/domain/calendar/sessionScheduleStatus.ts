@@ -1,6 +1,6 @@
 import type { AbsencePeriod, ClassSchedule, TimetableClockPolicy, TimetableEntry } from '../../types';
 import { getDaySessionBlocks, getDayTeachingBlocks, getTimetableDisplayRange } from './timetable';
-import { getBundledCalendar, getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from './calendar';
+import { deviceClockMinutes, deviceTodayISO, getBundledCalendar, getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from './calendar';
 import { moroccoClockMinutes } from '../notifications/sessionAlertEngine';
 
 type SessionScheduleState =
@@ -18,6 +18,10 @@ export interface SessionScheduleStatus {
     /** Libellé court pour badges et repères compacts (ex: "En cours · 44 min", "Lundi à 10h00") */
     shortLabel: string;
     remainingMinutes?: number;
+    /** Temps restant exact en secondes jusqu'à la fin de la séance ou de la pause en cours. */
+    remainingSeconds?: number;
+    /** Délai en millisecondes avant la prochaine bascule d'état (fin à la dernière seconde, reprise ou début). */
+    nextTransitionMs?: number;
     startMin?: number;
     endMin?: number;
     startTimeLabel?: string;
@@ -49,6 +53,8 @@ const DAY_NAMES: Record<'fr' | 'ar' | 'en', Record<number, string>> = {
 export interface SessionScheduleOptions {
     now?: Date;
     calendar?: HolidayCalendar;
+    /** Fuseau horaire explicite ('local' par défaut pour suivre l'horloge du téléphone/PC). */
+    timeZone?: string;
     locale?: string;
     absences?: AbsencePeriod[];
     schedules?: ClassSchedule[];
@@ -57,7 +63,7 @@ export interface SessionScheduleOptions {
 
 /**
  * Analyse dynamique et intelligente de l'emploi du temps pour une classe donnée.
- * Détermine si la séance est en cours (avec calcul du temps restant en minutes),
+ * Détermine si la séance est en cours (active jusqu'à la dernière seconde de la séance),
  * commence bientôt, aura lieu plus tard aujourd'hui, ou planifiée plus tard dans la semaine.
  */
 export function computeClassSessionSchedule(
@@ -84,8 +90,13 @@ export function computeClassSessionSchedule(
 
     const calendar = options.calendar ?? getBundledCalendar();
     const now = options.now ?? new Date();
-    const todayIso = todayInMorocco(now, calendar);
-    const currentMinute = moroccoClockMinutes(now, calendar.fuseau);
+    const effectiveZone = options.timeZone ?? (options.calendar?.fuseau || (options.now ? calendar.fuseau : 'local'));
+    const todayIso = effectiveZone === 'local'
+        ? deviceTodayISO(now)
+        : todayInMorocco(now, { ...calendar, fuseau: effectiveZone });
+    const currentMinute = effectiveZone === 'local'
+        ? deviceClockMinutes(now)
+        : moroccoClockMinutes(now, effectiveZone);
     const schoolYear = getEffectiveSchoolYear(calendar, options.schoolYearStart, todayIso);
     const currentDayOfWeek = new Date(`${todayIso}T12:00:00Z`).getUTCDay();
     const rawLocale = options.locale ?? 'fr';
@@ -109,13 +120,15 @@ export function computeClassSessionSchedule(
             .filter(b => b.classId === classId)
             .sort((a, b) => a.startMin - b.startMin);
 
-        // A. Séance en cours ?
+        // A. Séance en cours (active jusqu'à la toute dernière seconde avant endMin) ?
         const activeBlock = todayBlocks.find(b => currentMinute >= b.startMin && currentMinute < b.endMin);
         if (activeBlock) {
             const parentSession = todaySessionBlocks.find(
                 b => activeBlock.startMin >= b.startMin && activeBlock.endMin <= b.endMin,
             );
+            const remainingSeconds = Math.max(1, Math.ceil((activeBlock.endMin - currentMinute) * 60));
             const remaining = Math.max(1, Math.ceil(activeBlock.endMin - currentMinute));
+            const nextTransitionMs = Math.max(50, Math.ceil((activeBlock.endMin - currentMinute) * 60_000) + 25);
             const display = getTimetableDisplayRange(activeBlock.startMin, activeBlock.endMin, clock);
             const startLabel = formatHourMinute(display.startMin, lang);
             const endLabel = formatHourMinute(display.endMin, lang);
@@ -137,6 +150,8 @@ export function computeClassSessionSchedule(
                 label,
                 shortLabel,
                 remainingMinutes: remaining,
+                remainingSeconds,
+                nextTransitionMs,
                 startMin: activeBlock.startMin,
                 endMin: activeBlock.endMin,
                 startTimeLabel: startLabel,
@@ -144,10 +159,11 @@ export function computeClassSessionSchedule(
                 dayLabel: lang === 'ar' ? 'اليوم' : lang === 'en' ? 'Today' : 'Aujourd’hui',
                 dayOffset: 0,
                 sessionHours: parentSession?.hours ?? activeBlock.hours,
+                date: todayIso,
             };
         }
 
-        // B. Séance aujourd'hui qui commence bientôt ou plus tard ?
+        // B. Séance aujourd'hui qui commence bientôt ou plus tard (suivant les horaires internes) ?
         const upcomingToday = todayBlocks.filter(b => b.startMin > currentMinute);
         if (upcomingToday.length > 0) {
             const nextBlock = upcomingToday[0];
@@ -155,7 +171,9 @@ export function computeClassSessionSchedule(
                 b => nextBlock.startMin >= b.startMin && nextBlock.endMin <= b.endMin,
             );
             const sessionHours = parentSession?.hours ?? nextBlock.hours;
-            const diffMin = Math.ceil(nextBlock.startMin - currentMinute);
+            const remainingSeconds = Math.max(1, Math.ceil((nextBlock.startMin - currentMinute) * 60));
+            const diffMin = Math.max(1, Math.ceil(nextBlock.startMin - currentMinute));
+            const nextTransitionMs = Math.max(50, Math.ceil((nextBlock.startMin - currentMinute) * 60_000) + 25);
             const display = getTimetableDisplayRange(nextBlock.startMin, nextBlock.endMin, clock);
             const startLabel = formatHourMinute(display.startMin, lang);
             const endLabel = formatHourMinute(display.endMin, lang);
@@ -166,10 +184,22 @@ export function computeClassSessionSchedule(
                 const resumeLabel = formatHourMinute(nextBlock.startMin, lang);
                 const label = lang === 'ar' ? `استراحة · استئناف الحصة على الساعة ${resumeLabel}`
                     : lang === 'en' ? `Break · resumes at ${resumeLabel}` : `Pause · reprise à ${resumeLabel}`;
-                return { state: 'paused', label, shortLabel: label, remainingMinutes: diffMin,
-                    startMin: nextBlock.startMin, endMin: nextBlock.endMin,
-                    startTimeLabel: startLabel, endTimeLabel: endLabel, dayOffset: 0,
-                    sessionHours: pausedSession.hours };
+                return {
+                    state: 'paused',
+                    label,
+                    shortLabel: label,
+                    remainingMinutes: diffMin,
+                    remainingSeconds,
+                    nextTransitionMs,
+                    startMin: nextBlock.startMin,
+                    endMin: nextBlock.endMin,
+                    startTimeLabel: startLabel,
+                    endTimeLabel: endLabel,
+                    dayLabel: lang === 'ar' ? 'اليوم' : lang === 'en' ? 'Today' : 'Aujourd’hui',
+                    dayOffset: 0,
+                    sessionHours: pausedSession.hours,
+                    date: todayIso,
+                };
             }
 
             if (diffMin <= 60) {
@@ -190,6 +220,8 @@ export function computeClassSessionSchedule(
                     label,
                     shortLabel,
                     remainingMinutes: diffMin,
+                    remainingSeconds,
+                    nextTransitionMs,
                     startMin: nextBlock.startMin,
                     endMin: nextBlock.endMin,
                     startTimeLabel: startLabel,
@@ -197,9 +229,11 @@ export function computeClassSessionSchedule(
                     dayLabel: lang === 'ar' ? 'اليوم' : lang === 'en' ? 'Today' : 'Aujourd’hui',
                     dayOffset: 0,
                     sessionHours,
+                    date: todayIso,
                 };
             }
 
+            const untilSoonMs = Math.max(50, Math.ceil((nextBlock.startMin - 60 - currentMinute) * 60_000) + 25);
             const label = lang === 'ar'
                 ? `حصة اليوم على الساعة ${startLabel}`
                 : lang === 'en'
@@ -216,6 +250,9 @@ export function computeClassSessionSchedule(
                 state: 'today_later',
                 label,
                 shortLabel,
+                remainingMinutes: diffMin,
+                remainingSeconds,
+                nextTransitionMs: Math.min(nextTransitionMs, untilSoonMs),
                 startMin: nextBlock.startMin,
                 endMin: nextBlock.endMin,
                 startTimeLabel: startLabel,
@@ -223,6 +260,7 @@ export function computeClassSessionSchedule(
                 dayLabel: lang === 'ar' ? 'اليوم' : lang === 'en' ? 'Today' : 'Aujourd’hui',
                 dayOffset: 0,
                 sessionHours,
+                date: todayIso,
             };
         }
     }

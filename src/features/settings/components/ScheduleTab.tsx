@@ -6,6 +6,7 @@ import { SUBJECT_ABBREV_MAP, formatLocalizedSubjectDisplayName } from '@/constan
 import { scheduleClassLabel } from '@/domain/classes/classAbbreviation';
 import { classIdentityFor } from '@/domain/classes/classIdentity';
 import { resolveDashboardClassOrder } from '@/domain/classes/classOrder';
+import { teachesSeveralSubjects } from '@/domain/classes/subjectScope';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import {
     TIMETABLE_DAYS,
@@ -90,12 +91,16 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }, [classes, config.dashboardClassOrder]);
     /**
      * Libellé de matière : affiché **seulement** si l'enseignant couvre
-     * plusieurs matières (règle partagée, calculée dans `App`). Avec une seule,
-     * il répéterait la même ligne dans toutes les cases et volerait la hauteur
-     * du nom de classe — l'information reste disponible dans l'info-bulle et le
-     * libellé accessible du créneau.
+     * au moins deux matières (`>= 2`). Avec une seule matière, on n'affiche
+     * pas le nom de la matière dans la cellule ni dans le sélecteur pour ne
+     * pas répéter la même information dans toutes les cases.
      */
-    const showSubjectLabels = useShowsSubjectLabels();
+    const contextShowsSubjectLabels = useShowsSubjectLabels();
+    const hasMultipleSubjects = React.useMemo(
+        () => teachesSeveralSubjects(classes, config.defaultTeacherName, config.selectedSubjects),
+        [classes, config.defaultTeacherName, config.selectedSubjects],
+    );
+    const showSubjectLabels = contextShowsSubjectLabels && hasMultipleSubjects;
     const assign = (day: number, slot: number, classId: string | null, createdName?: string) => {
         const nextTimetable = setTimetableEntry(timetable, day, slot, classId);
         onChange({ timetable: nextTimetable, schedules: deriveSchedules(nextTimetable) });
@@ -173,7 +178,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     return (
         <Tabs dir={locale === 'ar' ? 'rtl' : 'ltr'} value={visiblePeriod} onValueChange={value => setVisiblePeriod(value as SchedulePeriod)} className="schedule-tab">
             <div className="schedule-periods">
-                <span className="schedule-periods__label">{t('schedule.periodLabel')}</span>
+                <span className="sr-only">{t('schedule.periodLabel')}</span>
                 <TabsList aria-label={t('schedule.viewLabel')}>
                     {periodTabItems.map(item => (
                         <TabsTrigger key={item.id} value={item.id}>{item.label}</TabsTrigger>
@@ -249,7 +254,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                                 <option value={whole ? 'whole:' : ''}>{t('schedule.noClass')}</option>
                                                                 {pickerClasses.map(c => (
                                                                     <option key={c.id} value={whole ? `whole:${c.id}` : c.id}>
-                                                                        {subjectLabel(c.subject)} · {classLabel(c.name)}
+                                                                        {showSubjectLabels ? `${subjectLabel(c.subject)} · ${classLabel(c.name)}` : classLabel(c.name)}
                                                                     </option>
                                                                 ))}
                                                             </>;

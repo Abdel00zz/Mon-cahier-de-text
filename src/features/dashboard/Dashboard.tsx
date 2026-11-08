@@ -133,25 +133,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const scheduleStatusByClassId = useMemo(() => {
         const map = new Map<string, SessionScheduleStatus>();
         for (const classInfo of classes) {
-            map.set(
-                classInfo.id,
-                computeClassSessionSchedule(
-                    config.timetable,
-                    config.timetableClock,
-                    classInfo.id,
-                    {
-                        now: scheduleClockNow,
-                        calendar,
-                        locale,
-                        absences: config.absences,
-                        schedules: config.schedules,
-                        schoolYearStart: config.schoolYearStart,
-                    }
-                )
-            );
+            map.set(classInfo.id, computeClassSessionSchedule(config.timetable, config.timetableClock, classInfo.id, {
+                now: scheduleClockNow, calendar, timeZone: 'local', locale, absences: config.absences, schedules: config.schedules, schoolYearStart: config.schoolYearStart,
+            }));
         }
         return map;
     }, [classes, config.timetable, config.schedules, config.timetableClock, config.absences, config.schoolYearStart, calendar, locale, scheduleClockNow]);
+
+    useEffect(() => {
+        let minDelay = Number.POSITIVE_INFINITY;
+        for (const s of scheduleStatusByClassId.values()) if (s.nextTransitionMs && s.nextTransitionMs > 0 && s.nextTransitionMs < minDelay) minDelay = s.nextTransitionMs;
+        if (!Number.isFinite(minDelay) || minDelay > 60_000) return;
+        const id = setTimeout(() => { if (typeof document === 'undefined' || document.visibilityState === 'visible') setScheduleClockNow(new Date()); }, minDelay);
+        return () => clearTimeout(id);
+    }, [scheduleStatusByClassId]);
 
     useEffect(() => { setScheduleClockNow(new Date()); }, [sessionBoundaryIds]);
 

@@ -28,3 +28,33 @@ test('les cellules d’emploi du temps deviennent des cartes arrondies et légè
   assert.match(css, /inset 0 0 0 1px color-mix\(in srgb, var\(--card-border\)/, 'un liseré fin reprend la couleur de la classe');
   assert.match(css, /\.schedule-cell__label \{[\s\S]*?font-weight: 650/, 'le nom de classe gagne en lisibilité');
 });
+
+test('la matière est masquée dans les cellules si le professeur enseigne une seule matière (y compris synonymes AR/FR)', async () => {
+  const { teachesSeveralSubjects, subjectKey } = await import('../src/domain/classes/subjectScope');
+  assert.equal(subjectKey('Mathématiques'), subjectKey('الرياضيات'));
+  assert.equal(subjectKey('Mathématiques'), subjectKey('Maths'));
+  assert.equal(
+    teachesSeveralSubjects([
+      { subject: 'Mathématiques', teacherName: 'Prof' },
+      { subject: 'الرياضيات', teacherName: 'Prof' },
+    ], 'Prof'),
+    false,
+    'une seule matière canonique même écrite en FR et AR',
+  );
+  assert.equal(
+    teachesSeveralSubjects([
+      { subject: 'Mathématiques', teacherName: 'Prof' },
+      { subject: 'Physique-Chimie', teacherName: 'Prof' },
+    ], 'Prof', ['Mathématiques']),
+    false,
+    'une seule matière déclarée dans le profil masque les matières résiduelles non déclarées',
+  );
+  assert.equal(
+    teachesSeveralSubjects([
+      { subject: 'Mathématiques', teacherName: 'Prof' },
+      { subject: 'Physique-Chimie', teacherName: 'Prof' },
+    ], 'Prof', ['Mathématiques', 'Physique-Chimie']),
+    true,
+    'deux matières déclarées et enseignées affichent le libellé pour les distinguer',
+  );
+});
