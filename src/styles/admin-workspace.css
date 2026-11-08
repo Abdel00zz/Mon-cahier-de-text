@@ -1,38 +1,79 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    7. ADMINISTRATION WORKSPACE, COMMAND BAR & TEACHER CARDS
+   Design language : Apple / iOS — surfaces calmes, hairlines, pilules,
+   verre dépoli, une seule couleur d'action. Aucun élément ajouté :
+   seules les surfaces, les contours et les typographies changent.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Administration: a calm, compact control surface built from the existing
-   navigation and panels. Scoped classes keep the teacher workspace unchanged. */
+/* Administration : palette Apple scopée sur le point de montage admin.
+   Toutes les vues (pilotage, fiche enseignant, calendrier, journal…) vivent
+   dans #admin-root : les utilitaires Tailwind (bg-card, text-primary…)
+   héritent de ces variables sans toucher au reste de l'application. */
+#admin-root {
+  --background: 240 12% 97%;          /* #F5F5F7 — le gris Apple */
+  --foreground: 240 8% 12%;           /* #1D1D1F — encre Graphite */
+  --card: 0 0% 100%;                  /* blanc pur, ombre diffuse seulement */
+  --card-foreground: 240 8% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 8% 12%;
+  --primary: 211 100% 45%;            /* #0071E3 — bleu Apple */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 6% 94%;
+  --secondary-foreground: 240 8% 12%;
+  --muted: 240 6% 95%;
+  --muted-foreground: 240 4% 42%;     /* #6E6E73 */
+  --accent: 240 6% 94%;
+  --accent-foreground: 240 8% 12%;
+  --destructive: 4 90% 58%;           /* #FF3B30 */
+  --warning: 35 100% 50%;             /* #FF9500 */
+  --border: 240 10% 91%;              /* hairline */
+  --input: 240 10% 91%;
+  --ring: 211 100% 45%;
+  --clr-bg: hsl(240 12% 97%);
+  min-height: 100dvh;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', 'Readex Pro Variable', 'Readex Pro', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+#admin-root h1, #admin-root h2, #admin-root h3 {
+  letter-spacing: -.022em;
+  font-weight: 700;
+}
+#admin-root button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
 .admin-shell {
   min-height: 100dvh;
   color: hsl(var(--foreground));
-  background:
-    radial-gradient(circle at 90% -10%, hsl(var(--primary) / .07), transparent 31rem),
-    linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted) / .34));
+  background: hsl(var(--background));
 }
-.admin-loading { background: hsl(var(--background)); }
+
+/* ── Barre de commande : verre dépoli façon macOS, flottante sur le gris ── */
 .admin-commandbar {
   position: sticky;
   top: 0;
   z-index: 30;
   min-height: 4.25rem;
   align-items: center;
-  background: hsl(var(--background) / .82);
-  border-bottom: 1px solid hsl(var(--border) / .72);
-  backdrop-filter: blur(14px) saturate(1.08);
-  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  background: hsl(var(--background) / .78);
+  border-bottom: 1px solid hsl(var(--foreground) / .07);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 .admin-commandbar__action {
   display: inline-flex;
   min-height: 2.75rem;
   align-items: center;
   justify-content: center;
-  border-radius: .75rem;
-  border-color: hsl(var(--border) / .9);
-  background: hsl(var(--card) / .88);
-  box-shadow: 0 1px 2px hsl(var(--foreground) / .04);
-  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  border-radius: 980px;               /* la pilule Apple */
+  border-color: transparent;
+  background: hsl(var(--foreground) / .055);
+  color: hsl(var(--foreground));
+  box-shadow: none;
+  transition: background-color 200ms ease, color 200ms ease, transform 120ms ease;
 }
 .admin-commandbar__icon {
   width: 1.08rem;
@@ -40,175 +81,246 @@
   margin-inline-end: .15rem;
 }
 .admin-commandbar__action:hover {
-  border-color: hsl(var(--primary) / .34);
-  background: hsl(var(--primary) / .07);
-  box-shadow: 0 5px 14px hsl(var(--foreground) / .07);
+  border-color: transparent;
+  background: hsl(var(--foreground) / .09);
+  box-shadow: none;
 }
-.admin-commandbar__action:active { transform: scale(.98); }
+.admin-commandbar__action:active { transform: scale(.965); }
 .admin-commandbar__action:focus-visible,
 .admin-filter-bar :is(input, select):focus-visible,
 .admin-filter-chips button:focus-visible,
 .admin-metric-card:focus-visible,
 .admin-teacher-card:focus-visible {
-  outline: 2px solid hsl(var(--primary));
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 3px hsl(var(--primary) / .32);
 }
+/* Actions secondaires : même pilule neutre, icône seule colorée
+   (langage Réglages d'iOS — une teinte par domaine, jamais un fond). */
+.admin-commandbar__action--schedule .admin-commandbar__icon { color: hsl(211 100% 45%); }
+.admin-commandbar__action--journal .admin-commandbar__icon { color: hsl(35 100% 50%); }
+.admin-commandbar__action--policy .admin-commandbar__icon { color: hsl(155 65% 38%); }
 .admin-commandbar__action--primary {
-  border-color: hsl(var(--primary) / .86);
-  box-shadow: 0 4px 12px hsl(var(--primary) / .18);
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 1px 3px hsl(var(--primary) / .28);
 }
-.admin-commandbar__action--ink { box-shadow: 0 3px 10px hsl(var(--foreground) / .15); }
-.admin-commandbar__action--schedule {
-  border-color: hsl(209 68% 46% / .28);
-  background: hsl(209 70% 96% / .92);
-  color: hsl(209 58% 34%);
+.admin-commandbar__action--primary:hover { background: hsl(211 100% 41%); }
+.admin-commandbar__action--primary .admin-commandbar__icon { color: inherit; }
+.admin-commandbar__action--ink {
+  background: hsl(var(--foreground));
+  color: hsl(0 0% 100%);
+  box-shadow: 0 1px 3px hsl(var(--foreground) / .22);
 }
-.admin-commandbar__action--schedule:hover {
-  border-color: hsl(209 68% 46% / .52);
-  background: hsl(209 70% 92%);
-}
-.admin-commandbar__action--bulletin {
-  background: hsl(15 55% 45%);
-  color: hsl(45 40% 98%);
-}
-.admin-commandbar__action--bulletin:hover { background: hsl(15 56% 39%); }
-.admin-commandbar__action--calendar {
-  background: hsl(38 55% 28%);
-  color: hsl(45 55% 96%);
-}
-.admin-commandbar__action--calendar:hover { background: hsl(38 55% 23%); }
+.admin-commandbar__action--ink:hover { background: hsl(var(--foreground) / .88); }
+.admin-commandbar__action--ink .admin-commandbar__icon { color: inherit; }
 
-.admin-overview { padding-top: 1.4rem; }
+/* ── En-tête : grande typographie SF, filet discret ── */
+.admin-overview { padding-top: 1.6rem; }
 .admin-overview__header {
-  padding-bottom: 1.1rem;
-  border-bottom: 1px solid hsl(var(--border) / .72);
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid hsl(var(--foreground) / .07);
 }
 .admin-overview__header h1,
 .admin-detail__header h1 {
-  letter-spacing: -.035em;
+  letter-spacing: -.028em;
+  font-weight: 800;
 }
 .admin-overview__header-actions button {
   min-height: 2.75rem;
-  border-radius: .7rem;
-  box-shadow: 0 1px 2px hsl(var(--foreground) / .035);
+  border-radius: 980px;
+  box-shadow: none;
 }
+/* ── Cartes d'indicateurs : blanc, ombre diffuse, halo coloré discret ── */
 .admin-metric-card {
   position: relative;
   overflow: hidden;
   min-height: 8.6rem;
-  border-radius: .9rem;
-  border-color: hsl(var(--border) / .86);
-  background: hsl(var(--card) / .9);
-  box-shadow: 0 2px 8px hsl(var(--foreground) / .035);
-  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
+  border-radius: 1.125rem;
+  border-color: hsl(var(--foreground) / .06);
+  background: hsl(var(--card));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .04), 0 8px 24px hsl(var(--foreground) / .05);
+  transition: box-shadow 220ms ease, border-color 220ms ease !important;
 }
 .admin-metric-card::after {
   position: absolute;
-  inset: 0 auto 0 0;
-  width: 3px;
-  background: hsl(var(--primary) / .55);
+  top: -2.4rem;
+  inset-inline-end: -2.4rem;
+  width: 7.5rem;
+  height: 7.5rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(var(--primary) / .12), transparent 68%);
   content: '';
+  pointer-events: none;
 }
-.admin-metric-card:nth-child(2)::after { background: hsl(var(--destructive) / .68); }
-.admin-metric-card:nth-child(3)::after { background: hsl(var(--warning) / .76); }
-.admin-metric-card:nth-child(4)::after { background: hsl(var(--foreground) / .48); }
+.admin-metric-card:nth-child(2)::after { background: radial-gradient(circle, hsl(var(--destructive) / .12), transparent 68%); }
+.admin-metric-card:nth-child(3)::after { background: radial-gradient(circle, hsl(var(--warning) / .14), transparent 68%); }
+.admin-metric-card:nth-child(4)::after { background: radial-gradient(circle, hsl(var(--foreground) / .1), transparent 68%); }
 .admin-metric-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 9px 20px hsl(var(--foreground) / .075) !important;
+  transform: none !important;
+  border-color: hsl(var(--foreground) / .09);
+  box-shadow: 0 2px 4px hsl(var(--foreground) / .05), 0 14px 34px hsl(var(--foreground) / .09) !important;
 }
 .admin-priority-panel {
-  border-radius: .9rem;
-  border-color: hsl(var(--warning) / .24);
-  background: color-mix(in srgb, hsl(var(--card)) 92%, hsl(var(--warning)));
-  box-shadow: 0 2px 8px hsl(var(--foreground) / .025);
+  border-radius: 1.125rem;
+  border-color: hsl(35 100% 50% / .22);
+  background: hsl(var(--card));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .04), 0 8px 24px hsl(var(--foreground) / .05);
 }
 .admin-priority-panel > div > div > button { text-underline-offset: 3px; }
+/* ── Filtres : champ iOS — blanc, rayon doux, anneau bleu au focus ── */
 .admin-filter-chips { gap: .45rem; }
 .admin-filter-chips button {
   min-height: 2.4rem;
-  border-radius: .65rem;
-  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
+  border-radius: 980px;
+  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease !important;
 }
-.admin-filter-chips button:hover { transform: translateY(-1px); }
+.admin-filter-chips button:hover { transform: none; background: hsl(var(--foreground) / .055); }
 .admin-filter-bar {
   padding: .5rem;
-  border: 1px solid hsl(var(--border) / .76);
-  border-radius: .9rem;
-  background: hsl(var(--card) / .72);
-  box-shadow: 0 1px 3px hsl(var(--foreground) / .025);
+  border: 1px solid hsl(var(--foreground) / .06);
+  border-radius: 1rem;
+  background: hsl(var(--card));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .04);
 }
 .admin-filter-bar :is(input, select) {
   min-height: 2.75rem;
-  border-radius: .65rem;
-  border-color: hsl(var(--border) / .9);
-  background: hsl(var(--background) / .92);
+  border-radius: .75rem;
+  border-color: hsl(var(--foreground) / .08);
+  background: hsl(var(--background));
   color: hsl(var(--foreground));
   transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
-.admin-filter-bar :is(input, select):hover { border-color: hsl(var(--primary) / .35); }
+.admin-filter-bar :is(input, select)::placeholder { color: hsl(var(--muted-foreground) / .85); }
+.admin-filter-bar :is(input, select):hover { border-color: hsl(var(--foreground) / .16); }
 .admin-filter-bar :is(input, select):focus {
-  border-color: hsl(var(--primary) / .68);
-  box-shadow: 0 0 0 3px hsl(var(--primary) / .12);
+  border-color: hsl(var(--primary) / .55);
+  box-shadow: 0 0 0 3.5px hsl(var(--primary) / .18);
 }
 .admin-empty-state {
-  border-radius: .9rem;
+  border-radius: 1.125rem;
   border-style: dashed;
-  background: hsl(var(--card) / .55);
+  background: hsl(var(--card) / .6);
 }
 .admin-teacher-grid { gap: .85rem; }
+/* ── Cartes enseignant : respiration, élévation douce au survol ── */
 .admin-teacher-card {
   min-height: 100%;
-  border-radius: .9rem;
-  border-color: hsl(var(--border) / .85);
-  background: hsl(var(--card) / .9);
-  box-shadow: 0 2px 8px hsl(var(--foreground) / .035);
-  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
+  border-radius: 1.125rem;
+  border-color: hsl(var(--foreground) / .06);
+  background: hsl(var(--card));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .04), 0 8px 24px hsl(var(--foreground) / .05);
+  transition: border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease !important;
 }
 .admin-teacher-card:hover {
-  transform: translateY(-2px) !important;
-  border-color: hsl(var(--primary) / .38);
-  background: hsl(var(--primary) / .035);
-  box-shadow: 0 10px 20px hsl(var(--foreground) / .075) !important;
+  transform: translateY(-1px) !important;
+  border-color: hsl(var(--foreground) / .1);
+  background: hsl(var(--card));
+  box-shadow: 0 2px 4px hsl(var(--foreground) / .05), 0 16px 36px hsl(var(--foreground) / .1) !important;
 }
 
-.admin-detail { padding-top: 1.4rem; }
+.admin-detail { padding-top: 1.6rem; }
 .admin-detail__header {
-  border-radius: .95rem;
-  border-color: hsl(var(--border) / .82);
-  background: hsl(var(--card) / .9);
-  box-shadow: 0 3px 12px hsl(var(--foreground) / .04);
+  border-radius: 1.125rem;
+  border-color: hsl(var(--foreground) / .06);
+  background: hsl(var(--card));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .04), 0 8px 24px hsl(var(--foreground) / .05);
 }
+/* ── Onglets : contrôle segmenté iOS ── */
 .admin-detail__tabs {
   top: .35rem;
   z-index: 20;
-  border-radius: .85rem;
-  border-color: hsl(var(--border) / .8);
-  background: hsl(var(--background) / .86);
-  box-shadow: 0 3px 12px hsl(var(--foreground) / .045);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-.admin-login__card {
   border-radius: 1rem;
-  border-color: hsl(var(--border) / .86);
-  box-shadow: 0 16px 38px hsl(var(--foreground) / .09);
+  border-color: hsl(var(--foreground) / .06);
+  background: hsl(var(--foreground) / .045);
+  box-shadow: none;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
-.dark .admin-shell {
-  background:
-    radial-gradient(circle at 90% -10%, hsl(var(--primary) / .11), transparent 30rem),
-    linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted) / .18));
+.admin-detail__tabs [data-state='active'] {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  box-shadow: 0 1px 3px hsl(var(--foreground) / .12), 0 0 0 .5px hsl(var(--foreground) / .06);
 }
-.dark .admin-commandbar { background: hsl(var(--background) / .78); }
-.dark .admin-commandbar__action--schedule {
-  border-color: hsl(209 62% 65% / .32);
-  background: hsl(209 36% 19% / .86);
-  color: hsl(209 75% 80%);
+.admin-detail__tabs [data-state='active'] svg { color: hsl(var(--primary)); }
+/* ── Connexion : carte sérique, badge squircle, bouton pilule bleu ── */
+.admin-login__card {
+  border-radius: 1.375rem;
+  border-color: hsl(var(--foreground) / .06);
+  box-shadow: 0 2px 8px hsl(var(--foreground) / .05), 0 24px 70px hsl(var(--foreground) / .13);
 }
-.dark .admin-commandbar__action--schedule:hover { background: hsl(209 38% 24%); }
-.dark .admin-commandbar__action--bulletin { background: hsl(15 48% 54%); color: hsl(30 18% 13%); }
-.dark .admin-commandbar__action--calendar { background: hsl(38 54% 55%); color: hsl(35 24% 13%); }
-.dark .admin-filter-bar,
-.dark .admin-detail__tabs { background: hsl(var(--card) / .72); }
+.admin-login__card input {
+  border-radius: .8rem;
+  background: hsl(var(--background));
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.admin-login__card input:focus {
+  border-color: hsl(var(--primary) / .55);
+  box-shadow: 0 0 0 3.5px hsl(var(--primary) / .18);
+}
+.admin-login__card button[type='submit'] {
+  border-radius: 980px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  transition: background-color 200ms ease, transform 120ms ease, opacity 200ms ease;
+}
+.admin-login__card button[type='submit']:active { transform: scale(.985); }
+.admin-login__card .bg-primary {
+  border-radius: .85rem;              /* badge bouclier : squircle iOS */
+}
+
+/* ── Mode sombre : #0A0A0C, cartes #1C1C1E, bleu iOS nuit ── */
+.dark #admin-root {
+  --background: 240 6% 4%;            /* #0A0A0C */
+  --foreground: 240 12% 96%;
+  --card: 240 5% 11%;                 /* #1C1C1E */
+  --card-foreground: 240 12% 96%;
+  --popover: 240 5% 13%;
+  --popover-foreground: 240 12% 96%;
+  --primary: 211 100% 52%;            /* #0A84FF */
+  --secondary: 240 4% 16%;
+  --muted: 240 4% 15%;
+  --muted-foreground: 240 5% 66%;
+  --accent: 240 4% 16%;
+  --destructive: 4 95% 62%;
+  --border: 240 5% 20%;
+  --input: 240 5% 20%;
+  --ring: 211 100% 52%;
+  --clr-bg: hsl(240 6% 4%);
+  background: hsl(var(--background));
+}
+.dark .admin-shell { background: hsl(var(--background)); }
+.dark .admin-commandbar {
+  background: hsl(var(--background) / .74);
+  border-bottom-color: hsl(var(--foreground) / .09);
+}
+.dark .admin-commandbar__action { background: hsl(var(--foreground) / .08); }
+.dark .admin-commandbar__action:hover { background: hsl(var(--foreground) / .13); }
+.dark .admin-commandbar__action--schedule .admin-commandbar__icon { color: hsl(211 100% 62%); }
+.dark .admin-commandbar__action--journal .admin-commandbar__icon { color: hsl(35 100% 58%); }
+.dark .admin-commandbar__action--policy .admin-commandbar__icon { color: hsl(155 60% 52%); }
+.dark .admin-commandbar__action--ink { background: hsl(240 12% 96%); color: hsl(240 6% 6%); }
+.dark .admin-commandbar__action--ink:hover { background: hsl(240 12% 96% / .88); }
+.dark .admin-overview__header { border-bottom-color: hsl(var(--foreground) / .09); }
+.dark .admin-metric-card,
+.dark .admin-priority-panel,
+.dark .admin-detail__header,
+.dark .admin-teacher-card {
+  border-color: hsl(var(--foreground) / .09);
+  box-shadow: 0 1px 2px hsl(0 0% 0% / .3), 0 10px 28px hsl(0 0% 0% / .35);
+}
+.dark .admin-metric-card:hover,
+.dark .admin-teacher-card:hover {
+  border-color: hsl(var(--foreground) / .14);
+  box-shadow: 0 2px 6px hsl(0 0% 0% / .32), 0 18px 40px hsl(0 0% 0% / .45) !important;
+}
+.dark .admin-filter-bar { background: hsl(var(--card)); border-color: hsl(var(--foreground) / .09); }
+.dark .admin-filter-bar :is(input, select) { background: hsl(var(--foreground) / .06); border-color: hsl(var(--foreground) / .12); }
+.dark .admin-detail__tabs { background: hsl(var(--foreground) / .07); border-color: hsl(var(--foreground) / .09); }
+.dark .admin-detail__tabs [data-state='active'] {
+  background: hsl(var(--foreground) / .14);
+  color: hsl(var(--foreground));
+  box-shadow: 0 1px 3px hsl(0 0% 0% / .4);
+}
 
 @media (max-width: 639px) {
   .admin-commandbar {
