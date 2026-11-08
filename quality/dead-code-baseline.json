@@ -1,3 +1,119 @@
 {
-  "items": []
+  "items": [
+    {
+      "kind": "fichier",
+      "file": "src/components/ui/action-tile.css",
+      "name": "src/components/ui/action-tile.css"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/components/ui/animated-submit-button.tsx",
+      "name": "src/components/ui/animated-submit-button.tsx"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/constants/guide/navigation.ts",
+      "name": "src/constants/guide/navigation.ts"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/features/dashboard/classCardLoading.css",
+      "name": "src/features/dashboard/classCardLoading.css"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/features/dashboard/ClassListItem.tsx",
+      "name": "src/features/dashboard/ClassListItem.tsx"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/features/dashboard/onboarding/gettingStarted.ts",
+      "name": "src/features/dashboard/onboarding/gettingStarted.ts"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/features/evaluations/components/dateCalendar.css",
+      "name": "src/features/evaluations/components/dateCalendar.css"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/features/evaluations/components/eventDateCalendar.ts",
+      "name": "src/features/evaluations/components/eventDateCalendar.ts"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/features/evaluations/components/EventDateModal.tsx",
+      "name": "src/features/evaluations/components/EventDateModal.tsx"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/features/evaluations/components/eventDateModel.ts",
+      "name": "src/features/evaluations/components/eventDateModel.ts"
+    },
+    {
+      "kind": "export",
+      "file": "src/features/evaluations/components/KindChooser.tsx",
+      "name": "KindHeader"
+    },
+    {
+      "kind": "export",
+      "file": "src/features/evaluations/components/KindChooser.tsx",
+      "name": "ProgrammedList"
+    },
+    {
+      "kind": "export",
+      "file": "src/features/evaluations/components/KindChooser.tsx",
+      "name": "StepTrail"
+    },
+    {
+      "kind": "type",
+      "file": "src/features/evaluations/components/KindChooser.tsx",
+      "name": "ProgrammedItem"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/features/guide/GuideFigure.tsx",
+      "name": "src/features/guide/GuideFigure.tsx"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/i18n/messages/ar/dateModal.ts",
+      "name": "src/i18n/messages/ar/dateModal.ts"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/i18n/messages/en/dateModal.ts",
+      "name": "src/i18n/messages/en/dateModal.ts"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/i18n/messages/fr/dateModal.ts",
+      "name": "src/i18n/messages/fr/dateModal.ts"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/infrastructure/push/pushResponse.ts",
+      "name": "src/infrastructure/push/pushResponse.ts"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/lib/motion-physics.ts",
+      "name": "src/lib/motion-physics.ts"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/lib/sound-engine.ts",
+      "name": "src/lib/sound-engine.ts"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/platform/notificationNavigation.ts",
+      "name": "src/platform/notificationNavigation.ts"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/styles/admin-futurist.css",
+      "name": "src/styles/admin-futurist.css"
+    }
+  ]
 }

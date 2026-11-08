@@ -1134,7 +1134,9 @@ test('tableau : les colonnes viennent des jetons, pas de pourcentages codés en 
   assert.match(css, /--cdt-table-cols:\s*minmax\(\s*9rem/);
   // La grille du tableau consomme le jeton, jamais des pourcentages bruts :
   // sinon le téléphone perd ses largeurs minimales (date tronquée, rails tassés).
-  assert.match(table, /TABLE_GRID_CLASS = 'editor-table-grid'/);
+  const constants = readFileSync('src/features/editor/editorConstants.ts', 'utf8');
+  assert.match(constants, /TABLE_GRID_CLASS = 'editor-table-grid'/);
+  assert.match(table, /TABLE_GRID_CLASS/);
   assert.ok(!/grid-cols-\[18%/.test(table), 'Aucune colonne en pourcentage codé en dur');
 });
 

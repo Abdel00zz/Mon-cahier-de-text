@@ -312,7 +312,7 @@
     --editor-fs-remark: calc(var(--editor-scale) * 0.80);
     --editor-fs-table-main: calc(var(--editor-scale) * 0.77);
     --editor-fs-table-side: calc(var(--editor-scale) * 0.71);
-    --editor-fs-date: calc(var(--editor-scale) * 0.84);
+    --editor-fs-date: calc(var(--editor-scale) * 0.88);
     --editor-fs-page: calc(var(--editor-scale) * 0.71);
     --editor-fs-badge: calc(var(--editor-scale) * 0.65);
     --editor-badge-min-width: 0px;
@@ -323,9 +323,9 @@
        niveau imbriqué s'enfonce d'un cran régulier (section, sous-section,
        sous-sous-section). Le cran de marge suffit : aucun filet vertical,
        à l'écran comme sur le papier. */
-    --editor-indent-1: 2px;
-    --editor-indent-2: 5px;
-    --editor-indent-3: 8px;
+    --editor-indent-1: 4px;
+    --editor-indent-2: 8px;
+    --editor-indent-3: 14px;
   }
 
   /* Une grille partagée par l'en-tête, les lignes et les cellules fusionnées.
@@ -345,19 +345,19 @@
       --editor-description-indent: 0px;
       --editor-description-padding: 6px;
       --editor-scale: max(0.73rem, calc(clamp(0.725rem, calc(0.725rem + 0.12vmin), 0.78rem) * var(--app-text-scale, 1)));
-      --editor-fs-chapter: calc(var(--editor-scale) * 1.31);
-      --editor-fs-top: calc(var(--editor-scale) * 1.18);
-      --editor-fs-section: calc(var(--editor-scale) * 1.07);
-      --editor-fs-subsection: calc(var(--editor-scale) * 1.00);
-      --editor-fs-subsubsection: calc(var(--editor-scale) * 0.93);
-      --editor-fs-item-title: calc(var(--editor-scale) * 0.87);
-      --editor-fs-description: calc(var(--editor-scale) * 0.82);
-      --editor-fs-remark: calc(var(--editor-scale) * 0.79);
-      --editor-fs-table-main: calc(var(--editor-scale) * 0.78);
-      --editor-fs-table-side: calc(var(--editor-scale) * 0.77);
-      --editor-fs-date: calc(var(--editor-scale) * 0.90);
-      --editor-fs-page: calc(var(--editor-scale) * 0.77);
-      --editor-fs-badge: calc(var(--editor-scale) * 0.76);
+      --editor-fs-chapter: calc(var(--editor-scale) * 1.38);
+      --editor-fs-top: calc(var(--editor-scale) * 1.24);
+      --editor-fs-section: calc(var(--editor-scale) * 1.13);
+      --editor-fs-subsection: calc(var(--editor-scale) * 1.05);
+      --editor-fs-subsubsection: calc(var(--editor-scale) * 0.98);
+      --editor-fs-item-title: calc(var(--editor-scale) * 0.92);
+      --editor-fs-description: calc(var(--editor-scale) * 0.86);
+      --editor-fs-remark: calc(var(--editor-scale) * 0.83);
+      --editor-fs-table-main: calc(var(--editor-scale) * 0.82);
+      --editor-fs-table-side: calc(var(--editor-scale) * 0.81);
+      --editor-fs-date: calc(var(--editor-scale) * 0.95);
+      --editor-fs-page: calc(var(--editor-scale) * 0.81);
+      --editor-fs-badge: calc(var(--editor-scale) * 0.80);
     }
     [data-editor-table] .editor-type-remark {
       word-break: normal;
@@ -389,10 +389,10 @@
      pour que la hiérarchie du cahier se lise d'un seul regard. */
   @media (pointer: coarse) and (orientation: landscape) {
     [data-editor-table] {
-      --editor-indent-1: 12px;
-      --editor-indent-2: 24px;
-      --editor-indent-3: 36px;
-      --editor-lesson-indent: 8px;
+      --editor-indent-1: 22px;
+      --editor-indent-2: 42px;
+      --editor-indent-3: 62px;
+      --editor-lesson-indent: 16px;
     }
   }
 
@@ -418,19 +418,19 @@
          d’un pixel qui rendait les niveaux indiscernables). Le réglage de
          taille de l’application reste appliqué par-dessus. */
       --editor-scale: max(0.73rem, calc(clamp(0.725rem, calc(0.725rem + 0.12vmin), 0.78rem) * var(--app-text-scale, 1)));
-      --editor-fs-chapter: calc(var(--editor-scale) * 1.31);
-      --editor-fs-top: calc(var(--editor-scale) * 1.18);
-      --editor-fs-section: calc(var(--editor-scale) * 1.07);
-      --editor-fs-subsection: calc(var(--editor-scale) * 1.00);
-      --editor-fs-subsubsection: calc(var(--editor-scale) * 0.93);
-      --editor-fs-item-title: calc(var(--editor-scale) * 0.87);
-      --editor-fs-description: calc(var(--editor-scale) * 0.82);
-      --editor-fs-remark: calc(var(--editor-scale) * 0.79);
-      --editor-fs-table-main: calc(var(--editor-scale) * 0.78);
-      --editor-fs-table-side: calc(var(--editor-scale) * 0.77);
-      --editor-fs-date: calc(var(--editor-scale) * 0.90);
-      --editor-fs-page: calc(var(--editor-scale) * 0.77);
-      --editor-fs-badge: calc(var(--editor-scale) * 0.76);
+      --editor-fs-chapter: calc(var(--editor-scale) * 1.38);
+      --editor-fs-top: calc(var(--editor-scale) * 1.24);
+      --editor-fs-section: calc(var(--editor-scale) * 1.13);
+      --editor-fs-subsection: calc(var(--editor-scale) * 1.05);
+      --editor-fs-subsubsection: calc(var(--editor-scale) * 0.98);
+      --editor-fs-item-title: calc(var(--editor-scale) * 0.92);
+      --editor-fs-description: calc(var(--editor-scale) * 0.86);
+      --editor-fs-remark: calc(var(--editor-scale) * 0.83);
+      --editor-fs-table-main: calc(var(--editor-scale) * 0.82);
+      --editor-fs-table-side: calc(var(--editor-scale) * 0.81);
+      --editor-fs-date: calc(var(--editor-scale) * 0.95);
+      --editor-fs-page: calc(var(--editor-scale) * 0.81);
+      --editor-fs-badge: calc(var(--editor-scale) * 0.80);
     }
   }
 }
