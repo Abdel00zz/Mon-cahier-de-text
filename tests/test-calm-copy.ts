@@ -24,7 +24,7 @@ test('aucun texte ne répète ce que dit déjà la section', () => {
     assert.doesNotMatch(notifications, /notifications\.intro/, 'plus de sous-titre qui redit le titre');
 
     const account = read('src/features/settings/components/AccountDataTab.tsx');
-    assert.doesNotMatch(account, /account\.adminPortalHint/, 'le portail d’administration se décrit par son titre');
+    assert.doesNotMatch(account, /adminPortal|\/admin\.html/, 'l’interface enseignant standard n’expose pas le portail d’administration dans les paramètres');
 
     // Deux informations pour un même fait : la pastille d’état et l’heure de la
     // dernière synchronisation. La pastille ne reste que hors de l’état nominal.

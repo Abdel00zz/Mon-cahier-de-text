@@ -1,7 +1,7 @@
 import React from 'react';
 import type { AppConfig } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { HardDriveDownload, HardDriveUpload, ShieldCheck } from '@/components/ui/icons';
+import { HardDriveDownload, HardDriveUpload } from '@/components/ui/icons';
 import { AccountTab } from './AccountTab';
 import { SettingsPanel, SettingsRow, SettingsSection, settingsButtonClass } from './SettingsPrimitives';
 
@@ -33,13 +33,6 @@ export const AccountDataTab: React.FC<AccountDataTabProps> = ({ config, onExport
             <span>{t('settings.importButton')}</span>
           </button>
         </SettingsRow>
-      </SettingsSection>
-
-      <SettingsSection title={t('account.adminPortalTitle')} icon={ShieldCheck}>
-          <a href="/admin.html" className={settingsButtonClass}>
-            <ShieldCheck className="h-[18px] w-[18px] stroke-[1.5]" />
-            <span>{t('account.adminPortalAction')}</span>
-          </a>
       </SettingsSection>
 
       <React.Suspense fallback={<div className="h-24 w-full rounded-lg skeleton-shimmer" />}>

@@ -12,7 +12,6 @@ import {
   Calendar,
   ArrowRight,
   Command as CommandIcon,
-  ShieldCheck,
 } from '@/components/ui/icons';
 import { ClassInfo } from '@/types';
 import { acquireModalLayer } from '@/platform/modalStack';
@@ -134,19 +133,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         },
       });
     }
-
-    list.push({
-      id: 'nav-admin',
-      title: 'Tableau de bord Administration',
-      subtitle: 'Ouvrir la console de direction de l’établissement (/admin)',
-      category: 'navigation',
-      icon: ShieldCheck,
-      badge: 'Direction',
-      onSelect: () => {
-        window.location.href = '/admin.html';
-        onClose();
-      },
-    });
 
     if (onToggleDarkMode) {
       list.push({
