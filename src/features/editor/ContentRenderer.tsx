@@ -127,7 +127,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
           <div dir={textDirectionAttribute(chapterTitle)} className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-bold tracking-tight select-none">
-            <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,44rem)] break-words text-pretty">
+            <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,calc(100%-2.5rem))] break-words text-pretty">
               {contentNumber && <bdi dir="ltr" className="me-2">{contentNumber}.</bdi>}
               {highlight || hasMathSyntax(chapterTitle) ? (
                 <HighlightedText text={chapterTitle} query={highlight} />
@@ -144,8 +144,8 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // MaybeKaTeX : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeKaTeX key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
-        <div dir={textDirectionAttribute(item.title)} className={`editor-type-top w-full font-bold tracking-tight py-1 flex items-center ${titleColorClass} ${indentClass} ${justificationClass}`}>
-            <span className="inline-flex min-w-0 flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
+        <div dir={textDirectionAttribute(item.title)} className={`editor-type-top w-full font-bold tracking-tight py-0.5 flex items-center ${titleColorClass} ${indentClass} ${justificationClass}`}>
+            <span className="inline-flex min-w-0 max-w-[calc(100%-2.5rem)] flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
               {documentPreview ? (
                 <button
                   type="button"
@@ -232,7 +232,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         const empty = !source.trim();
         return (
           <MaybeKaTeX mathSource={source} cacheKey={`free-${source}`}>
-            <div dir={textDirectionAttribute(item.title || item.description)} className={`editor-free-content text-start min-h-6 whitespace-pre-wrap break-words py-1 text-foreground ${lessonIndentClass}`}>
+            <div dir={textDirectionAttribute(item.title || item.description)} className={`editor-free-content text-start min-h-6 whitespace-pre-wrap break-words py-0.5 text-foreground ${lessonIndentClass}`}>
               {item.title && <div dir={textDirectionAttribute(item.title)}><HighlightedText text={item.title} query={highlight} /></div>}
               {item.description && <div dir={textDirectionAttribute(item.description)}>{renderDescriptionWithBold(item.description)}</div>}
               {empty && !isPrint && <span dir={textDirectionAttribute(t('addContent.freeHint'))} className="text-muted-foreground text-xs italic">{t('addContent.freeHint')}</span>}
@@ -282,7 +282,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         : undefined;
 
       const content = (
-        <div dir={textDirectionAttribute(item.title || item.description)} className={`editor-lesson-row editor-table-content block min-w-0 text-start font-editor-system py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
+        <div dir={textDirectionAttribute(item.title || item.description)} className={`editor-lesson-row editor-table-content block min-w-0 text-start font-editor-system py-0.5 text-muted-foreground ${lessonIndentClass}`}>
           <Badge
             variant="outline"
             dir={textDirectionAttribute(badgeText) ?? 'ltr'}

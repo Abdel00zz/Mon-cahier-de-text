@@ -149,7 +149,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
     const contentCell = (
       <div
-        className={`relative flex min-w-0 flex-1 items-center justify-start py-1.5 ps-2 pe-7 sm:ps-2.5 sm:pe-8 cursor-pointer ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
+        className={`relative flex min-w-0 flex-1 items-center justify-start py-0.5 ps-2.5 pe-10 sm:ps-3 sm:pe-11 cursor-pointer ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         data-reorder-direction={reorderDirection}
         tabIndex={sortable ? 0 : undefined}
@@ -163,12 +163,12 @@ const TableRowComponent: FC<TableRowProps> = ({
           handleToggle();
         }}
       >
-        <div className="min-w-0 w-full">
-          <div className="flex w-full items-center justify-start py-1">
+        <div className="min-w-0 w-full pe-1">
+          <div className="flex w-full items-center justify-start py-0.5">
             <ContentRenderer data={data} indices={indices} elementType={elementType} highlight={searchQuery} showDescriptions={showDescriptions} descriptionTypes={descriptionTypes} contentNumber={getContentNumber?.(indices)} getDocumentPreview={getDocumentPreview} onOpenDocumentPreview={onOpenDocumentPreview} />
           </div>
         </div>
-        {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={14} strokeWidth={2.25} aria-hidden="true" /></button>}
+        {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={13} strokeWidth={2.2} aria-hidden="true" /></button>}
       </div>
     );
 
@@ -225,7 +225,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const contentCell = (
     <div
-      className={`relative min-w-0 flex-1 cursor-pointer py-1.5 ps-2 pe-7 sm:ps-2.5 sm:pe-8 ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors duration-150 ${contentBottomBorder}`}
+      className={`relative min-w-0 flex-1 cursor-pointer py-0.5 ps-2.5 pe-10 sm:ps-3 sm:pe-11 ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       data-reorder-direction={reorderDirection}
       tabIndex={sortable ? 0 : undefined}
@@ -250,7 +250,7 @@ const TableRowComponent: FC<TableRowProps> = ({
           getDocumentPreview={getDocumentPreview}
           onOpenDocumentPreview={onOpenDocumentPreview}
         />
-        {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={14} strokeWidth={2.25} aria-hidden="true" /></button>}
+        {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={13} strokeWidth={2.2} aria-hidden="true" /></button>}
     </div>
   );
 

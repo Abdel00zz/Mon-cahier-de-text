@@ -199,12 +199,12 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 // La séance garde la surface de la carte : l’accent ne teinte que
                 // les lignes visées, ce qui les rend d’autant plus lisibles.
             ].filter(Boolean).join(' ')}
-            style={{ gridTemplateRows: `repeat(${visualRowCount}, minmax(52px, auto))` }}
+            style={{ gridTemplateRows: `repeat(${visualRowCount}, minmax(38px, auto))` }}
         >
             <button
                 type="button"
                 data-session-cell="date"
-                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary hover:bg-primary/5 active:bg-primary/10 transition-colors ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
+                className={`flex min-h-[44px] min-w-0 items-center justify-center self-stretch px-1 py-1 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary hover:bg-primary/5 active:bg-primary/10 transition-colors ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
                 style={{ gridColumn: 1, gridRow: `1 / span ${visualRowCount}` }}
                 onClick={(e) => {
                     e.stopPropagation();

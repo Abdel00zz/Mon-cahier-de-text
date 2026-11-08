@@ -1,6 +1,6 @@
 [data-editor-sort-row] { position: relative; scroll-margin-block: 100px 96px; }
 [data-row-content].editor-row-content--sortable {
-  min-height: 52px;
+  min-height: 38px;
   cursor: pointer;
   touch-action: pan-y pinch-zoom;
   -webkit-tap-highlight-color: transparent;
@@ -154,17 +154,20 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: 6px;
+  right: 8px;
   left: auto;
-  width: 28px;
-  height: 44px;
+  width: 24px;
+  height: 32px;
   display: none;
   place-items: center;
   padding: 0;
-  color: hsl(var(--muted-foreground) / .55);
-  background: transparent;
-  border: 0;
-  border-radius: 8px;
+  color: hsl(var(--muted-foreground) / .65);
+  background: hsl(var(--card) / .75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid hsl(var(--border) / .6);
+  border-radius: 7px;
+  box-shadow: 0 1px 3px rgba(47, 35, 24, .06), inset 0 1px 0 rgba(255, 255, 255, .8);
   /* pan-y : avant l'armement (appui long), un balayage vertical depuis la
      poignée fait défiler la page au lieu de piéger le doigt. */
   touch-action: pan-y;
@@ -173,13 +176,14 @@
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: color 160ms ease, opacity 160ms ease, transform 160ms ease;
+  transition: color 160ms ease, opacity 160ms ease, transform 160ms cubic-bezier(.34, 1.4, .5, 1), background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  z-index: 5;
 }
 /* Le glyphe porte l'encre : plus fin, plus net, et il s'anime seul. */
 .editor-reorder-handle > svg {
-  width: 14px;
-  height: 14px;
-  stroke-width: 2.25;
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.2;
   transition: transform 160ms ease;
 }
 [data-row-state~="selected"] .editor-reorder-handle,
@@ -192,9 +196,9 @@
 /* Ancrage : la poignée vit au bord DROIT du contenu (à droite et pas à gauche).
    Le retrait de la cellule lui laisse la place, donc elle ne recouvre jamais le texte. */
 [data-reorder-direction="ltr"] > .editor-reorder-handle,
-[data-content-direction="ltr"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 6px; left: auto; }
+[data-content-direction="ltr"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 8px; left: auto; }
 [data-reorder-direction="rtl"] > .editor-reorder-handle,
-[data-content-direction="rtl"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 6px; left: auto; }
+[data-content-direction="rtl"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 8px; left: auto; }
 /* Un seul repère : le glyphe, centré dans sa cible. Le rail séparé faisait
    doublon avec lui et alourdissait la marge — deux traits pour dire une chose. */
 .editor-reorder-handle::before { content: none; }
@@ -203,13 +207,31 @@
    clic qui sélectionne et la fait apparaître). Seule la poignée DÉJÀ visible
    réagit au survol, pour confirmer la cible avant la saisie. */
 @media (hover: hover) and (pointer: fine) {
-  .editor-reorder-handle:hover { color: hsl(var(--foreground)); }
+  .editor-reorder-handle:hover {
+    color: hsl(var(--primary));
+    background: hsl(var(--card));
+    border-color: hsl(var(--primary) / .35);
+    box-shadow: 0 3px 8px -1px rgba(47, 35, 24, .12), inset 0 1px 0 rgba(255, 255, 255, .9);
+    transform: translateY(-50%) scale(1.06);
+  }
   .editor-reorder-handle:hover > svg { transform: scale(1.08); }
 }
 .editor-reorder-handle:active {
   cursor: grabbing;
-  transform: translateY(-50%) scale(.92);
+  transform: translateY(-50%) scale(.94);
   color: hsl(var(--primary));
+  background: hsl(var(--primary) / .12);
+  border-color: hsl(var(--primary) / .5);
+}
+.dark .editor-reorder-handle {
+  background: hsl(var(--card) / .85);
+  border-color: hsl(var(--border));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+.dark .editor-reorder-handle:hover {
+  background: hsl(var(--card));
+  border-color: hsl(var(--primary) / .5);
+  box-shadow: 0 3px 8px -1px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .1);
 }
 /* Focus clavier : une teinte douce, pas un anneau. Un contour de 2 px autour
    d'une cible de 44 px dessinait un carré lourd dans la marge du cahier. */
