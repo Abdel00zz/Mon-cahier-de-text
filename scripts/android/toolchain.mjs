@@ -14,6 +14,13 @@ export function androidToolchain({ requireSdk = true } = {}) {
     .find(directory => directory && fs.existsSync(path.join(directory, 'platforms/android-36/android.jar')));
   if (!java || (requireSdk && !sdk)) throw new Error('Java 21 et Android SDK 36 requis ; voir docs/operations/android.md.');
   const userHome = path.join(root, 'tmp/android-user-home');
+  const globalDebugKey = (process.env.USERPROFILE || process.env.HOME)
+    && path.join(process.env.USERPROFILE || process.env.HOME, '.android/debug.keystore');
+  const isolatedDebugKey = path.join(userHome, 'debug.keystore');
+  if (globalDebugKey && fs.existsSync(globalDebugKey) && (!fs.existsSync(isolatedDebugKey) || fs.statSync(isolatedDebugKey).size !== fs.statSync(globalDebugKey).size)) {
+    fs.mkdirSync(userHome, { recursive: true });
+    try { fs.copyFileSync(globalDebugKey, isolatedDebugKey); } catch { /* ignore */ }
+  }
   const tempDir = process.platform === 'win32' && fs.existsSync('C:\\Users\\Think\\DOCUME~1\\ChatGPT\\CAHIER~1.02\\tmp')
     ? 'C:\\Users\\Think\\DOCUME~1\\ChatGPT\\CAHIER~1.02\\tmp\\android-temp'
     : path.join(root, 'tmp/android-temp');

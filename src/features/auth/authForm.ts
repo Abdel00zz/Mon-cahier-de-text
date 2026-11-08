@@ -13,7 +13,7 @@ export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 const TRIVIAL_SEGMENTS = [
   'password', 'passw0rd', 'motdepasse', 'mot2passe', '123456', '654321',
-  'qwerty', 'azerty', 'iloveyou', 'admin', 'salam', 'bcdé', 'abcd',
+  'qwerty', 'azerty', 'iloveyou', 'admin', 'salam',
 ];
 const TRIVIAL_SEQUENCE = /(?:012|123|234|345|456|567|678|789|abcd|bcde|cdef|qwer|wert|azer|zert|erty|sdfg){2,}/;
 
@@ -32,9 +32,9 @@ export const passwordScore = (password: string): number => {
   if (digitsOnly || repeated || trivial || TRIVIAL_SEQUENCE.test(lowered)) return 1;
   let score = 2;
   if (password.length >= 12) score++;
-  const classes = [
-    /\p{Ll}/u, /\p{Lu}/u, /\p{N}/u, /[^\p{L}\p{N}\s]/u,
-  ].filter((pattern) => pattern.test(password)).length;
-  if (classes >= 3) score++;
+  const hasLetter = /\p{L}/u.test(password);
+  const hasNumber = /\p{N}/u.test(password);
+  const hasSpecial = /[^\p{L}\p{N}\s]/u.test(password);
+  if (hasLetter && hasNumber && hasSpecial) score++;
   return Math.min(score, 4);
 };

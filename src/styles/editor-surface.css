@@ -8,19 +8,19 @@
    le paysage gagne en largeur sans faire regrossir brutalement le texte. */
 @layer components {
   [data-editor-table] {
-    --editor-fs-chapter: 21px;
-    --editor-fs-top: 18px;
-    --editor-fs-section: 17px;
-    --editor-fs-subsection: 16px;
-    --editor-fs-subsubsection: 15px;
-    --editor-fs-item-title: 14px;
-    --editor-fs-description: 13px;
-    --editor-fs-remark: 12.5px;
-    --editor-fs-table-main: 12px;
-    --editor-fs-table-side: 11px;
-    --editor-fs-date: 12.5px;
-    --editor-fs-page: 11px;
-    --editor-fs-badge: 10.5px;
+    --editor-fs-chapter: 22px;
+    --editor-fs-top: 19px;
+    --editor-fs-section: 18px;
+    --editor-fs-subsection: 17px;
+    --editor-fs-subsubsection: 16px;
+    --editor-fs-item-title: 15px;
+    --editor-fs-description: 14px;
+    --editor-fs-remark: 13px;
+    --editor-fs-table-main: 12.5px;
+    --editor-fs-table-side: 11.5px;
+    --editor-fs-date: 13px;
+    --editor-fs-page: 11.5px;
+    --editor-fs-badge: 11px;
     --editor-badge-min-width: 30px;
     --editor-badge-padding-inline: 5px;
     --editor-badge-padding-block: 1px;
@@ -411,9 +411,6 @@
       -webkit-line-clamp: 2;
       overflow: hidden;
     }
-  }
-
-  @media (max-width: 639px) and (pointer: coarse) {
     [data-editor-table] {
       /* Téléphone : le cahier se resserre d’un cran, mais la hiérarchie garde
          des écarts francs — chaque niveau vaut au moins 6 % de plus que le

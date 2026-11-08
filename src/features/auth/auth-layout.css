@@ -61,10 +61,10 @@ button.auth-brand { cursor: pointer; }
 }
 @media (max-height: 650px) { .auth-form-main { justify-content: flex-start; } }
 .auth-account-switch { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 5px; margin-top: 20px; color: hsl(var(--muted-foreground)); font-size: 13px; }
-.auth-footer { margin-top: 22px; padding-top: 14px; border-top: 1px solid hsl(var(--border)); text-align: center; }
-/* Lien admin : discret mais découvrible (avant : 12px / muted-foreground,
-   quasiment invisible). Un hairline pill le distingue sans crier. */
-.auth-footer .auth-link { gap: 7px; color: hsl(var(--muted-foreground)); font-size: 12px; font-weight: 550; padding-inline: 10px; border: 1px solid hsl(var(--border)); border-radius: 9999px; background: hsl(var(--card) / .6); }
+.auth-footer { margin-top: 18px; padding-top: 4px; border-top: none; text-align: center; }
+/* Lien admin : discret, aérien et sans séparateur inutile. */
+.auth-footer .auth-link { gap: 7px; color: hsl(var(--muted-foreground)); font-size: 12px; font-weight: 550; padding-inline: 12px; border: none; border-radius: 9999px; background: transparent; transition: color 150ms ease, background-color 150ms ease; }
+.auth-footer .auth-link:hover { color: hsl(var(--foreground)); background: hsl(var(--muted) / .5); text-decoration: none; }
 
 /* Survol lié au pointeur : jamais collant sur écran tactile. */
 @media (hover: hover) and (pointer: fine) {

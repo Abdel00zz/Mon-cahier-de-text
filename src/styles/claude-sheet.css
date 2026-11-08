@@ -205,10 +205,7 @@
   padding: 0 4px;
 }
 
-/* ── 10. PROGRESSION MULTISTEP NUMÉROTÉE (motif « Progress Steps ») ──
-   Cercles blancs à bordure, piste de 4px qui se remplit entre les nœuds.
-   Atteinte = bordure accent ; courante = pastille pleine. Aucun halo,
-   aucune échelle : la légèreté du motif d'origine, aux tokens du projet. */
+/* ── 10. PROGRESSION MULTISTEP NUMÉROTÉE (motif « Progress Steps ») ── */
 .claude-circuit-steps {
   display: flex;
   align-items: flex-start;
@@ -219,8 +216,7 @@
   margin: 0;
 }
 
-/* Rail vide : 4px, exactement entre les centres des nœuds
-   (l'inset est posé en inline style par le composant : 50/n %). */
+/* Rail vide : 4px, entre les centres des nœuds (inset posé en inline style). */
 .claude-circuit-track {
   position: absolute;
   top: 21px;
@@ -259,8 +255,7 @@
 
 .claude-circuit-step[data-state='complete'] { cursor: pointer; }
 
-/* Nœud : 30px, bordure 3px — la géométrie du motif d'origine. Le numéro
-   vit dans le cercle ; seuls contour, fond et encre changent d'état. */
+/* Nœud : 30px, bordure 3px — géométrie du motif progress-steps. */
 .claude-circuit-node {
   width: 30px;
   height: 30px;
@@ -276,15 +271,13 @@
   transition: border-color 400ms ease, background-color 400ms ease, color 400ms ease;
 }
 
-/* Étape atteinte : SEULE la bordure s'allume (et l'encre suit, pour le
-   contraste) — le cercle reste blanc, comme dans le motif d'origine. */
+/* Étape atteinte : bordure accentuée. */
 .claude-circuit-step[data-state='complete'] .claude-circuit-node {
   border-color: var(--cm-accent);
   color: var(--cm-accent);
 }
 
-/* Étape courante : l'unique pastille pleine — le marqueur « où suis-je ».
-   Pas d'échelle, pas de halo : la position suffit. */
+/* Étape courante : pastille pleine. */
 .claude-circuit-step[data-state='current'] .claude-circuit-node {
   border-color: var(--cm-accent);
   background-color: var(--cm-accent);
@@ -328,8 +321,7 @@
   background-color: var(--cm-surface);
   color: var(--cm-text);
   font-family: var(--cm-font-sans);
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 16px; font-weight: 500;
   padding: 14px 18px;
   text-align: start;
   cursor: pointer;
@@ -347,9 +339,7 @@
   background-color: var(--cm-sunken);
 }
 
-.claude-choice-card:active {
-  transform: scale(0.96);
-}
+.claude-choice-card:active { transform: scale(0.96); }
 
 .claude-choice-card[data-selected='true'] {
   border-color: var(--cm-accent);
@@ -382,26 +372,11 @@
     max-width: 100%;
   }
 
-  .claude-sheet-header {
-    padding: 10px 16px 12px;
-  }
-
-  .claude-grouped-list {
-    margin: 0 14px;
-  }
-
-  .claude-tabs {
-    margin: 0 14px 12px;
-  }
-
-  .claude-choice-card {
-    min-height: 52px;
-    padding: 12px 15px;
-    border-radius: 18px;
-  }
+  .claude-sheet-header { padding: 10px 16px 12px; }
+  .claude-grouped-list { margin: 0 14px; }
+  .claude-tabs { margin: 0 14px 12px; }
+  .claude-choice-card { min-height: 52px; padding: 12px 15px; border-radius: 18px; }
 }
-
-
 
 @media (max-width: 420px) {
   .claude-circuit-track { top: 21px; inset-inline: 1.5rem; }
