@@ -12,18 +12,29 @@ import {
     type ClassAssessmentPlanDetails,
 } from '../domain/evaluations/assessments';
 
-/** Charge le planning officiel + le calendrier (une fois), puis les expose. */
+/** Charge le planning officiel + le calendrier (une fois), puis les expose avec gestion d'erreur indépendante. */
 const useCalendarAndPlanning = () => {
     const [calendar, setCalendar] = useState<HolidayCalendar>(() => getBundledCalendar());
     const [planning, setPlanning] = useState<PlanningFile | null>(null);
 
     useEffect(() => {
         let cancelled = false;
-        Promise.all([loadHolidayCalendar(), loadPlanning(), loadOfficialStudentEvents()]).then(([cal, plan]) => {
-            if (cancelled) return;
-            setCalendar(cal);
-            setPlanning(plan);
-        });
+
+        // Préchauffage du cache des événements officiels élèves (non bloquant)
+        void loadOfficialStudentEvents().catch(() => {});
+
+        void loadHolidayCalendar()
+            .then(cal => {
+                if (!cancelled) setCalendar(cal);
+            })
+            .catch(() => {});
+
+        void loadPlanning()
+            .then(plan => {
+                if (!cancelled) setPlanning(plan);
+            })
+            .catch(() => {});
+
         return () => { cancelled = true; };
     }, []);
 
@@ -34,9 +45,22 @@ const useCalendarAndPlanning = () => {
 export const useClassAssessments = (
     classInfo: ClassInfo | null,
     config: AppConfig
-): { assessments: PlannedAssessment[]; hasPlan: boolean; planDetails: ClassAssessmentPlanDetails | null; planning: PlanningFile | null; calendar: HolidayCalendar | null } => {
+): {
+    assessments: PlannedAssessment[];
+    hasPlan: boolean;
+    planDetails: ClassAssessmentPlanDetails | null;
+    planning: PlanningFile | null;
+    calendar: HolidayCalendar;
+} => {
     const { calendar, planning } = useCalendarAndPlanning();
     const today = useMoroccoToday();
+
+    const classId = classInfo?.id;
+    const assessmentDates = classId ? config.assessmentDates?.[classId] : undefined;
+    const manualAssessments = classId ? config.manualAssessments?.[classId] : undefined;
+    const removedAssessments = classId ? config.removedAssessments?.[classId] : undefined;
+    const assessmentOrder = classId ? config.assessmentOrder?.[classId] : undefined;
+    const schoolYearStart = config.schoolYearStart;
 
     return useMemo(() => {
         if (!classInfo) return { assessments: [], hasPlan: false, planDetails: null, planning: null, calendar };
@@ -44,5 +68,5 @@ export const useClassAssessments = (
         const assessments = resolveClassAssessments(classInfo, effectivePlanning, config, calendar, today);
         const planDetails = planning ? getAssessmentPlanDetailsForClass(classInfo, planning) : null;
         return { assessments, hasPlan: assessments.length > 0, planDetails, planning, calendar };
-    }, [today, calendar, planning, classInfo, config.assessmentDates, config.schoolYearStart, config.manualAssessments, config.removedAssessments, config.assessmentOrder]);
+    }, [today, calendar, planning, classInfo, assessmentDates, schoolYearStart, manualAssessments, removedAssessments, assessmentOrder, config]);
 };

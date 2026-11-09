@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { createStore } from 'zustand/vanilla';
 
-type DeviceType = 'phone' | 'tablet' | 'desktop';
+export type DeviceType = 'phone' | 'tablet' | 'desktop';
 
-interface DeviceInfo {
+export interface DeviceInfo {
     type: DeviceType;
     isPortrait: boolean;
     isLandscape: boolean;
@@ -15,63 +16,95 @@ interface DeviceInfo {
 const PHONE_MAX = 767;
 const TABLET_MAX = 1023;
 
-/** Détection fine du type d'appareil (phone / tablette / desktop). */
-export const useDevice = (): DeviceInfo => {
-    const [info, setInfo] = useState<DeviceInfo>(() => readDevice());
-
-    useEffect(() => {
-        const queries = [
-            window.matchMedia(`(max-width: ${PHONE_MAX}px)`),
-            window.matchMedia(`(min-width: ${PHONE_MAX + 1}px) and (max-width: ${TABLET_MAX}px)`),
-            window.matchMedia('(orientation: portrait)'),
-            window.matchMedia('(pointer: coarse)'),
-        ];
-        let frame: number | null = null;
-        const update = () => {
-            if (frame !== null) return;
-            frame = window.requestAnimationFrame(() => {
-                frame = null;
-                const next = readDevice();
-                setInfo(current => current.type === next.type && current.isPortrait === next.isPortrait
-                    && current.isTouch === next.isTouch && current.isPhone === next.isPhone
-                    && current.isNative === next.isNative ? current : next);
-            });
-        };
-        queries.forEach(q => q.addEventListener('change', update));
-        window.addEventListener('resize', update);
-        window.visualViewport?.addEventListener('resize', update);
-        window.screen.orientation?.addEventListener('change', update);
-        return () => {
-            if (frame !== null) window.cancelAnimationFrame(frame);
-            queries.forEach(q => q.removeEventListener('change', update));
-            window.removeEventListener('resize', update);
-            window.visualViewport?.removeEventListener('resize', update);
-            window.screen.orientation?.removeEventListener('change', update);
-        };
-    }, []);
-
-    return info;
-};
+const isNativeConstant = typeof window !== 'undefined' && (
+    Capacitor.isNativePlatform() ||
+    (typeof document !== 'undefined' && (document.documentElement.dataset.platform === 'android' || document.documentElement.dataset.platform === 'ios'))
+);
 
 const readDevice = (): DeviceInfo => {
-    if (typeof window === 'undefined') return { type: 'desktop', isPortrait: false, isLandscape: false, isTouch: false, isPhone: false, isNative: false };
+    if (typeof window === 'undefined') {
+        return { type: 'desktop', isPortrait: false, isLandscape: false, isTouch: false, isPhone: false, isNative: false };
+    }
     const isTouch = navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
-    const visualWidth = window.visualViewport?.width ?? window.innerWidth;
-    const screenMin = Math.min(window.screen?.width || visualWidth, window.screen?.height || visualWidth);
-    const w = isTouch ? Math.min(visualWidth, screenMin) : visualWidth;
+    // Layout viewport : documentElement.clientWidth ne varie pas lors du pinch-zoom
+    const layoutWidth = document.documentElement?.clientWidth || window.innerWidth;
+    const screenMin = Math.min(window.screen?.width || layoutWidth, window.screen?.height || layoutWidth);
+    const w = isTouch ? Math.min(layoutWidth, screenMin) : layoutWidth;
     const isPortrait = isTouch && window.screen.orientation?.type
         ? window.screen.orientation.type.startsWith('portrait')
         : window.matchMedia('(orientation: portrait)').matches;
+
     let type: DeviceType = 'desktop';
     if (w <= PHONE_MAX) type = 'phone';
     else if (w <= TABLET_MAX && isTouch) type = 'tablet';
     else if (w <= TABLET_MAX) type = 'desktop';
 
-    const isNative = typeof window !== 'undefined' && (
-        Capacitor.isNativePlatform() ||
-        (typeof document !== 'undefined' && (document.documentElement.dataset.platform === 'android' || document.documentElement.dataset.platform === 'ios'))
-    );
-    const isPhone = type === 'phone';
+    return {
+        type,
+        isPortrait,
+        isLandscape: !isPortrait,
+        isTouch,
+        isPhone: type === 'phone',
+        isNative: isNativeConstant,
+    };
+};
 
-    return { type, isPortrait, isLandscape: !isPortrait, isTouch, isPhone, isNative };
+const deviceStore = createStore<DeviceInfo>(() => readDevice());
+let subscribers = 0;
+let frame: number | null = null;
+
+const updateDevice = () => {
+    if (frame !== null) return;
+    frame = window.requestAnimationFrame(() => {
+        frame = null;
+        const next = readDevice();
+        const current = deviceStore.getState();
+        if (
+            current.type !== next.type ||
+            current.isPortrait !== next.isPortrait ||
+            current.isTouch !== next.isTouch
+        ) {
+            deviceStore.setState(next);
+        }
+    });
+};
+
+let queries: MediaQueryList[] = [];
+
+const subscribe = (notify: () => void) => {
+    const unsub = deviceStore.subscribe(notify);
+    subscribers += 1;
+    if (subscribers === 1 && typeof window !== 'undefined') {
+        queries = [
+            window.matchMedia(`(max-width: ${PHONE_MAX}px)`),
+            window.matchMedia(`(min-width: ${PHONE_MAX + 1}px) and (max-width: ${TABLET_MAX}px)`),
+            window.matchMedia('(orientation: portrait)'),
+            window.matchMedia('(pointer: coarse)'),
+        ];
+        queries.forEach(q => q.addEventListener('change', updateDevice));
+        window.addEventListener('resize', updateDevice);
+        window.screen.orientation?.addEventListener('change', updateDevice);
+        updateDevice();
+    }
+    return () => {
+        unsub();
+        subscribers -= 1;
+        if (!subscribers && typeof window !== 'undefined') {
+            if (frame !== null) {
+                window.cancelAnimationFrame(frame);
+                frame = null;
+            }
+            queries.forEach(q => q.removeEventListener('change', updateDevice));
+            queries = [];
+            window.removeEventListener('resize', updateDevice);
+            window.screen.orientation?.removeEventListener('change', updateDevice);
+        }
+    };
+};
+
+const getSnapshot = () => deviceStore.getState();
+
+/** Détection fine et performante de l'appareil avec store partagé au niveau du module. */
+export const useDevice = (): DeviceInfo => {
+    return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 };

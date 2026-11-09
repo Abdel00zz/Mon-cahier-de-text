@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { debounce } from 'es-toolkit';
 
-export type DebouncedCallback<T extends (...args: any[]) => void> = T & { cancel: () => void };
+export type DebouncedCallback<T extends (...args: any[]) => void> = T & {
+  cancel: () => void;
+  flush: () => void;
+};
 
 /**
  * React hook version of debounce backed by es-toolkit.
  * Ensures the debounced function identity is stable across renders,
- * cancels pending execution on unmount, and exposes `cancel` for callers
- * that clear the underlying storage.
+ * flushes pending execution on unmount so no writes are lost, and exposes
+ * `cancel` and `flush` for callers.
  */
 export function useDebouncedCallback<T extends (...args: any[]) => void>(
   callback: T,
@@ -21,9 +24,9 @@ export function useDebouncedCallback<T extends (...args: any[]) => void>(
     [delay]
   );
 
-  useEffect(() => () => { debounced.cancel(); }, [debounced]);
+  useEffect(() => () => {
+    debounced.flush();
+  }, [debounced]);
 
-  // es-toolkit expose déjà `cancel` : le type le rend visible aux appelants
-  // (notamment pour annuler une sauvegarde différée lors d'un effacement).
   return debounced as unknown as DebouncedCallback<T>;
 }

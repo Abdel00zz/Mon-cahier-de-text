@@ -39,7 +39,7 @@ export const readSyncProgress = (): SyncProgress => progressStore.getState();
 export const subscribeSyncProgress = (listener: (value: SyncProgress) => void): (() => void) =>
     progressStore.subscribe(state => listener(state));
 
-type SyncListener = (source?: symbol, keys?: readonly string[]) => void;
+export type SyncListener = (source?: symbol, keys?: readonly string[]) => void;
 
 const listeners = new Map<SyncEvent, Set<SyncListener>>();
 const SYNC_PENDING_KEY = 'syncPending_v1';
@@ -194,6 +194,21 @@ export const subscribe = (event: SyncEvent, listener: SyncListener): (() => void
 };
 
 export const markClassDirty = (classId: string): void => {
+    dirtyClassVersions.set(classId, ++dirtySeq);
+    deletedClasses.delete(classId);
+    persistPendingState();
+    emit('dirty');
+};
+
+/**
+ * Met à jour à la fois l'horodatage de synchronisation (syncMeta) et la file d'attente (syncPending)
+ * en un seul cycle atomique pour éviter deux passes I/O localStorage consécutives.
+ */
+export const commitClassMutation = (classId: string): void => {
+    const meta = readSyncMeta();
+    meta[classId] = { ...meta[classId], localUpdatedAt: new Date().toISOString() };
+    writeSyncMeta(meta);
+
     dirtyClassVersions.set(classId, ++dirtySeq);
     deletedClasses.delete(classId);
     persistPendingState();

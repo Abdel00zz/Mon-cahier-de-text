@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { AppTextSize, ThemeMode } from '@/types';
 import { readThemeBackground } from '@/platform/themeColor';
+import { useMediaQuery } from './useMediaQuery';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 /**
  * Crans de densité de texte.
  *
- * Ces multiplicateurs alimentent `--app-text-scale` (voir index.css) : toute
- * l'échelle typographique — interface, cahier, modales — en dépend. Les
- * espacements, rayons et cibles tactiles restent en pixels : agrandir le texte
- * ne casse donc jamais la mise en page ni les zones de 44 px.
+ * Ces multiplicateurs alimentent `--app-text-density`, qui est multiplié par
+ * `--app-text-scale-base` pour produire `--app-text-scale` (voir `theme-tokens.css`).
+ * Toute l'échelle typographique en dépend sans altérer les cibles tactiles minimales (≥ 44 px).
  */
 const TEXT_SIZE_SCALE: Record<AppTextSize, number> = {
   sm: 0.94,
@@ -18,33 +20,14 @@ const TEXT_SIZE_SCALE: Record<AppTextSize, number> = {
 };
 
 /**
- * Contrôleur d'apparence : mode clair/sombre/système et densité de texte.
+ * Contrôleur d'apparence : mode clair/sombre/système et échelle de texte.
  *
- * Tous les autres réglages visuels (couleurs, rayons, styles de cartes, choix
- * de polices) ont été supprimés : la charte les fixe dans index.css et la
- * police est déterminée par la langue (DM Sans/Rubik, Arabswell 3/Maghribi
- * Font 3). Aucun réglage utilisateur ne peut donc plus les contredire.
+ * Utilise `useMediaQuery` pour un suivi instantané sans réabonnement inutile,
+ * et applique le thème via `useLayoutEffect` pour éliminer tout flash visuel au montage.
  */
 export function useTheme(configTheme?: ThemeMode, appTextSize?: AppTextSize) {
   const activeTheme: ThemeMode = configTheme ?? 'light';
-
-  const [systemIsDark, setSystemIsDark] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (e: MediaQueryListEvent) => setSystemIsDark(e.matches);
-
-    if (media.addEventListener) {
-      media.addEventListener('change', handler);
-      return () => media.removeEventListener('change', handler);
-    }
-    media.addListener(handler);
-    return () => media.removeListener(handler);
-  }, []);
+  const systemIsDark = useMediaQuery('(prefers-color-scheme: dark)');
 
   const isDark = useMemo(() => {
     if (activeTheme === 'dark') return true;
@@ -52,8 +35,8 @@ export function useTheme(configTheme?: ThemeMode, appTextSize?: AppTextSize) {
     return systemIsDark;
   }, [activeTheme, systemIsDark]);
 
-  // Classe .dark + barre d'état des navigateurs mobiles / PWA.
-  useEffect(() => {
+  // Classe .dark + barre d'état appliquée avant peinture pour éviter tout flash blanc
+  useIsomorphicLayoutEffect(() => {
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
 
@@ -75,8 +58,8 @@ export function useTheme(configTheme?: ThemeMode, appTextSize?: AppTextSize) {
     }
   }, [isDark]);
 
-  // Densité de texte : une seule variable CSS, lue par toute l'échelle.
-  useEffect(() => {
+  // Densité de texte : posée immédiatement sur le root pour éviter le CLS
+  useIsomorphicLayoutEffect(() => {
     if (typeof document === 'undefined') return;
     document.documentElement.style.setProperty(
       '--app-text-density',

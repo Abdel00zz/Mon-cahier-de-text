@@ -54,7 +54,7 @@ import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSyn
 import { useNotebookDocumentPreviews } from './hooks/useNotebookDocumentPreviews';
 import { DocumentPreview } from '@/components/documents/DocumentPreview';
 import { dateTimeFormat } from '@/lib/formatters';
-import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/infrastructure/sync/syncBus';
+import { commitClassMutation, markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/infrastructure/sync/syncBus';
 import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs, sessionPrintSignatures, type PrintPrefs } from '@/infrastructure/printing/printMeta';
 import { toDisplayWarnings, createSessionDateValidator } from '@/domain/calendar/dateValidation';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '@/domain/curriculum/predefinedContent';
@@ -544,8 +544,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           lessonsData: normalizedLessons,
           contentDirection: nextDirection,
         }));
-        touchClassSyncMeta(classInfo.id);
-        markClassDirty(classInfo.id);
+        commitClassMutation(classInfo.id);
       }
     } catch (error) {
       logger.error("Failed to load data from localStorage", error);
@@ -565,21 +564,37 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       try {
         saveNotebook(classInfo.id, lessonsDataRef.current, contentDirectionRef.current);
       } finally {
-        isSelfPersistingRef.current = false;
+        queueMicrotask(() => {
+          isSelfPersistingRef.current = false;
+        });
       }
       rememberNotebookActivity(classInfo.id, historyContext.current.operationType, historyContext.current.historyAction);
       saveStatusRef.current = 'saved';
       if (withVisualStatus) {
         setEditorState(draft => { draft.saveStatus = 'saved'; });
       }
-      const latest = evaluationContext.current;
-      (latest.config.pedagogicalEvents?.[classInfo.id] ?? []).forEach(event => eventArchive.current.set(event.id, event));
-      const { patch, updated } = syncNotebookToEvaluations(classInfo.id, latest.config, lessonsDataRef.current, {
-        previousLessons: evaluationsBaseline.current, planned: latest.assessments, eventArchive: eventArchive.current,
-        policy: latest.config.evaluationPolicy,
+
+      const capturedLessons = lessonsDataRef.current;
+      const capturedConfig = evaluationContext.current;
+      const scheduleIdle = typeof window !== 'undefined' && 'requestIdleCallback' in window
+        ? window.requestIdleCallback
+        : (cb: () => void) => window.setTimeout(cb, 100);
+
+      scheduleIdle(() => {
+        if (lessonsDataRef.current !== capturedLessons || !workspaceIsActive()) return;
+        (capturedConfig.config.pedagogicalEvents?.[classInfo.id] ?? []).forEach(event => eventArchive.current.set(event.id, event));
+        const { patch, updated } = syncNotebookToEvaluations(classInfo.id, capturedConfig.config, capturedLessons, {
+          previousLessons: evaluationsBaseline.current,
+          planned: capturedConfig.assessments,
+          eventArchive: eventArchive.current,
+          policy: capturedConfig.config.evaluationPolicy,
+        });
+        if (updated) {
+          updateConfig(patch);
+        }
+        evaluationsBaseline.current = capturedLessons;
       });
-      if (updated) updateConfig(patch);
-      evaluationsBaseline.current = lessonsDataRef.current;
+
       return true;
     } catch (error) {
       logger.error("Failed to save data to localStorage", error);

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { logger } from '../lib/logger';
 import { useDebouncedCallback } from './useDebouncedCallback';
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
+import { writeDurably } from '../infrastructure/storage/safeStorage';
 
 /*
  * Lecture SYNCHRONE : `localStorage` rend la valeur immédiatement. La lire dans
@@ -33,40 +34,72 @@ export function useOptimizedLocalStorage<T>(
   debounceMs: number = 1500
 ) {
   const [workspaceIsActive] = useState(() => captureWorkspaceLease());
-  // Un changement de compte invalide cette instance : on ne lit rien (la
-  // valeur appartiendrait au compte précédent) et on n'écrit rien.
-  const [initial] = useState(() => workspaceIsActive()
+  const initial = workspaceIsActive()
     ? readStoredValue(key, defaultValue)
-    : { value: defaultValue, error: null });
+    : { value: defaultValue, error: null };
+
   const [value, setValue] = useState<T>(initial.value);
   const [error, setError] = useState<string | null>(initial.error);
-  // Aucune attente : la valeur est déjà connue au premier rendu. Le drapeau
-  // reste exposé pour les écrans qui gardent un squelette en filet de sécurité.
   const isLoading = false;
 
-  // Debounced save to localStorage
+  const currentKeyRef = useRef(key);
+  const valueRef = useRef<T>(value);
+  valueRef.current = value;
+  const defaultValueRef = useRef<T>(defaultValue);
+  defaultValueRef.current = defaultValue;
+  const lastPersistedRef = useRef<T>(initial.value);
+
+  // Debounced save to localStorage using writeDurably
   const debouncedSave = useDebouncedCallback((valueToSave: T) => {
     if (!workspaceIsActive()) return;
-    
+
     try {
-      localStorage.setItem(key, JSON.stringify(valueToSave));
+      writeDurably(currentKeyRef.current, JSON.stringify(valueToSave));
       setError(null);
     } catch (err) {
-      logger.error(`Failed to save ${key} to localStorage`, err);
-      setError(`Erreur de sauvegarde: ${key}`);
+      logger.error(`Failed to save ${currentKeyRef.current} to localStorage`, err);
+      setError(`Erreur de sauvegarde: ${currentKeyRef.current}`);
     }
   }, debounceMs);
 
-  // Persister APRÈS le rendu, jamais dans l'updater de `setValue` : React peut
-  // rejouer un updater (StrictMode, rendu concurrent), un effet de bord y
-  // dupliquerait la sauvegarde. La référence mémorise la dernière valeur écrite
-  // (ou lue) : le premier passage et une valeur identique ne réécrivent rien.
-  const lastPersistedRef = useRef<T>(initial.value);
+  // Si la clé change, réinitialiser la valeur pour éviter de sauvegarder l'ancienne valeur sous la nouvelle clé
+  useEffect(() => {
+    if (currentKeyRef.current !== key) {
+      debouncedSave.flush();
+      currentKeyRef.current = key;
+      const next = workspaceIsActive() ? readStoredValue(key, defaultValueRef.current) : { value: defaultValueRef.current, error: null };
+      setValue(next.value);
+      setError(next.error);
+      lastPersistedRef.current = next.value;
+    }
+  }, [key, debouncedSave, workspaceIsActive]);
+
+  // Persister après le rendu
   useEffect(() => {
     if (Object.is(value, lastPersistedRef.current)) return;
     lastPersistedRef.current = value;
     debouncedSave(value);
   }, [debouncedSave, value]);
+
+  // Flush sur masquage ou fermeture de la page pour éviter toute perte de données
+  useEffect(() => {
+    const handleFlush = () => {
+      if (document.visibilityState === 'hidden') {
+        debouncedSave.flush();
+      }
+    };
+    const handlePageHide = () => {
+      debouncedSave.flush();
+    };
+
+    document.addEventListener('visibilitychange', handleFlush);
+    window.addEventListener('pagehide', handlePageHide);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleFlush);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, [debouncedSave]);
 
   // Update value and trigger save
   const updateValue = useCallback((newValue: T | ((prev: T) => T)) => {
@@ -79,31 +112,31 @@ export function useOptimizedLocalStorage<T>(
   const saveImmediately = useCallback(() => {
     if (!workspaceIsActive()) return;
     try {
-      localStorage.setItem(key, JSON.stringify(value));
-      lastPersistedRef.current = value;
+      debouncedSave.cancel();
+      writeDurably(currentKeyRef.current, JSON.stringify(valueRef.current));
+      lastPersistedRef.current = valueRef.current;
       setError(null);
     } catch (err) {
-      logger.error(`Failed to immediately save ${key} to localStorage`, err);
-      setError(`Erreur de sauvegarde immédiate: ${key}`);
+      logger.error(`Failed to immediately save ${currentKeyRef.current} to localStorage`, err);
+      setError(`Erreur de sauvegarde immédiate: ${currentKeyRef.current}`);
     }
-  }, [key, value, workspaceIsActive]);
+  }, [workspaceIsActive, debouncedSave]);
 
   // Clear storage
   const clearValue = useCallback(() => {
     if (!workspaceIsActive()) return;
     try {
-      // Annule une sauvegarde différée et empêche l'effet de réécrire la valeur
-      // par défaut juste après la suppression de la clé.
       debouncedSave.cancel();
-      lastPersistedRef.current = defaultValue;
-      localStorage.removeItem(key);
-      setValue(defaultValue);
+      const def = defaultValueRef.current;
+      lastPersistedRef.current = def;
+      localStorage.removeItem(currentKeyRef.current);
+      setValue(def);
       setError(null);
     } catch (err) {
-      logger.error(`Failed to clear ${key} from localStorage`, err);
-      setError(`Erreur de suppression: ${key}`);
+      logger.error(`Failed to clear ${currentKeyRef.current} from localStorage`, err);
+      setError(`Erreur de suppression: ${currentKeyRef.current}`);
     }
-  }, [key, defaultValue, workspaceIsActive, debouncedSave]);
+  }, [workspaceIsActive, debouncedSave]);
 
   return {
     value,
@@ -111,6 +144,6 @@ export function useOptimizedLocalStorage<T>(
     isLoading,
     error,
     saveImmediately,
-    clearValue
+    clearValue,
   };
 }
