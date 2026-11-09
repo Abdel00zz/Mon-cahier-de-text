@@ -120,6 +120,28 @@ const expandComfortMacros = (tex: string, depth = 0): string => {
   return out;
 };
 
+const KATEX_CACHE_LIMIT = 2048;
+const katexCache = new Map<string, string>();
+
+const getCachedKatex = (key: string): string | undefined => {
+  const cached = katexCache.get(key);
+  if (cached !== undefined) {
+    katexCache.delete(key);
+    katexCache.set(key, cached);
+  }
+  return cached;
+};
+
+const setCachedKatex = (key: string, html: string): string => {
+  katexCache.delete(key);
+  katexCache.set(key, html);
+  if (katexCache.size > KATEX_CACHE_LIMIT) {
+    const oldest = katexCache.keys().next().value;
+    if (oldest !== undefined) katexCache.delete(oldest);
+  }
+  return html;
+};
+
 const BASE_OPTIONS = {
   // Une commande inconnue ne casse JAMAIS le rendu : elle s'affiche en rouge à
   // sa place, le reste de la formule reste lisible.
@@ -157,13 +179,16 @@ export const renderKatexHtml = (tex: string, displayMode?: boolean): string => {
   const trimmed = tex.trim();
   // Sans indication, c'est le délimiteur qui décide de l'affichage en bloc.
   const display = displayMode ?? (trimmed.startsWith('$$') || trimmed.startsWith('\\['));
+  const cacheKey = `${tex}\u0000${display ? '1' : '0'}`;
+  const cached = getCachedKatex(cacheKey);
+  if (cached !== undefined) return cached;
   try {
     const value = highlightMathSource(expandComfortMacros(stripMathDelimiters(tex)), display);
     if (!value) return '';
-    return katex.renderToString(value, {
+    return setCachedKatex(cacheKey, katex.renderToString(value, {
       ...BASE_OPTIONS,
       displayMode: display,
-    });
+    }));
   } catch {
     // A rendering failure must never silently erase the teacher's formula.
     const escaped = tex.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

@@ -248,7 +248,7 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 </div>
             ) : items.map((item, index) => (
                 <div
-                    key={`content-${item.key}`}
+                    key={`content-${getSortId(item.data)}`}
                     data-session-cell="content"
                     {...(sortable ? sortAttributes(item, getSortId(item.data)) : {})}
                     data-focus-key={item.key === focusKey ? focusKey : undefined}

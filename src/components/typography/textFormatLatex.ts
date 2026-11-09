@@ -152,6 +152,18 @@ function renderBlocks(blocks: DescriptionBlock[], keyBase: string, depth = 1): R
  */
 const COLUMNS_BLOCK = /\\begin\{(?:multicols|colonnes)\*?\}(?:\{(\d)\})?([\s\S]*?)\\end\{(?:multicols|colonnes)\*?\}/g;
 const COLUMNS_STRAY = /\\(?:begin|end)\{(?:multicols|colonnes)\*?\}(?:\{\d\})?/g;
+const DESCRIPTION_CACHE_LIMIT = 512;
+const descriptionCache = new Map<string, React.ReactNode[]>();
+
+const cacheDescription = (text: string, nodes: React.ReactNode[]): React.ReactNode[] => {
+  descriptionCache.delete(text);
+  descriptionCache.set(text, nodes);
+  if (descriptionCache.size > DESCRIPTION_CACHE_LIMIT) {
+    const oldest = descriptionCache.keys().next().value;
+    if (oldest !== undefined) descriptionCache.delete(oldest);
+  }
+  return nodes;
+};
 const clampColumns = (value: string | undefined): number => Math.min(3, Math.max(2, Number(value) || 2));
 
 function renderColumnSegments(text: string): React.ReactNode[] | null {
@@ -198,8 +210,10 @@ const TEXTCOLOR = /\\textcolor\{([#A-Za-z0-9]{2,20})\}\{([^{}]*)\}/g;
 export function renderDescriptionWithBold(input: unknown): React.ReactNode[] {
   const text = toDisplayText(input);
   if (!text) return [];
+  const cached = descriptionCache.get(text);
+  if (cached) return cached;
   const columns = renderColumnSegments(text);
-  if (columns) return columns;
+  if (columns) return cacheDescription(text, columns);
   let prefix = '\uE000';
   while (text.includes(prefix)) prefix += '\uE000';
   const formulas: string[] = [];
@@ -248,12 +262,12 @@ export function renderDescriptionWithBold(input: unknown): React.ReactNode[] {
     return node;
   };
   const state: ParseCursor = { tokens: tokenizeLatex(structuredSource), index: 0 };
-  return glueAfterFormulas(renderBlocks(parseBlocks(state), '0').map((node, index) => {
+  return cacheDescription(text, glueAfterFormulas(renderBlocks(parseBlocks(state), '0').map((node, index) => {
     const restored = restore(node);
     return React.isValidElement(restored) && restored.key === null
       ? React.cloneElement(restored, { key: `restored-${index}` })
       : restored;
-  }));
+  })));
 }
 
 function renderTextLines(lines: string[], keyBase: string): React.ReactNode[] {
