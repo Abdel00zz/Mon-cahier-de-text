@@ -102,15 +102,15 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
                     {isSubmitting ? (isAr ? 'جارٍ التحقق…' : 'Vérification…') : (isAr ? 'الولوج إلى لوحة القيادة' : 'Accéder au tableau de bord')}
                 </Button>
 
-                <div className="mt-6 border-t border-border pt-4 text-center">
+                <div className="mt-6 text-center">
                     <p className="text-xs text-muted-foreground">
                         {isAr ? 'هل أنت أستاذ وتبحث عن دفتر نصوصك؟' : 'Vous êtes enseignant et cherchez votre cahier ?'}
                     </p>
                     <a
                         href="/"
-                        className="mt-2 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-primary/30 bg-card px-4 text-xs font-bold text-primary shadow-sm transition-colors hover:bg-primary/10"
+                        className="mt-2 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-border/80 bg-background/50 px-3.5 text-xs font-semibold text-foreground shadow-2xs hover:border-primary/40 hover:bg-muted/50 transition-colors"
                     >
-                        <BookOpen className="h-4 w-4" aria-hidden="true" />
+                        <BookOpen className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                         <span>{isAr ? 'الولوج إلى فضاء الأستاذ (دفتر نصوصي)' : 'Accéder à la session enseignant'}</span>
                     </a>
                 </div>

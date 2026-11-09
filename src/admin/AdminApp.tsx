@@ -7,7 +7,7 @@ import { AdminApiError, adminLogout, fetchOverview } from './api';
 import { AdminLogin } from './components/AdminLogin';
 import { TeacherList } from './components/TeacherList';
 import { hashToView, sameView, viewToHash, type AdminView } from './route';
-import { BookOpen, CalendarDays, Clock, FileText, ShieldCheck } from '../components/ui/icons';
+import { ArrowUpRight, BookOpen, CalendarDays, Clock, FileText, History, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 
 /*
  * Seuls la connexion et la liste partent avec la première page : la fiche d'un
@@ -179,37 +179,40 @@ export const AdminApp: React.FC = () => {
 
     return (
         <div className="admin-shell min-h-dvh" style={{ backgroundColor: 'var(--clr-bg)' }}>
-            <nav aria-label="Outils administratifs" className="admin-commandbar mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 pt-4 sm:px-8">
+            <nav aria-label="Outils administratifs" className="admin-commandbar mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2.5 px-4 pt-3 pb-3 sm:px-8">
                 <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary">
+                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-primary/25 bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                         <ShieldCheck className="h-4 w-4" aria-hidden="true" />
                         Dashboard Direction
                     </span>
                     <a
                         href="/"
-                        className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground shadow-sm hover:bg-muted"
+                        className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border/80 bg-card px-2.5 text-xs font-semibold text-foreground shadow-xs hover:border-primary/40 hover:bg-muted/50 transition-colors"
                         title="Basculer vers la session utilisateur (Mon cahier de textes)"
                     >
                         <BookOpen className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                         <span>Session enseignant</span>
+                        <ArrowUpRight className="h-3 w-3 text-muted-foreground opacity-60" aria-hidden="true" />
                     </a>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <button onClick={() => go({ name: 'timetableClock' })} className="admin-commandbar__action admin-commandbar__action--schedule min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+                    <button onClick={() => go({ name: 'timetableClock' })} className="admin-commandbar__action admin-commandbar__action--schedule min-h-11 rounded-xl border border-border bg-card px-3.5 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
                         <Clock className="admin-commandbar__icon" aria-hidden />
                         Horaires des séances
                     </button>
-                    <button onClick={() => go({ name: 'journal' })} className="admin-commandbar__action admin-commandbar__action--journal min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+                    <button onClick={() => go({ name: 'journal' })} className="admin-commandbar__action admin-commandbar__action--journal min-h-11 rounded-xl border border-border bg-card px-3.5 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+                        <History className="admin-commandbar__icon" aria-hidden />
                         Journal
                     </button>
-                    <button onClick={() => go({ name: 'evaluationPolicy' })} className="admin-commandbar__action admin-commandbar__action--policy min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+                    <button onClick={() => go({ name: 'evaluationPolicy' })} className="admin-commandbar__action admin-commandbar__action--policy min-h-11 rounded-xl border border-border bg-card px-3.5 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+                        <SlidersHorizontal className="admin-commandbar__icon" aria-hidden />
                         Contrôle continu
                     </button>
-                    <button onClick={() => go({ name: 'bulletin' })} className="admin-commandbar__action admin-commandbar__action--primary admin-commandbar__action--bulletin min-h-11 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm">
+                    <button onClick={() => go({ name: 'bulletin' })} className="admin-commandbar__action admin-commandbar__action--primary admin-commandbar__action--bulletin min-h-11 rounded-xl bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-sm">
                         <FileText className="admin-commandbar__icon" aria-hidden />
                         Bulletin officiel JSON
                     </button>
-                    <button onClick={() => go({ name: 'calendar' })} className="admin-commandbar__action admin-commandbar__action--ink admin-commandbar__action--calendar min-h-11 rounded-xl bg-foreground px-4 text-xs font-bold text-primary-foreground shadow-sm">
+                    <button onClick={() => go({ name: 'calendar' })} className="admin-commandbar__action admin-commandbar__action--ink admin-commandbar__action--calendar min-h-11 rounded-xl bg-foreground px-3.5 text-xs font-bold text-primary-foreground shadow-sm">
                         <CalendarDays className="admin-commandbar__icon" aria-hidden />
                         Gérer les vacances
                     </button>

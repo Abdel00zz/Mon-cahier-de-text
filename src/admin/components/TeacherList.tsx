@@ -13,6 +13,22 @@ import { Input } from '../../components/ui/input';
 import { Skeleton } from '../../components/ui/skeleton';
 import { ClassroomWelcomeIllustration } from '../../components/ui/DynamicIllustration';
 import { BookOpen } from '../../components/ui/icons';
+import {
+    AlertCircle,
+    ArrowUpRight,
+    Building2,
+    CheckCircle2,
+    Clock3,
+    Download,
+    GraduationCap,
+    Layers,
+    LogOut,
+    Mail,
+    RotateCw,
+    Search,
+    ShieldAlert,
+    Users,
+} from 'lucide-react';
 import { DEFAULT_OVERVIEW_FILTERS, freshnessLabel, hasActiveFilters, readOverviewFilters, teachersToCsv, writeOverviewFilters, type CsvTeacherRow } from '../overviewTools';
 import type { AdminTeacherSummary } from '../api';
 import { getBundledCalendar } from '../../domain/calendar/calendar';
@@ -117,27 +133,19 @@ const teacherColumns = teacherColumnHelper.columns([
             const q = rawQuery.trim().toLowerCase();
             if (!q) return true;
             const { teacher } = row.original;
-            return (
-                establishmentKey(teacher.establishmentName).includes(establishmentKey(q)) ||
+            return establishmentKey(teacher.establishmentName).includes(establishmentKey(q)) ||
                 teacherNameOf(teacher).toLowerCase().includes(q) ||
                 `${teacher.prenom} ${teacher.nom}`.toLowerCase().includes(q) ||
                 (teacher.email ?? '').toLowerCase().includes(q) ||
-                (teacher.contactPhone ?? teacher.phone).includes(q)
-            );
+                (teacher.contactPhone ?? teacher.phone).includes(q);
         },
-        sortFn: (a, b) =>
-            teacherNameOf(a.original.teacher).localeCompare(teacherNameOf(b.original.teacher), 'fr'),
+        sortFn: (a, b) => teacherNameOf(a.original.teacher).localeCompare(teacherNameOf(b.original.teacher), 'fr'),
     }),
     teacherColumnHelper.accessor(row => establishmentKey(row.teacher.establishmentName), {
         id: 'establishment',
         header: 'Établissement',
-        filterFn: (row, _id, school: string | null) =>
-            school === null || establishmentKey(row.original.teacher.establishmentName) === school,
-        sortFn: (a, b) =>
-            establishmentKey(a.original.teacher.establishmentName).localeCompare(
-                establishmentKey(b.original.teacher.establishmentName),
-                'fr',
-            ) || teacherNameOf(a.original.teacher).localeCompare(teacherNameOf(b.original.teacher), 'fr'),
+        filterFn: (row, _id, school: string | null) => school === null || establishmentKey(row.original.teacher.establishmentName) === school,
+        sortFn: (a, b) => establishmentKey(a.original.teacher.establishmentName).localeCompare(establishmentKey(b.original.teacher.establishmentName), 'fr') || teacherNameOf(a.original.teacher).localeCompare(teacherNameOf(b.original.teacher), 'fr'),
     }),
     teacherColumnHelper.accessor(row => row.severity, {
         id: 'severity',
@@ -150,25 +158,19 @@ const teacherColumns = teacherColumnHelper.columns([
             if (filterValue === 'blocked') return Boolean(teacher.blocked);
             return severity === filterValue;
         },
-        sortFn: (a, b) =>
-            SEVERITY_RANK[b.original.severity] - SEVERITY_RANK[a.original.severity] ||
-            a.original.completion - b.original.completion,
+        sortFn: (a, b) => SEVERITY_RANK[b.original.severity] - SEVERITY_RANK[a.original.severity] || a.original.completion - b.original.completion,
     }),
     teacherColumnHelper.accessor(row => row.completion, {
         id: 'completion',
         header: 'Complétion',
-        filterFn: (row, _id, cycle: string) =>
-            cycle === 'all' || (row.original.teacher.classes ?? []).some(c => c.cycle === cycle),
+        filterFn: (row, _id, cycle: string) => cycle === 'all' || (row.original.teacher.classes ?? []).some(c => c.cycle === cycle),
         sortFn: (a, b) => a.original.completion - b.original.completion,
     }),
     teacherColumnHelper.accessor(row => row.teacher.lastSyncAt ?? '', {
         id: 'activity',
         header: 'Activité',
-        filterFn: (row, _id, subject: string) =>
-            subject === 'all' || (row.original.teacher.classes ?? []).some(c => c.subject === subject),
-        sortFn: (a, b) =>
-            new Date(b.original.teacher.lastSyncAt ?? 0).getTime() -
-            new Date(a.original.teacher.lastSyncAt ?? 0).getTime(),
+        filterFn: (row, _id, subject: string) => subject === 'all' || (row.original.teacher.classes ?? []).some(c => c.subject === subject),
+        sortFn: (a, b) => new Date(b.original.teacher.lastSyncAt ?? 0).getTime() - new Date(a.original.teacher.lastSyncAt ?? 0).getTime(),
     }),
 ]);
 
@@ -187,54 +189,49 @@ interface TeacherCardProps {
  * cartes dont les données ont réellement changé (et non toute la grille à chaque frappe).
  */
 const TeacherCard = memo(function TeacherCard({ teacher, severity, inactive, completion, minute, onSelect }: TeacherCardProps) {
+    const name = teacherNameOf(teacher);
+    const cycles = uniq((teacher.classes ?? []).map(c => c.cycle).filter(Boolean)).map(c => CYCLE_LABEL[c as string] ?? c).join(' · ');
     return (
         <button
             type="button"
             onClick={() => onSelect(teacher.phone)}
-            className="admin-teacher-card rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md active:scale-[0.99] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            className="group admin-teacher-card rounded-2xl border border-border bg-card p-4 text-left shadow-xs transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md active:scale-[0.99] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
             style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 190px' }}
         >
-            <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 font-semibold text-foreground">
                         <span className={`h-2 w-2 shrink-0 rounded-full ${teacher.blocked ? 'bg-foreground' : SEVERITY_META[severity].dot}`} title={teacher.blocked ? 'Compte bloqué' : SEVERITY_META[severity].label} />
-                        <span className="truncate">{teacherNameOf(teacher)}</span>
+                        <span className="truncate text-sm tracking-tight">{name}</span>
                     </div>
-                    <div dir="auto" className="text-xs text-muted-foreground truncate">{teacher.email || teacher.contactPhone || (!teacher.phone.startsWith('acct_') ? teacher.phone : 'Compte Google')}</div>
-                    <div dir="auto" className="mt-1 text-xs text-muted-foreground break-words">{establishmentLabel(teacher.establishmentName)}</div>
+                    <div dir="auto" className="truncate text-xs text-muted-foreground">{teacher.email || teacher.contactPhone || (!teacher.phone.startsWith('acct_') ? teacher.phone : 'Compte Google')}</div>
+                    <div dir="auto" className="mt-1 flex items-center gap-1 text-xs text-muted-foreground break-words">
+                        <Building2 className="h-3 w-3 shrink-0 opacity-60" />
+                        <span className="truncate">{establishmentLabel(teacher.establishmentName)}</span>
+                    </div>
                 </div>
-                <div className="text-right">
-                    <div className="text-lg font-black text-primary">{completion}%</div>
-                    <div className="text-[10px] text-muted-foreground">{teacher.classes.length} classe(s)</div>
-                </div>
-            </div>
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div className={`h-full rounded-full ${completionColor(completion)}`} style={{ width: `${completion}%` }} />
-            </div>
-            <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-                <span>
-                    {uniq((teacher.classes ?? []).map(c => c.cycle).filter(Boolean))
-                        .map(c => CYCLE_LABEL[c as string] ?? c)
-                        .join(' · ') || 'Non renseigné'}
-                </span>
-                <span className={inactive ? 'font-bold text-destructive' : ''}>{timeAgo(teacher.lastSyncAt, minute)}</span>
-            </div>
-            <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                {teacher.blocked && (
-                    <span className="rounded-full bg-foreground/10 px-2 py-1 text-[10px] font-bold text-foreground">Accès bloqué</span>
-                )}
-                {(teacher.pendingRequests ?? 0) > 0 && (
-                    <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">{teacher.pendingRequests} demande(s) à traiter</span>
-                )}
-                {teacher.pendingMessages > 0 && (
-                    <span className="rounded-full bg-warning/10 px-2 py-1 text-[10px] font-bold text-warning-strong">
-                        {teacher.pendingMessages} lecture{teacher.pendingMessages > 1 ? 's' : ''} attendue{teacher.pendingMessages > 1 ? 's' : ''}
+                <div className="shrink-0 text-right">
+                    <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${SEVERITY_META[severity].chip}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${teacher.blocked ? 'bg-foreground' : SEVERITY_META[severity].dot}`} />
+                        {teacher.blocked ? 'Bloqué' : SEVERITY_META[severity].label}
                     </span>
-                )}
-                {teacher.pendingMessages === 0 && !teacher.pendingRequests && teacher.lastMessageAt && (
-                    <span className="rounded-full bg-success/10 px-2 py-1 text-[10px] font-bold text-success">Messages confirmés</span>
-                )}
-                <span className="ms-auto text-[10px] font-bold text-primary">Ouvrir la fiche →</span>
+                    <div className="mt-1 text-right text-base font-bold text-foreground tabular-nums">{completion}%</div>
+                </div>
+            </div>
+            <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-muted/70">
+                <div className={`h-full rounded-full transition-all duration-300 ${completionColor(completion)}`} style={{ width: `${completion}%` }} />
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="notion-prop-tag"><GraduationCap className="h-3 w-3" /><span>{cycles || 'Non renseigné'}</span></span>
+                <span className="notion-prop-tag"><Layers className="h-3 w-3" /><span>{teacher.classes.length} classe(s)</span></span>
+                <span className={`notion-prop-tag ${inactive ? 'border-destructive/30 bg-destructive/5 font-bold text-destructive' : ''}`}><Clock3 className="h-3 w-3" /><span>{timeAgo(teacher.lastSyncAt, minute)}</span></span>
+            </div>
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-2 text-[10px]">
+                {teacher.blocked && <span className="inline-flex items-center gap-1 rounded-md bg-foreground/10 px-2 py-0.5 font-bold text-foreground"><ShieldAlert className="h-3 w-3" />Accès bloqué</span>}
+                {(teacher.pendingRequests ?? 0) > 0 && <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 font-bold text-primary"><AlertCircle className="h-3 w-3" />{teacher.pendingRequests} demande(s) à traiter</span>}
+                {teacher.pendingMessages > 0 && <span className="inline-flex items-center gap-1 rounded-md bg-warning/10 px-2 py-0.5 font-bold text-warning-strong"><Mail className="h-3 w-3" />{teacher.pendingMessages} lecture{teacher.pendingMessages > 1 ? 's' : ''} attendue{teacher.pendingMessages > 1 ? 's' : ''}</span>}
+                {teacher.pendingMessages === 0 && !teacher.pendingRequests && teacher.lastMessageAt && <span className="inline-flex items-center gap-1 rounded-md bg-success/10 px-2 py-0.5 font-bold text-success"><CheckCircle2 className="h-3 w-3" />Messages confirmés</span>}
+                <span className="ms-auto inline-flex items-center gap-0.5 text-[11px] font-semibold text-primary group-hover:translate-x-0.5 transition-transform">Ouvrir la fiche <ArrowUpRight className="h-3 w-3" /></span>
             </div>
         </button>
     );
@@ -326,15 +323,12 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
     }, [enriched]);
 
     const priorities = useMemo(
-        () => enriched
-            .filter(item => item.needsFollowUp)
-            .sort((a, b) =>
-                Number(b.teacher.blocked) - Number(a.teacher.blocked) ||
-                Number((b.teacher.pendingMessages > 0 || (b.teacher.pendingRequests ?? 0) > 0)) - Number((a.teacher.pendingMessages > 0 || (a.teacher.pendingRequests ?? 0) > 0)) ||
-                Number(b.inactive) - Number(a.inactive) ||
-                SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity]
-            )
-            .slice(0, 5),
+        () => enriched.filter(item => item.needsFollowUp).sort((a, b) =>
+            Number(b.teacher.blocked) - Number(a.teacher.blocked) ||
+            Number((b.teacher.pendingMessages > 0 || (b.teacher.pendingRequests ?? 0) > 0)) - Number((a.teacher.pendingMessages > 0 || (a.teacher.pendingRequests ?? 0) > 0)) ||
+            Number(b.inactive) - Number(a.inactive) ||
+            SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity]
+        ).slice(0, 5),
         [enriched]
     );
 
@@ -429,73 +423,73 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 <div className="admin-overview__header-actions flex flex-wrap gap-2">
                     <a
                         href="/"
-                        className="inline-flex h-10 items-center gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-3.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+                        className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
                         title="Basculer vers la session utilisateur (Mon cahier de textes)"
                     >
                         <BookOpen className="h-4 w-4" aria-hidden="true" />
                         <span>Session enseignant</span>
+                        <ArrowUpRight className="h-3 w-3 opacity-60" aria-hidden="true" />
                     </a>
                     <button
                         type="button"
                         onClick={exportCsv}
                         disabled={filtered.length === 0}
                         title="Exporter la liste affichée (CSV, ouvrable dans un tableur)"
-                        className="h-10 rounded-md border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                        className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
                     >
-                        Exporter
+                        <Download className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                        <span>Exporter</span>
                     </button>
                     <button
                         onClick={onRefresh}
                         disabled={isLoading}
-                        className="h-10 rounded-md border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                        className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
                     >
-                        {isLoading ? 'Actualisation…' : 'Actualiser'}
+                        <RotateCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-primary' : 'text-muted-foreground'}`} aria-hidden="true" />
+                        <span>{isLoading ? 'Actualisation…' : 'Actualiser'}</span>
                     </button>
                     <button
                         onClick={onLogout}
-                        className="h-10 rounded-md border border-border bg-card px-4 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted"
+                        className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
                     >
-                        Se déconnecter
+                        <LogOut className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                        <span>Se déconnecter</span>
                     </button>
                 </div>
             </header>
 
             <section aria-label="Indicateurs de pilotage" className="admin-metric-grid mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <button
-                    type="button"
-                    onClick={() => setSeverityFilter('all')}
-                    className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'all' ? 'border-primary bg-primary/5 ring-2 ring-primary/15' : 'border-border bg-card'}`}
-                >
-                    <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Enseignants suivis</span>
-                    <span className="mt-1 block text-3xl font-black text-foreground">{teachers.length}</span>
-                    <span className="mt-1 block text-xs text-muted-foreground">{distribution.counts.ok} à jour</span>
+                <button type="button" onClick={() => setSeverityFilter('all')} className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'all' ? 'border-primary bg-primary/5 ring-2 ring-primary/15' : 'border-border bg-card'}`}>
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Enseignants suivis</span>
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-4 w-4" /></div>
+                    </div>
+                    <span className="mt-2 block text-3xl font-black text-foreground tabular-nums">{teachers.length}</span>
+                    <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><span className="h-1.5 w-1.5 rounded-full bg-success" /><span>{distribution.counts.ok} à jour</span></div>
                 </button>
-                <button
-                    type="button"
-                    onClick={() => setSeverityFilter('critical')}
-                    className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'critical' ? 'border-destructive bg-destructive/5 ring-2 ring-destructive/15' : 'border-border bg-card'}`}
-                >
-                    <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">À traiter</span>
-                    <span className="mt-1 block text-3xl font-black text-destructive">{distribution.needsFollowUp}</span>
-                    <span className="mt-1 block text-xs text-muted-foreground">retard critique, inactivité ou relance</span>
+                <button type="button" onClick={() => setSeverityFilter('critical')} className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'critical' ? 'border-destructive bg-destructive/5 ring-2 ring-destructive/15' : 'border-border bg-card'}`}>
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">À traiter</span>
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-destructive/10 text-destructive"><AlertCircle className="h-4 w-4" /></div>
+                    </div>
+                    <span className="mt-2 block text-3xl font-black text-destructive tabular-nums">{distribution.needsFollowUp}</span>
+                    <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><span className="h-1.5 w-1.5 rounded-full bg-destructive" /><span>retard critique, inactivité ou relance</span></div>
                 </button>
-                <button
-                    type="button"
-                    onClick={() => setSeverityFilter('messages')}
-                    className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'messages' ? 'border-warning bg-warning/5 ring-2 ring-warning/15' : 'border-border bg-card'}`}
-                >
-                    <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Messages à suivre</span>
-                    <span className="mt-1 block text-3xl font-black text-warning-strong">{distribution.pendingMessages}</span>
-                    <span className="mt-1 block text-xs text-muted-foreground">demande(s) et lecture(s) en attente</span>
+                <button type="button" onClick={() => setSeverityFilter('messages')} className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'messages' ? 'border-warning bg-warning/5 ring-2 ring-warning/15' : 'border-border bg-card'}`}>
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Messages à suivre</span>
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-warning/10 text-warning-strong"><Mail className="h-4 w-4" /></div>
+                    </div>
+                    <span className="mt-2 block text-3xl font-black text-warning-strong tabular-nums">{distribution.pendingMessages}</span>
+                    <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><span className="h-1.5 w-1.5 rounded-full bg-warning" /><span>demande(s) et lecture(s) en attente</span></div>
                 </button>
-                <button
-                    type="button"
-                    onClick={() => setSeverityFilter('blocked')}
-                    className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'blocked' ? 'border-foreground bg-foreground/5 ring-2 ring-foreground/10' : 'border-border bg-card'}`}
-                >
-                    <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Comptes bloqués</span>
-                    <span className="mt-1 block text-3xl font-black text-foreground">{distribution.blocked}</span>
-                    <span className="mt-1 block text-xs text-muted-foreground">accès immédiatement suspendu</span>
+                <button type="button" onClick={() => setSeverityFilter('blocked')} className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'blocked' ? 'border-foreground bg-foreground/5 ring-2 ring-foreground/10' : 'border-border bg-card'}`}>
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Comptes bloqués</span>
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground/10 text-foreground"><ShieldAlert className="h-4 w-4" /></div>
+                    </div>
+                    <span className="mt-2 block text-3xl font-black text-foreground tabular-nums">{distribution.blocked}</span>
+                    <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><span className="h-1.5 w-1.5 rounded-full bg-foreground" /><span>accès immédiatement suspendu</span></div>
                 </button>
             </section>
 
@@ -578,17 +572,21 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
             </div>
 
             <div className="admin-filter-bar mb-5 flex flex-wrap gap-2">
-                <Input
-                    ref={searchRef}
-                    type="search"
-                    value={query}
-                    onChange={e => setQuery(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Escape') { setQuery(''); e.currentTarget.blur(); } }}
-                    aria-label="Rechercher un enseignant ou un établissement"
-                    aria-keyshortcuts="/"
-                    placeholder="Nom, établissement, téléphone…   ( / )"
-                    className="h-10 min-w-[12rem] flex-1 rounded-md border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                />
+                <div className="relative flex flex-1 min-w-[13rem] items-center">
+                    <Search className="pointer-events-none absolute left-3 h-4 w-4 text-muted-foreground opacity-60" aria-hidden="true" />
+                    <Input
+                        ref={searchRef}
+                        type="search"
+                        value={query}
+                        onChange={e => setQuery(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Escape') { setQuery(''); e.currentTarget.blur(); } }}
+                        aria-label="Rechercher un enseignant ou un établissement"
+                        aria-keyshortcuts="/"
+                        placeholder="Nom, établissement, téléphone…   ( / )"
+                        className="h-10 w-full rounded-md border border-border bg-background ps-9 pe-8 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    />
+                    <kbd className="admin-kbd pointer-events-none absolute right-2.5 hidden sm:inline-flex">/</kbd>
+                </div>
                 <select
                     aria-label="Établissement"
                     value={schoolFilter === null ? 'all' : `school:${schoolFilter}`}
