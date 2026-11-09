@@ -9,7 +9,6 @@ import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/hom
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { SessionDocuments } from './SessionDocuments';
-import { CalendarDays, MessageSquare } from 'lucide-react';
 
 const DATE_CARD_NUMBER_OPTIONS: Intl.NumberFormatOptions = { minimumIntegerDigits: 2, useGrouping: false };
 const dateCardNumberFormatters = new Map<AppLocale, Intl.NumberFormat>();
@@ -85,7 +84,7 @@ const parseRangeOrPair = (str: string, locale: AppLocale): ParsedRange | null =>
 
 /** Les dates simples et fusionnées partagent exactement la même typographie. */
 export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ dateStr, hasWarning }) => (
-  dateStr ? <MultiDateCard dates={[dateStr]} hasWarning={hasWarning} /> : <CalendarDays className="editor-empty-date" size={16} aria-hidden="true" />
+  dateStr ? <MultiDateCard dates={[dateStr]} hasWarning={hasWarning} /> : null
 ));
 
 DateCard.displayName = 'DateCard';
@@ -228,9 +227,6 @@ export const RemarkCell: FC<{
               <div dir={textDirectionAttribute(otherRemark)} className="editor-type-remark min-h-[22px] w-full whitespace-pre-wrap break-words p-0.5 text-start font-semibold leading-snug text-foreground/80 text-xs sm:text-sm">
                 {renderDescriptionWithBold(otherRemark)}
               </div>
-            )}
-            {!homeworkLine && !otherRemark && !sessionAnnotation && !sessionDocuments?.length && (
-              <MessageSquare className="editor-empty-note" size={16} aria-hidden="true" />
             )}
           </>
         );

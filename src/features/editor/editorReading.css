@@ -110,12 +110,6 @@
     font-size: .8125rem; color: var(--reading-note); padding: .3rem .45rem;
     border-radius: .75rem; background: color-mix(in srgb, var(--reading-note) 8%, transparent);
   }
-  .editor-reading-table .editor-empty-date, .editor-reading-table .editor-empty-note {
-    margin: auto; color: #6b6b6b; opacity: .82;
-    transition: opacity 160ms ease;
-  }
-  .dark .editor-reading-table :is(.editor-empty-date, .editor-empty-note) { color: #c2c2c2; }
-  .editor-reading-table button:is(:hover, :focus-visible) :is(.editor-empty-date, .editor-empty-note) { opacity: 1; }
   .editor-reading-table [data-absence-session] > * { padding: .5rem .25rem; }
   
   .editor-reading-table .editor-reorder-handle { border-radius: .6rem; color: var(--reading-mute); }
@@ -140,6 +134,4 @@
     .editor-reading-table :is(.editor-type-remark, .editor-session-note) { padding-inline: .25rem; }
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .editor-reading-table :is(.editor-empty-date, .editor-empty-note) { transition: none; }
-}
+
