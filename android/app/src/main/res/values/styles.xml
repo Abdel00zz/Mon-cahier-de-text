@@ -20,7 +20,7 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <!-- Même papier que l'interface claire : aucun saut de couleur au démarrage. -->
-        <item name="windowSplashScreenBackground">#f4f2eb</item>
+        <item name="windowSplashScreenBackground">#faf9f8</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_notebook_foreground</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>

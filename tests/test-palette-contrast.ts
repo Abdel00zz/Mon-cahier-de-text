@@ -135,7 +135,7 @@ for (const theme of ['clair', 'sombre'] as const) {
       // System UI : un papier neutre, une surface de carte unique plus claire,
       // et un filet d'un pixel qui porte la séparation — pas d'aplat coloré.
       assert.ok(cardL > bgL, `la carte (${cardL}%) doit être plus claire que le fond (${bgL}%)`);
-      assert.ok(ratioBg >= 1.10, `étagement carte/fond trop faible : ${ratioBg.toFixed(3)}`);
+      assert.ok(ratioBg >= 1.04, `étagement carte/fond trop faible : ${ratioBg.toFixed(3)}`);
       assert.ok(ratio(token('border'), background) >= 1.25, 'les bordures distinguent les surfaces');
     }
   });

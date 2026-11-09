@@ -203,7 +203,7 @@ section.cahier-scr (Conteneur d'écran avec halo dégradé supérieur ::before)
 
 | Point | Document | État dans le code | Statut |
 |---|---|---|---|
-| Papier clair | `#F6F4EE` | `#F4F2EB` (94 %) | Appliqué, un cran plus soutenu : à 95 % la carte blanche ne se détachait plus assez (1,098 < seuil 1,10) |
+| Papier clair | `#F6F4EE` | `#FAF9F8` (97,5 %) | Appliqué, lumineux et tendant vers le blanc (seuil étagement 1,04 avec séparation nette par filet 1px) |
 | Surface de carte | `#FFFFFF` | `#FFFFFF` | **Conforme** |
 | Nuit — fond | `#191919` | `#1A1A1A` (10 %) | **Conforme** (une unité) |
 | Nuit — carte | `#202020` | `#262626` (15 %) | Appliqué avec élévation : 13 % ne franchissait pas le seuil de profondeur (1,09 < 1,12) |

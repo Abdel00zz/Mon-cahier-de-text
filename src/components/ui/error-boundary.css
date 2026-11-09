@@ -3,7 +3,7 @@
    Tous les jetons ont un repli : même si le thème n'a pas encore chargé,
    l'écran reste lisible. */
 .app-error {
-    --error-bg: hsl(var(--background, 45 30% 94%));
+    --error-bg: hsl(var(--background, 45 14% 97.5%));
     --error-card: hsl(var(--card, 45 22% 99.5%));
     --error-border: hsl(var(--border, 35 16% 82%));
     --error-ink: hsl(var(--foreground, 25 35.29% 13.33%));

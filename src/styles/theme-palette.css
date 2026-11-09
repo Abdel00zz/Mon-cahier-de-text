@@ -6,10 +6,10 @@
     /* Le thème est piloté par l'application. `only` empêche les navigateurs
        mobiles de recolorer automatiquement les champs et les textes. */
     color-scheme: only light;
-    /* System UI : papier albâtre chaud (charte §2.1) et une seule surface de
-       carte blanche, séparée par un filet d'un pixel — jamais par un
-       empilement d'aplats colorés. */
-    --background: 45 30% 94%;      /* papier albâtre #F4F2EB, un cran sous la carte */
+    /* System UI : papier clair lumineux tendant vers le blanc (charte §2.1)
+       et une seule surface de carte blanche, séparée par un filet d'un pixel —
+       jamais par un empilement d'aplats colorés. */
+    --background: 45 14% 97.5%;      /* papier clair lumineux #faf9f8, tendant vers le blanc */
     --foreground: 25 35.29% 13.33%; /* #2e2016 */
     --card: 45 22% 99.5%;          /* feuille chaude, jamais un blanc pur */
     --card-foreground: 25 35.29% 13.33%;
