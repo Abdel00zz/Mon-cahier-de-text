@@ -122,11 +122,12 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
     if (item.type === 'chapter') {
       const chapterTitle = toDisplayText(item.title) || toDisplayText(config.name);
+      const cleanChapterNumber = contentNumber ? String(contentNumber).replace(/\.+$/, '').trim() : null;
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
           <div dir={textDirectionAttribute(chapterTitle)} className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-bold tracking-tight select-none">
             <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,calc(100%-2.5rem))] break-words text-pretty">
-              {contentNumber && <bdi dir="ltr" className="me-2">{contentNumber}.</bdi>}
+              {cleanChapterNumber && <bdi dir="ltr" className="me-2">{cleanChapterNumber}</bdi>}
               {highlight || hasMathSyntax(chapterTitle) ? (
                 <HighlightedText text={chapterTitle} query={highlight} />
               ) : (
@@ -138,19 +139,23 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       );
     }
 
+    const IconComponent = config.icon;
+    const badgeColorClass = config.badgeColor || 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800';
+
     return (
       // MaybeKaTeX : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeKaTeX key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
         <div dir={textDirectionAttribute(item.title)} className={`editor-type-top w-full font-bold tracking-tight py-0.5 flex items-center ${titleColorClass} ${indentClass} ${justificationClass}`}>
-            <span className="inline-flex min-w-0 max-w-[calc(100%-2.5rem)] flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
+            <span className={`editor-assessment-pill inline-flex min-w-0 max-w-[calc(100%-2.5rem)] items-center justify-center gap-2 rounded-full border px-3.5 py-1 text-xs sm:text-sm font-semibold shadow-xs transition-transform duration-150 ${badgeColorClass}`}>
+              {IconComponent && <IconComponent className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 opacity-80" aria-hidden="true" />}
               {documentPreview ? (
                 <button
                   type="button"
                   dir={textDirectionAttribute(item.title)}
                   data-document-title-link="true"
                   data-document-highlight="true"
-                  className="editor-document-highlight group max-w-full"
+                  className="editor-document-highlight group max-w-full inline-flex items-center gap-1.5"
                   onClick={(event) => {
                     event.stopPropagation();
                     onOpenDocumentPreview?.(documentPreview);
@@ -177,14 +182,17 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
   switch (elementType) {
     case 'section':
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
+      const sectionLabel = contentNumber
+        ? String(contentNumber).replace(/\.+$/, '').trim()
+        : sectionLetter;
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div dir={textDirectionAttribute(data.name)} className="editor-type-section editor-indent-1 font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2 text-start">
                 {/* `shrink-0 whitespace-nowrap` : la cellule hérite de
                     `overflow-wrap: anywhere` ([data-row-content]), donc sans
-                    cela le repli d'un titre long comprime « A. » jusqu'à ce
-                    que le point passe seul à la ligne suivante. */}
-                <bdi dir="ltr" className="editor-section-letter shrink-0 whitespace-nowrap">{contentNumber ?? sectionLetter}</bdi>
+                    cela le repli d'un titre long comprime « A » jusqu'à ce
+                    que la lettre passe seule à la ligne suivante. */}
+                <bdi dir="ltr" className="editor-section-letter shrink-0 whitespace-nowrap">{sectionLabel}</bdi>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>
@@ -192,10 +200,13 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         </MaybeKaTeX>
       );
     case 'subsection':
+      const subsectionNum = contentNumber
+        ? String(contentNumber).replace(/\.+$/, '').trim()
+        : String(indices.subsectionIndex! + 1);
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div dir={textDirectionAttribute(data.name)} className="editor-type-subsection editor-indent-2 font-semibold text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2 text-start">
-                <bdi dir="ltr" className="shrink-0 whitespace-nowrap">{contentNumber ?? indices.subsectionIndex! + 1}.</bdi>
+                <bdi dir="ltr" className="shrink-0 whitespace-nowrap">{subsectionNum}</bdi>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>
@@ -203,10 +214,13 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         </MaybeKaTeX>
       );
     case 'subsubsection':
+      const subsubsectionNum = contentNumber
+        ? String(contentNumber).replace(/\.+$/, '').trim()
+        : romanNumber(indices.subsubsectionIndex! + 1).toLowerCase();
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div dir={textDirectionAttribute(data.name)} className="editor-type-subsubsection editor-indent-3 italic font-semibold text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2 text-start">
-                <bdi dir="ltr" className="shrink-0 whitespace-nowrap">{contentNumber ?? romanNumber(indices.subsubsectionIndex! + 1).toLowerCase()}.</bdi>
+                <bdi dir="ltr" className="shrink-0 whitespace-nowrap">{subsubsectionNum}</bdi>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>

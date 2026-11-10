@@ -684,6 +684,25 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
   html:not(.dark) [data-editor-table] :is(.editor-type-item-title, .editor-type-description) { color: #333; }
   .dark [data-editor-table] :is(.editor-type-top, .editor-type-evaluation),
   .dark [data-editor-table] .editor-date-value:not(.text-alert-strong) { color: #efaab2; }
+  /* Badge spécial arrondi, clean, coloré et moderne pour contrôles et devoirs */
+  .editor-assessment-pill {
+    border-radius: 9999px !important;
+    font-family: var(--notebook-heading, var(--font-display, system-ui));
+    letter-spacing: -0.01em;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+    transition: transform 150ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 150ms ease;
+  }
+  .editor-assessment-pill:hover {
+    transform: translateY(-0.5px);
+    box-shadow: 0 3px 8px -1px rgb(0 0 0 / 0.08);
+  }
+  [data-editor-table] .editor-assessment-pill,
+  [data-editor-table] .editor-assessment-pill :is(span, button, svg, bdi) {
+    color: inherit !important;
+  }
+  .dark .editor-assessment-pill {
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+  }
   [data-editor-table] :is(.editor-table-grid > :first-child, [data-session-cell='date']) {
     border-inline-end: 2px solid hsl(var(--border));
   }

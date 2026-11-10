@@ -1,77 +1,85 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   Hiérarchie de structure (A / 1. / i.) — Style Vercel Geist Kbd & Tabular Grid
-   Alignement optique rigoureux entre le badge de section, les sous-sections
-   numérotées et les lignes d'éléments (dans la table d'édition et à l'écran).
+   Hiérarchie de structure (A / 1 / i) — Typographie Harmonisée & Propre
+   Numéros harmonisés sans boîte d'arrière-plan, suppression du point '.',
+   alignement optique soigné.
    ══════════════════════════════════════════════════════════════════════════ */
 
+:root {
+  --editor-number-color: #24655b;
+}
+.dark {
+  --editor-number-color: #5eead4;
+}
+
 [data-editor-table] .editor-type-section {
-  align-items: center !important;
+  align-items: baseline !important;
   gap: 0.55rem !important;
 }
 
 .editor-section-letter {
   display: inline-flex;
   flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.5rem;
-  height: 1.5rem;
-  padding-inline: 0.35rem;
-  border: 1px solid color-mix(in srgb, hsl(var(--foreground)) 14%, hsl(var(--border)));
-  border-bottom-width: 2px;
-  border-radius: 6px;
-  background: linear-gradient(180deg, hsl(var(--card)) 0%, color-mix(in srgb, hsl(var(--muted)) 65%, hsl(var(--card))) 100%);
-  box-shadow: 0 1px 1.5px rgb(0 0 0 / 0.04), inset 0 1px 0 rgb(255 255 255 / 0.7);
-  color: hsl(var(--foreground));
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
-  font-size: 0.74rem;
+  align-items: baseline;
+  justify-content: flex-start;
+  min-width: 1.25rem;
+  height: auto;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--editor-number-color, #24655b) !important;
+  font-family: var(--notebook-heading, var(--font-editor-title, system-ui));
+  font-size: 0.95rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: normal;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  align-self: center;
+  align-self: baseline;
 }
 
 .dark .editor-section-letter {
-  border-color: color-mix(in srgb, hsl(var(--foreground)) 20%, hsl(var(--border)));
-  background: linear-gradient(180deg, color-mix(in srgb, hsl(var(--muted)) 85%, hsl(var(--card))) 0%, hsl(var(--card)) 100%);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--editor-number-color, #5eead4) !important;
 }
 
-/* Marqueurs de sous-section (1., 2.) et sous-sous-section (i., ii.) en style
-   compteur Vercel Geist : boîte tabulaire sobre alignée sur la ligne de base */
+/* Marqueurs de sous-section (1, 2) et sous-sous-section (i, ii) :
+   Zéro boîte d'arrière-plan, typographie harmonisée, suppression du point '.' */
 [data-editor-table] :is(.editor-type-subsection, .editor-type-subsubsection) {
-  align-items: center !important;
+  align-items: baseline !important;
   gap: 0.5rem !important;
 }
 
 [data-editor-table] .editor-type-subsection > bdi,
 [data-editor-table] .editor-type-subsubsection > bdi {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.45rem;
-  height: 1.35rem;
-  padding-inline: 0.28rem;
-  border: 1px solid color-mix(in srgb, hsl(var(--border)) 85%, transparent);
-  border-radius: 5px;
-  background: color-mix(in srgb, hsl(var(--muted)) 55%, hsl(var(--card)));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55);
-  color: hsl(var(--foreground) / 0.88);
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
-  font-size: 0.7rem;
-  font-weight: 600;
+  align-items: baseline;
+  justify-content: flex-start;
+  min-width: 1.15rem;
+  height: auto;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--editor-number-color, #24655b) !important;
+  font-family: var(--notebook-heading, var(--font-editor-title, system-ui));
+  font-size: 0.9rem;
+  font-weight: 700;
   font-style: normal;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  align-self: center;
+  align-self: baseline;
 }
 
 .dark [data-editor-table] .editor-type-subsection > bdi,
 .dark [data-editor-table] .editor-type-subsubsection > bdi {
-  border-color: color-mix(in srgb, hsl(var(--border)) 95%, transparent);
-  background: color-mix(in srgb, hsl(var(--muted)) 70%, hsl(var(--card)));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--editor-number-color, #5eead4) !important;
 }
 
 /* Étagement dans le tableau d'édition : les éléments enfants (DÉF, PROPR, EXO)
