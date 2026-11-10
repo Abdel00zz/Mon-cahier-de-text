@@ -43,17 +43,20 @@
   .editor-reading-table [data-editor-table-header] .sr-only { position: static; width: auto; height: auto; padding: 0; margin: 0; overflow: visible; clip: auto; clip-path: none; white-space: normal; }
   .editor-reading-table [data-editor-table-header] [aria-hidden='true'] { display: none; }
   .editor-reading-table .editor-section-letter {
-    display: inline-flex; align-items: baseline; justify-content: flex-start; align-self: baseline;
-    min-width: 1.25rem; height: auto; padding: 0 !important;
-    border: none !important; border-radius: 0 !important;
+    display: inline-flex; align-items: center; justify-content: center; align-self: center;
+    min-width: 1.55rem; height: 1.55rem; padding-inline: .35rem;
+    border-radius: 6px !important;
+    border: 1.5px solid color-mix(in srgb, var(--editor-number-color, var(--reading-teal, #326c70)) 55%, hsl(var(--border))) !important;
     background: transparent !important;
-    box-shadow: none !important;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
     color: var(--editor-number-color, var(--reading-teal, #326c70)) !important;
-    font-family: var(--notebook-heading, var(--font-editor-title, system-ui));
-    font-size: .95rem; font-weight: 700; line-height: 1;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: .78rem; font-weight: 700; line-height: 1;
     font-variant-numeric: tabular-nums;
   }
   .dark .editor-reading-table .editor-section-letter {
+    border-color: color-mix(in srgb, var(--editor-number-color, var(--reading-teal, #a0ceca)) 50%, hsl(var(--border))) !important;
+    background: transparent !important;
     color: var(--editor-number-color, var(--reading-teal, #a0ceca)) !important;
   }
   .editor-reading-table [data-row-content] { border-radius: 0; padding: .28rem .75rem; }
