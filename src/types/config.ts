@@ -65,6 +65,8 @@ export interface AppConfig {
     assessmentOrder?: Record<string, string[]>;
     /** Editable presentation of an activity in the session remark, keyed by stable activity ID. */
     sessionRemarkOverrides?: Record<string, Record<string, { text?: string; hidden?: boolean }>>;
+    /** Remarques pédagogiques saisies manuellement par l'enseignant pour les séances d'absence : { [classId]: { [dateISO]: string } } */
+    absenceRemarks?: Record<string, Record<string, string>>;
 }
 
 /** Devoir surveillé ou maison ajouté manuellement, sans planning officiel imposé. */

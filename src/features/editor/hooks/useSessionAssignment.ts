@@ -11,6 +11,7 @@ export interface SessionEditorState {
   intent: 'date' | 'remark';
   patch?: SessionPatch;
   source: LessonsData;
+  absenceDate?: string;
 }
 
 interface Options {
@@ -25,6 +26,7 @@ interface Options {
   onClose: () => void;
   onSaved: () => void;
   onActivityRemarks?: (patch: SessionPatch, session: SessionEditorState) => HistoryEffects | undefined;
+  onAbsenceRemark?: (date: string, remark: string) => void;
   onStale: () => void;
 }
 
@@ -46,12 +48,44 @@ export function useSessionAssignment(options: Options) {
     onOpen();
   }, []);
 
+  const openAbsenceRemark = useCallback((date: string, initialRemark = '') => {
+    const { lessonsData, isActive, onOpen } = latest.current;
+    if (!isActive()) return;
+    setEditor({
+      selection: {
+        targets: [],
+        date,
+        remark: initialRemark,
+        mixedDates: false,
+        mixedRemarks: false,
+      },
+      intent: 'remark',
+      source: lessonsData,
+      absenceDate: date,
+    });
+    setReview(null);
+    onOpen();
+  }, []);
+
   const request = useCallback((session: SessionEditorState, patch: SessionPatch) => {
     const { getDateWarnings, locale, revision } = latest.current;
     setEditor({ ...session, patch });
     const commit = () => {
       const current = latest.current;
-      if (!current.isActive() || current.lessonsData !== session.source || current.revision !== revision) {
+      if (!current.isActive()) {
+        cancel();
+        current.onClose();
+        current.onStale();
+        return;
+      }
+      if (session.absenceDate) {
+        current.onAbsenceRemark?.(session.absenceDate, patch.remark ?? '');
+        cancel();
+        current.onSaved();
+        current.onClose();
+        return;
+      }
+      if (current.lessonsData !== session.source || current.revision !== revision) {
         cancel();
         current.onClose();
         current.onStale();
@@ -63,7 +97,7 @@ export function useSessionAssignment(options: Options) {
       current.onSaved();
       current.onClose();
     };
-    const warnings = patch.date ? [
+    const warnings = !session.absenceDate && patch.date ? [
       ...getDateWarnings(patch.date),
       ...dateOrderWarnings(patch.date, selectionDateOrder(session.source, session.selection.targets), locale),
       ...(latest.current.getSelectionWarnings?.(session.source, session.selection.targets, patch) ?? []),
@@ -89,5 +123,5 @@ export function useSessionAssignment(options: Options) {
     latest.current.onOpen();
   }, []);
   const confirm = useCallback(() => { if (!review?.warnings.some(warning => warning.blocking)) review?.commit(); }, [review]);
-  return { editor, review, open, apply, assignDate, modify, confirm, cancel };
+  return { editor, review, open, openAbsenceRemark, apply, assignDate, modify, confirm, cancel };
 }

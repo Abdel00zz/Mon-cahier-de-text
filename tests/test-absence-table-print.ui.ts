@@ -27,16 +27,25 @@ const table = (data: LessonsData, locale: 'fr' | 'ar' = 'fr') => render(React.cr
     onOpenContentEditor: noop, newlyAddedIds: [],
 }), locale);
 
-test('editor renders the absence date and reason between sessions, without a course control', () => {
+test('editor renders the absence date and interactive remark button between sessions, without auto-filling administrative motif', () => {
     const html = table(lessons);
     assert.ok(html.indexOf('Avant') < html.indexOf('data-absence-session="2026-09-14"'));
     assert.ok(html.indexOf('data-absence-session="2026-09-14"') < html.indexOf('Après'));
-    const row = html.match(/data-absence-session="2026-09-14"[\s\S]*?Repos prescrit<\/div>/)?.[0] ?? '';
+    const row = html.match(/data-absence-session="2026-09-14"[\s\S]*?<\/button>/)?.[0] ?? '';
     assert.ok(row.includes('14/09/2026'));
     assert.ok(row.includes('Certificat de maladie'));
-    assert.ok(row.includes('Repos prescrit'));
+    assert.ok(!row.includes('Repos prescrit'), 'administrative motif is not auto-injected in editor table');
     assert.ok(!row.includes('editor-indent'));
-    assert.ok(!row.includes('<button'));
+    assert.ok(row.includes('data-remark-cell="true"'), 'remark cell is interactive button');
+
+    // With explicit teacher remark provided
+    const withTeacherRemark = render(React.createElement(MainTable, {
+        lessonsData: lessons, visibleRows: buildLessonRows(lessons), absenceSessions: sessions,
+        onClearSearch: noop, contentDirection: 'ltr', onOpenAddContentModal: noop,
+        selectedKeys: new Set<string>(), onToggleSelect: noop, onOpenContentEditor: noop, newlyAddedIds: [],
+        getAbsenceRemark: (date: string) => date === '2026-09-14' ? 'Rattrapage prévu' : undefined,
+    }));
+    assert.ok(withTeacherRemark.includes('Rattrapage prévu'));
 });
 
 test('paper uses the same independent chronological row, including absence-only jobs', () => {
@@ -78,14 +87,14 @@ const adjacentSessions = [
     { date: '2026-09-14', reasons: ['راحة بوصفة طبية'] },
     { date: '2026-09-18', reasons: ['راحة بوصفة طبية'] },
 ];
-const mergedTable = (absenceSessions = adjacentSessions, searchQuery?: string) => render(React.createElement(MainTable, {
-    lessonsData: [], visibleRows: [], absenceSessions, searchQuery,
+const mergedTable = (absenceSessions = adjacentSessions, searchQuery?: string, getAbsenceRemark?: (d: string) => string | undefined) => render(React.createElement(MainTable, {
+    lessonsData: [], visibleRows: [], absenceSessions, searchQuery, getAbsenceRemark,
     onClearSearch: noop, contentDirection: 'rtl', onOpenAddContentModal: noop,
     selectedKeys: new Set<string>(), onToggleSelect: noop, onOpenContentEditor: noop, newlyAddedIds: [],
 }), 'ar');
 
 test('editor and paper merge adjacent medical certificates, with every date and one shared remark', () => {
-    const screen = mergedTable();
+    const screen = mergedTable(adjacentSessions, undefined, () => 'راحة بوصفة طبية');
     const paper = render(React.createElement(PrintView, { lessonsData: [], absenceSessions: adjacentSessions,
         classInfo, config, contentDirection: 'rtl', newlyAddedIds: [], preview: true }), 'ar');
     for (const html of [screen, paper]) {
@@ -102,9 +111,10 @@ test('editor and paper merge adjacent medical certificates, with every date and 
 
 test('merged certificate remarks retain their date associations on screen and paper', () => {
     const different = [adjacentSessions[0], { ...adjacentSessions[1], reasons: ['متابعة طبية'] }];
+    const remarkMap: Record<string, string> = { '2026-09-14': 'راحة بوصفة طبية', '2026-09-18': 'متابعة طبية' };
     const paper = render(React.createElement(PrintView, { lessonsData: [], absenceSessions: different,
         classInfo, config, contentDirection: 'rtl', newlyAddedIds: [], preview: true }), 'ar');
-    for (const html of [mergedTable(different), paper]) {
+    for (const html of [mergedTable(different, undefined, d => remarkMap[d]), paper]) {
         assert.equal(html.match(/شهادة مرضية/g)?.length, 1);
         assert.ok(/14\/09\/2026[\s\S]*?راحة بوصفة طبية[\s\S]*?18\/09\/2026[\s\S]*?متابعة طبية/.test(html));
     }

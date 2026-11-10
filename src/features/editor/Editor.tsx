@@ -431,8 +431,24 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const result = sessionRemarkSettingsPatch(config, classInfo.id, session.source, session.selection.targets, patch, sessionRemarkEntries);
       return recordSessionSettings(result);
     },
+    onAbsenceRemark: (date: string, remark: string) => {
+      const classId = classInfo.id;
+      const currentClassRemarks = { ...(config.absenceRemarks?.[classId] ?? {}) };
+      if (remark.trim()) {
+        currentClassRemarks[date] = remark.trim();
+      } else {
+        delete currentClassRemarks[date];
+      }
+      updateConfig({
+        absenceRemarks: {
+          ...(config.absenceRemarks ?? {}),
+          [classId]: currentClassRemarks,
+        },
+      });
+      showNotification(t('remark.savedNotification') || 'Remarque enregistrée', 'success');
+    },
   });
-  const { open: openSession, assignDate: assignSessionDate, cancel: cancelSession } = sessionAssignment;
+  const { open: openSession, openAbsenceRemark, assignDate: assignSessionDate, cancel: cancelSession } = sessionAssignment;
   const openSessionRef = useRef(openSession);
   openSessionRef.current = openSession;
 
@@ -440,6 +456,15 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     const targets = sessionTargetsRef.current.get(indicesKey(indices)) ?? [indices];
     openSessionRef.current(targets, 'remark');
   }, []);
+
+  const handleOpenAbsenceRemark = useCallback((date: string) => {
+    const currentRemark = config.absenceRemarks?.[classInfo.id]?.[date] ?? '';
+    openAbsenceRemark(date, currentRemark);
+  }, [config.absenceRemarks, classInfo.id, openAbsenceRemark]);
+
+  const getAbsenceRemark = useCallback((date: string) => {
+    return config.absenceRemarks?.[classInfo.id]?.[date];
+  }, [config.absenceRemarks, classInfo.id]);
 
   const addNewItemHighlight = useCallback((id: string) => {
     setEditorState(draft => { draft.newlyAddedIds.push(id); });
@@ -1278,6 +1303,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               onOpenContentEditor={handleOpenContentEditor}
               onOpenDateModal={handleOpenDateModal}
               onOpenRemark={handleOpenRemark}
+              getAbsenceRemark={getAbsenceRemark}
+              onOpenAbsenceRemark={handleOpenAbsenceRemark}
               newlyAddedIds={newlyAddedIds}
               editingKey={editingIndices ? indicesKey(editingIndices) : undefined}
               getDateWarnings={getDisplayDateWarnings}

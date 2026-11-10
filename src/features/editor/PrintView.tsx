@@ -268,7 +268,13 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
                         printRows.map((row, index) => {
                             if (row.kind === 'absence') {
                               const dates = row.sessions.map(session => session.date);
-                              const remarks = absenceRemarkGroups(row.sessions);
+                              const teacherRemarks = config.absenceRemarks?.[classInfo.id];
+                              const customList = teacherRemarks
+                                ? dates.map(d => ({ date: d, text: teacherRemarks[d] })).filter(item => Boolean(item.text))
+                                : [];
+                              const remarks = customList.length > 0
+                                ? customList.map(item => ({ dates: [item.date], reasons: [item.text!] }))
+                                : absenceRemarkGroups(row.sessions);
                               return (
                                 <tr key={row.key} data-absence-session={row.session.date} data-absence-dates={dates.join(',')} className="print-absence-row">
                                     <td className="print-col-date"><div className="print-absence-dates">{dates.map(date => <bdi key={date} dir="ltr" className="print-date-text">{formatDateDDMMYYYY(date)}</bdi>)}</div></td>

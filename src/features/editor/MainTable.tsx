@@ -20,6 +20,7 @@ import { SessionGroupRow } from './SessionGroupRow';
 import { NotebookEmptyState } from './NotebookEmptyState';
 import { sortAttributes } from './tableSortAttributes';
 import { TABLE_GRID_CLASS } from './editorConstants';
+import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import './editorRowReorder.css';
 import './editorReading.css';
 
@@ -43,6 +44,9 @@ interface MainTableProps {
   onOpenDateModal?: (indices: Indices, currentDate?: string) => void;
   /** saisie de la remarque de la séance (ligne ou groupe fusionné) */
   onOpenRemark?: (indices: Indices) => void;
+  /** remarque personnalisée pour une séance d'absence */
+  getAbsenceRemark?: (date: string) => string | undefined;
+  onOpenAbsenceRemark?: (date: string) => void;
   newlyAddedIds: string[];
   /** clé de la ligne dont le contenu est ouvert dans l’éditeur */
   editingKey?: string;
@@ -127,6 +131,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   onOpenContentEditor,
   onOpenDateModal,
   onOpenRemark,
+  getAbsenceRemark,
+  onOpenAbsenceRemark,
   getDateWarnings,
   getDateOrder,
   getContentNumber,
@@ -299,19 +305,54 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
               return rows.map(({ row, virtualItem, absoluteIndex }) => {
                   if (row.kind === 'absence') {
                     const dates = row.sessions.map(session => session.date);
-                    const remarks = absenceRemarkGroups(row.sessions);
+                    const absenceDate = dates[0] ?? row.session.date;
+                    const rawRemarks = getAbsenceRemark
+                      ? dates.map(d => ({ date: d, text: getAbsenceRemark(d)?.trim() })).filter(item => Boolean(item.text))
+                      : [];
+                    const groupedTeacherRemarks: Array<{ dates: string[]; text: string }> = [];
+                    for (const item of rawRemarks) {
+                      const previous = groupedTeacherRemarks.at(-1);
+                      if (previous && previous.text === item.text) {
+                        previous.dates.push(item.date);
+                      } else {
+                        groupedTeacherRemarks.push({ dates: [item.date], text: item.text! });
+                      }
+                    }
+                    const hasMultipleDistinct = groupedTeacherRemarks.length > 1;
                     return (
                       <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement}>
                           <div data-absence-session={row.session.date} data-absence-dates={dates.join(',')} className={`grid min-h-14 border-b border-border bg-muted/20 ${TABLE_GRID_CLASS}`}>
                               <div title={dates.map(date => formatDateDDMMYYYY(date) ?? date).join(' · ')} className="flex min-w-0 items-center justify-center border-e border-border px-1 py-3 text-center editor-type-table-side"><MultiDateCard dates={dates} /></div>
                               <div dir={textDirectionAttribute(t('notifications.absenceCertificate'))} className="flex items-center justify-start text-start border-e border-border px-3 py-3 font-medium editor-type-table-main">{t('notifications.absenceCertificate')}</div>
-                              <div className="flex min-w-0 flex-col justify-center gap-2 whitespace-pre-wrap break-words px-2 py-3 text-muted-foreground editor-type-remark">
-                                  {remarks.map(remark => <div key={remark.dates[0]} dir={textDirectionAttribute(remark.reasons.join(' · '))}>
-                                      {remarks.length > 1 && <div className="mb-1 text-xs font-medium tabular-nums">{remark.dates.map(date => <bdi key={date} dir="ltr" title={formatDateDDMMYYYY(date) ?? date} className="inline-block max-w-full me-1">
-                                          <span className="sm:hidden">{formatDateDDMMYYYY(date)?.slice(0, 5)}</span><span className="hidden sm:inline">{formatDateDDMMYYYY(date)}</span>
-                                      </bdi>)}</div>}
-                                      {remark.reasons.join(' · ')}
-                                  </div>)}
+                              <div className="flex min-w-0 p-1 md:p-1.5 transition-colors items-center justify-start">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenAbsenceRemark?.(absenceDate);
+                                  }}
+                                  data-remark-cell="true"
+                                  title={t('remark.editTitle')}
+                                  aria-label={t('remark.editTitle')}
+                                  className="flex min-h-[44px] h-full flex-1 w-full flex-col justify-center items-start text-start cursor-pointer touch-manipulation rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 p-2 editor-type-remark"
+                                >
+                                  {groupedTeacherRemarks.length > 0 ? (
+                                    groupedTeacherRemarks.map(item => (
+                                      <div key={item.dates[0]} dir={textDirectionAttribute(item.text)} className="editor-type-remark min-h-[22px] w-full whitespace-pre-wrap break-words p-0.5 text-start font-semibold leading-snug text-foreground/80 text-xs sm:text-sm">
+                                        {hasMultipleDistinct && (
+                                          <div className="mb-1 text-xs font-medium tabular-nums">
+                                            {item.dates.map(date => (
+                                              <bdi key={date} dir="ltr" title={formatDateDDMMYYYY(date) ?? date} className="inline-block max-w-full me-1">
+                                                {formatDateDDMMYYYY(date)}
+                                              </bdi>
+                                            ))}
+                                          </div>
+                                        )}
+                                        {renderDescriptionWithBold(item.text)}
+                                      </div>
+                                    ))
+                                  ) : null}
+                                </button>
                               </div>
                           </div>
                       </VirtualListRow>
