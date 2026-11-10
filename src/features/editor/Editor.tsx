@@ -18,11 +18,8 @@ import { Header } from './Header';
 import { EditorOverlays } from './EditorOverlays';
 import { Toolbar } from './Toolbar';
 import { MainTable } from './MainTable';
-import { SelectionBar } from './SelectionBar';
 import { AppBootSkeleton, EditorSkeleton } from '@/components/ui/PageSkeleton';
 import { preloadEditorFonts } from './editorFontLoading';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '@/features/editor/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { indicesKey, resolveAddAfterTarget } from '@/domain/notebook/lessonRows';
@@ -52,7 +49,6 @@ import { materializeContentAssessments } from '@/domain/evaluations/homeworkCorr
 import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionDates';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { useNotebookDocumentPreviews } from './hooks/useNotebookDocumentPreviews';
-import { DocumentPreview } from '@/components/documents/DocumentPreview';
 import { dateTimeFormat } from '@/lib/formatters';
 import { commitClassMutation, markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/infrastructure/sync/syncBus';
 import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs, sessionPrintSignatures, type PrintPrefs } from '@/infrastructure/printing/printMeta';
@@ -62,8 +58,6 @@ import { PrintMode, PrintOptions } from './modals/PrintModal';
 import { printDocument, preparePrintContent } from '@/infrastructure/printing/printUtils';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, ContentDirection } from '@/types';
 import { PrintView } from './PrintView';
-import { EditorModals } from './EditorModals';
-import { DateReviewModal } from './modals/DateReviewModal';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, formatLocalizedClassDisplayName, normalizeOfficialClassName } from '@/constants';
 import { insertFreeContent } from '@/domain/notebook/freeContent';
 import { logger } from '@/lib/logger';
@@ -79,11 +73,6 @@ import { rememberNotebookActivity } from '@/infrastructure/storage/companionActi
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
-/**
- * Horodatage de rédaction d'un sujet : options stables (objet de module) pour
- * que le formateur `Intl` mémoïsé soit partagé au lieu d'être reconstruit à
- * chaque ouverture d'aperçu.
- */
 const DOCUMENT_UPDATED_FORMAT: Intl.DateTimeFormatOptions = {
     day: 'numeric',
     month: 'long',
@@ -92,8 +81,6 @@ const DOCUMENT_UPDATED_FORMAT: Intl.DateTimeFormatOptions = {
     minute: '2-digit',
 };
 
-/** Valeur stable tant que la modale d'impression est fermée : aucune signature
- *  de séance n'est calculée pendant la frappe. */
 const EMPTY_PRINT_STATS = {
     totalDates: 0,
     allDates: [] as string[],
@@ -124,15 +111,10 @@ type ActiveModal =
   | 'print'
   | null;
 
-
-
 export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings, onOpenGuide, onBack }) => {
   const [workspaceIsActive] = useState(() => captureWorkspaceLease());
   const { t, locale } = useLocale();
   const { syncNow } = useSync();
-  // Lecture SYNCHRONE du cahier avant le premier rendu : la classe s'ouvre
-  // directement sur son tableau. Une lecture illisible (`null`) retombe sur le
-  // chargement différé et son écran d'attente, jamais sur un cahier vide.
   const [initialNotebook] = useState(() => readInitialNotebook({ classId: initialClassInfo.id, locale }));
   const initialNotebookRef = useRef<{ classId: string } | null>(initialNotebook ? { classId: initialClassInfo.id } : null);
   const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>(initialNotebook?.lessons ?? []);
@@ -144,9 +126,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   useEffect(() => {
     let active = true;
     let ceiling = 0;
-    // Plafond : les polices ne retardent jamais l'affichage du cahier lu
-    // synchronement — au pire 1,5 s puis repli navigateur, sans bloquer le
-    // premier rendu derrière `AppBootSkeleton`.
     const timeout = new Promise<void>(resolve => { ceiling = window.setTimeout(resolve, 1500); });
     void Promise.race([preloadEditorFonts(), timeout])
       .catch((error: unknown) => {
@@ -162,23 +141,15 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   const [editorState, setEditorState] = useImmer({
     classInfo: initialClassInfo,
-    // Faux quand la lecture synchrone a réussi : plus aucun squelette à l'ouverture.
     isClassLoading: !initialNotebook,
     saveStatus: 'saved' as 'saved' | 'saving' | 'unsaved',
     activeModal: null as ActiveModal,
     editingIndices: null as Indices | null,
     searchQuery: '',
-    // La langue du contenu est indépendante de celle de l'interface : un
-    // enseignant peut conserver l'UI française avec un cahier arabe, ou inversement.
-    // La direction ENREGISTRÉE dans le cahier prime sur la langue de l'interface :
-    // c'est elle qui garde un texte latin lisible de gauche à droite dans un
-    // cahier arabe (et l'inverse).
     contentDirection: (initialNotebook?.direction ?? defaultContentDirection(locale)) as ContentDirection,
     newlyAddedIds: [] as string[],
   });
 
-  // Une direction déduite du contenu est persistée dès l'ouverture, pour qu'elle
-  // survive au retour au tableau de bord et parte vers les autres appareils.
   useEffect(() => {
     if (!initialNotebook?.repaired || !workspaceIsActive()) return;
     try {
@@ -189,7 +160,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       touchClassSyncMeta(initialClassInfo.id);
       markClassDirty(initialClassInfo.id);
     } catch { /* stockage plein : le cahier reste en mémoire */ }
-    // Une seule fois, pour la classe ouverte : les changements de classe passent par loadData.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -209,26 +179,26 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const { assessments: syncAssessments } = useClassAssessments(initialClassInfo, config);
   const evaluationContext = useRef({ config, assessments: syncAssessments });
   evaluationContext.current = { config, assessments: syncAssessments };
-  /*
-   * Ordre chronologique : chaque contenu daté connaît son plus proche
-   * voisin daté (avant / après). Le contrôle est mémoïsé : passé à
-   * MainTable (React.memo), une lambda par rendu casserait la table.
-   */
+
   const contentDateOrder = useMemo(() => buildContentDateOrder(lessonsData), [lessonsData]);
+  const contentDateOrderRef = useRef(contentDateOrder);
+  contentDateOrderRef.current = contentDateOrder;
   const getDateOrder = useCallback(
-    (indices: Indices) => contentDateOrder.get(indicesKey(indices)),
-    [contentDateOrder],
+    (indices: Indices) => contentDateOrderRef.current.get(indicesKey(indices)),
+    [],
   );
-  // Numérotation par chapitre : « définition 1 », « exemple 2 »… Un numéro
-  // saisi à la main reste prioritaire sur le calcul (activé par défaut).
+
   const contentNumbers = useMemo(
     () => buildContentNumbers(lessonsData, config.contentNumbering ?? true),
     [lessonsData, config.contentNumbering],
   );
+  const contentNumbersRef = useRef(contentNumbers);
+  contentNumbersRef.current = contentNumbers;
   const getContentNumber = useCallback(
-    (indices: Indices) => contentNumbers.get(indicesKey(indices)),
-    [contentNumbers],
+    (indices: Indices) => contentNumbersRef.current.get(indicesKey(indices)),
+    [],
   );
+
   const contentDirectionRef = useRef<ContentDirection>(editorState.contentDirection);
   const saveStatusRef = useRef<'saved' | 'saving' | 'unsaved'>(editorState.saveStatus);
 
@@ -246,51 +216,50 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     contentDirection,
     newlyAddedIds,
   } = editorState;
-  // Les événements pagehide/démontage doivent toujours voir le dernier rendu,
-  // sans dépendre du délai d'autosauvegarde de 1,5 seconde.
   lessonsDataRef.current = lessonsData;
   contentDirectionRef.current = contentDirection;
   saveStatusRef.current = saveStatus;
-  const isNotebookAwaitingContent = lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData);
-  const notebookHasMath = useMemo(() => hasMathContent(lessonsData), [lessonsData]);
-  /*
-   * Contrôle des cahiers : l'activité n'ajoute AUCUN contenu au cahier — sa
-   * trace est une annotation dans la cellule « remarque » de la séance du même
-   * jour. Indexée par date (un contrôle de deux jours annote les deux séances)
-   * et mémoïsée. Le contrôle des cahiers, la remédiation et les évaluations
-   * orales datées alimentent cette annotation sans modifier le plan du cours.
-   */
+  const isNotebookAwaitingContent = useMemo(
+    () => lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData),
+    [lessonsData],
+  );
+  const notebookHasMath = useMemo(
+    () => (initialMathTypesetComplete ? false : hasMathContent(lessonsData)),
+    [initialMathTypesetComplete, lessonsData],
+  );
+
   const sessionRemarkEntries = useMemo(() => buildSessionRemarkEntries(config, classInfo.id, t, locale === 'ar' ? '، ' : ', ', lessonsData), [config, classInfo.id, t, locale, lessonsData]);
   const sessionAnnotationTexts = useMemo(() => sessionRemarkTextMap(sessionRemarkEntries), [sessionRemarkEntries]);
+  const sessionAnnotationTextsRef = useRef(sessionAnnotationTexts);
+  sessionAnnotationTextsRef.current = sessionAnnotationTexts;
   const getSessionAnnotation = useCallback(
-    (date?: string) => remarksForSessionDates(sessionAnnotationTexts, date),
-    [sessionAnnotationTexts],
+    (date?: string) => remarksForSessionDates(sessionAnnotationTextsRef.current, date),
+    [],
   );
-  const getSessionRemarkEntries = useCallback((date?: string) => sessionRemarkEntries.get(sessionDateKey(date)) ?? [], [sessionRemarkEntries]);
+  const sessionRemarkEntriesRef = useRef(sessionRemarkEntries);
+  sessionRemarkEntriesRef.current = sessionRemarkEntries;
+  const getSessionRemarkEntries = useCallback(
+    (date?: string) => sessionRemarkEntriesRef.current.get(sessionDateKey(date)) ?? [],
+    [],
+  );
 
-  /*
-   * Sujets de devoirs : le cahier affiche « Devoir maison 2 », les évaluations
-   * rangent le sujet sous l'identifiant du devoir planifié. La pastille
-   * « Document » n'apparaît QUE sur une ligne qui a vraiment un sujet, et
-   * l'aperçu se contente de relire ce qui est déjà en mémoire — aucune requête
-   * au clic, donc une ouverture instantanée.
-   */
   const documentPreviews = useNotebookDocumentPreviews(classInfo, config, lessonsData);
+  const documentPreviewsRef = useRef(documentPreviews);
+  documentPreviewsRef.current = documentPreviews;
   const [openDocument, setOpenDocument] = useState<NotebookDocumentPreview | null>(null);
   const getDocumentPreview = useCallback(
-    (rowKey: string) => documentPreviews.rows.get(rowKey),
-    [documentPreviews],
+    (rowKey: string) => documentPreviewsRef.current.rows.get(rowKey),
+    [],
   );
   const getSessionDocuments = useCallback(
-    (date: string) => documentsForSessionDates(documentPreviews.sessions, date),
-    [documentPreviews],
+    (date: string) => documentsForSessionDates(documentPreviewsRef.current.sessions, date),
+    [],
   );
   const handleOpenDocumentPreview = useCallback(
     (preview: NotebookDocumentPreview) => setOpenDocument(preview),
     [],
   );
   const closeDocumentPreview = useCallback(() => setOpenDocument(null), []);
-  /** « Mise à jour le … » : la date de rédaction du sujet, dans la langue de l'interface. */
   const documentUpdatedLabel = useMemo(() => {
     const updatedAt = openDocument?.document.updatedAt;
     if (!updatedAt) return undefined;
@@ -305,8 +274,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       setInitialMathTypesetComplete(true);
       return;
     }
-    // KaTeX compose les formules pendant le rendu. Laisser deux frames pour
-    // leur première peinture, sans moteur asynchrone ni attente artificielle.
     let secondFrame = 0;
     const firstFrame = window.requestAnimationFrame(() => {
       secondFrame = window.requestAnimationFrame(() => setInitialMathTypesetComplete(true));
@@ -321,8 +288,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     editingIndicesRef.current = editingIndices;
   }, [editingIndices]);
 
-  // Une recherche lancée depuis « Mes classes » continue dans le tableau du
-  // cahier : mêmes mots, mêmes lignes filtrées et surlignées, sans ressaisie.
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem('dashboard_search_handoff_v1');
@@ -336,11 +301,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     }
   }, [classInfo.id, setEditorState]);
 
-  /*
-   * Contenu prédéfini : si le cahier est vide et qu'un programme officiel
-   * existe pour ce niveau × matière, on le propose (utiliser tel quel,
-   * puis modifier librement, ou l'ignorer et créer son propre contenu).
-  */
   const [predefinedOffer, setPredefinedOffer] = useState<PredefinedEntry | null>(null);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   useEffect(() => {
@@ -378,7 +338,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
   }, [predefinedOffer, setState, setEditorState, t, workspaceIsActive, classInfo.id]);
 
-  // Échap : efface la sélection (si aucune modale/édition n'est ouverte, elles gèrent leur propre Échap)
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
@@ -392,12 +351,14 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const { rows: visibleRows, allRows, query: displayedQuery } = useLessonSearch(lessonsData, searchQuery);
   const absenceSessions = useMemo(() => buildAbsenceSessions(config, classInfo.id, lessonsData),
     [config.absences, config.timetable, config.timetableClock, classInfo.id, lessonsData]);
-  // UN SEUL groupement pour tout l'écran : les cibles d'édition et les cibles
-  // de séance en dérivent, au lieu de refaire le parcours de fusion deux fois.
   const groupedRows = useMemo(() => groupRowsWithAbsences(allRows, absenceSessions).renderRows, [allRows, absenceSessions]);
   const contentEditTargets = useMemo(() => buildContentEditTargetsGrouped(groupedRows), [groupedRows]);
-  /** Shared session remarks stay grouped; dragging addresses each entry. */
+  const contentEditTargetsRef = useRef(contentEditTargets);
+  contentEditTargetsRef.current = contentEditTargets;
   const sessionTargets = useMemo(() => buildSessionTargetsGrouped(groupedRows), [groupedRows]);
+  const sessionTargetsRef = useRef(sessionTargets);
+  sessionTargetsRef.current = sessionTargets;
+
   const {
     selectionState,
     selectedIndices,
@@ -423,32 +384,17 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     setConfirmBulkDelete
   });
 
-
   const getStorageKey = useCallback(() => `classData_v1_${classInfo.id}`, [classInfo.id]);
 
   const showNotification = useCallback((message: string, type: NotificationType) => {
     toast[type](message);
   }, []);
 
-  /*
-   * Garde intelligente : à chaque affectation de date, croise la date avec
-   * l'emploi du temps de la classe, les jours fériés, les vacances et les
-   * absences du prof. Alerte non bloquante (toast), le prof reste maître.
-   * `getDateWarnings` est mémoïsé : passé à MainTable (React.memo), une
-   * lambda inline casserait la mémoïsation de toute la table.
-   */
   const getDateWarnings = useMemo(
     () => createSessionDateValidator(classInfo, config, locale),
     [classInfo.id, classInfo.name, classInfo.cycle, classInfo.subject, config.schedules, config.absences, config.schoolYearStart, locale]
   );
 
-  /*
-   * Affichage du tableau : une séance déjà passée ne doit plus être repeinte
-   * en orange parce que l'emploi du temps a changé depuis l'affectation des
-   * dates. Les dates elles-mêmes ne sont jamais modifiées ; seule la couleur
-   * rétroactive disparaît. La saisie d'une date (requestDateCommit) continue
-   * d'utiliser la validation complète, y compris pour une saisie rétroactive.
-   */
   const today = useMoroccoToday();
   const getDisplayDateWarnings = useCallback(
     (date: string) => toDisplayWarnings(getDateWarnings(date), date, today),
@@ -479,7 +425,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     onSaved: () => {
       setSelectionState(createSelectionState());
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-
     },
     onStale: () => showNotification(t('editorNotice.selectionUnavailable'), 'info'),
     onActivityRemarks: (patch, session) => {
@@ -488,10 +433,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     },
   });
   const { open: openSession, assignDate: assignSessionDate, cancel: cancelSession } = sessionAssignment;
+  const openSessionRef = useRef(openSession);
+  openSessionRef.current = openSession;
+
   const handleOpenRemark = useCallback((indices: Indices) => {
-    const targets = sessionTargets.get(indicesKey(indices)) ?? [indices];
-    openSession(targets, 'remark');
-  }, [sessionTargets, openSession]);
+    const targets = sessionTargetsRef.current.get(indicesKey(indices)) ?? [indices];
+    openSessionRef.current(targets, 'remark');
+  }, []);
 
   const addNewItemHighlight = useCallback((id: string) => {
     setEditorState(draft => { draft.newlyAddedIds.push(id); });
@@ -501,8 +449,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [setEditorState]);
 
   const loadData = useCallback(() => {
-    // Cahier déjà en mémoire (lecture synchrone du premier rendu) : recharger
-    // réinitialiserait l'historique d'annulation sans rien apporter.
     if (initialNotebookRef.current?.classId === classInfo.id) {
       initialNotebookRef.current = null;
       return;
@@ -513,13 +459,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const savedData = raw ? JSON.parse(raw) : [];
       const lessons = Array.isArray(savedData) ? savedData : (savedData.lessonsData ?? []);
       const migratedLessons = migrateLessonsData(lessons);
-      // Les anciens cahiers (simple tableau) sont analysés une fois ; les
-      // nouveaux gardent une décision explicite dans le même instantané.
       const fallback = defaultContentDirection(locale);
       const storedDirection = readStoredContentDirection(savedData);
       const detectedDirection = detectContentDirection(lessons, fallback).direction;
       const nextDirection = storedDirection ?? detectedDirection;
-      // Un cahier vierge reste vierge : le choix de démarrage appartient au professeur.
       const normalizedLessons = materializeContentAssessments(migratedLessons, evaluationContext.current.config, classInfo.id, locale);
       resetState(normalizedLessons, 'initial-load');
       evaluationsBaseline.current = normalizedLessons;
@@ -536,9 +479,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         if (updated) updateConfig(patch);
       }
 
-      // Répare une fois les cahiers existants créés avant cette règle. La
-      // correction est persistée immédiatement afin qu'elle survive au retour
-      // Dashboard et soit propagée aux autres appareils.
       if (normalizedLessons !== migratedLessons && workspaceIsActive()) {
         localStorage.setItem(getStorageKey(), JSON.stringify({
           lessonsData: normalizedLessons,
@@ -552,7 +492,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     } finally {
       setEditorState(draft => { draft.isClassLoading = false; });
     }
-  }, [resetState, getStorageKey, showNotification, setEditorState, t, locale, workspaceIsActive, classInfo.id]);
+  }, [resetState, getStorageKey, showNotification, setEditorState, t, locale, workspaceIsActive, classInfo.id, updateConfig]);
 
   const isSelfPersistingRef = useRef(false);
   const persistCurrentData = useCallback((withVisualStatus: boolean): boolean => {
@@ -626,8 +566,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     return () => window.removeEventListener('keydown', handleSaveShortcut);
   }, [saveData, activeModal]);
 
-  // Garantie locale : quitter rapidement après une édition ne peut plus annuler
-  // la dernière saisie avant que l'autosauvegarde différée ait eu le temps de partir.
   useEffect(() => {
     const flushWhenHidden = () => {
       if (document.visibilityState === 'hidden') persistCurrentData(false);
@@ -642,11 +580,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     };
   }, [persistCurrentData]);
 
-  /*
-   * EXPORT : tout le cahier, ou seulement les blocs cochés. La liste n'est
-   * calculée QUE quand la fenêtre est ouverte : elle pèse chaque bloc, et la
-   * refaire à chaque frappe ralentirait l'édition sans jamais servir.
-   */
   const exportChapters = useMemo(
     () => (activeModal === 'dataTransfer' ? listExportableChapters(lessonsData) : []),
     [activeModal, lessonsData],
@@ -655,7 +588,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const handleExportData = useCallback((chapters: number[] | null) => {
     if (!workspaceIsActive()) return;
     try {
-        // `null` = tout le cahier ; sinon les blocs d'origine, tels quels.
         const selected = chapters === null ? lessonsData : selectExportableChapters(lessonsData, chapters);
         if (Array.isArray(selected) && selected.length === 0) {
           showNotification(t('editorNotice.exportEmpty'), 'error');
@@ -663,8 +595,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         }
         const dataToExport = { classInfo, lessonsData: selected, contentDirection };
         const jsonString = JSON.stringify(dataToExport, null, 2);
-        // La garde est EXACTE et vit ici : un fichier au-delà du plafond ne
-        // serait pas réimportable, donc on ne le produit pas.
         if (new TextEncoder().encode(jsonString).byteLength > MAX_JSON_FILE_BYTES) {
           showNotification(t('editorNotice.exportTooLarge'), 'error');
           return;
@@ -721,7 +651,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     loadData();
   }, [loadData]);
 
-  // Relecture après synchronisation, sans recouvrir une saisie encore non enregistrée.
   const reloadStoredNotebook = useCallback(() => {
     if (isSelfPersistingRef.current || !workspaceIsActive() || saveStatusRef.current !== 'saved') return;
     try {
@@ -734,10 +663,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         if (draft.activeModal === 'editContent') draft.activeModal = null;
       });
     } catch (error) { logger.error('Failed to refresh the notebook from storage', error); }
-  }, [getStorageKey, loadData, setEditorState, workspaceIsActive]);
+  }, [getStorageKey, loadData, setEditorState, workspaceIsActive, setSelectionState]);
 
-  // `dirty` est émis APRÈS l'écriture (voir `saveNotebook`), donc la lecture voit
-  // toujours la version neuve.
   useEffect(() => {
     const unsubscribers = [
       subscribe('pull-applied', reloadStoredNotebook),
@@ -746,13 +673,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     return () => unsubscribers.forEach(unsubscribe => unsubscribe());
   }, [reloadStoredNotebook]);
 
-  /*
-   * Ouverture d'un cahier : on se place directement sur le DERNIER CONTENU
-   * DATÉ — le bas de la dernière séance — plutôt qu'en haut d'un cahier de
-   * deux cents lignes. Le repère est celui d'un lien profond : MainTable sait
-   * défiler jusqu'à une ligne, virtualisée ou non. Il est relâché juste après,
-   * sinon la moindre édition ramènerait l'enseignant de force sur cette ligne.
-   */
   useNotebookOpeningFocus(classInfo.id, allRows,
     !isClassLoading && !isConfigLoading && initialMathTypesetComplete,
     setSessionFocusKey);
@@ -788,18 +708,15 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     undo();
     setSelectionState(createSelectionState());
     setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-  }, [canUndo, undo, setEditorState]);
+  }, [canUndo, undo, setEditorState, setSelectionState]);
 
   const handleRedo = useCallback(() => {
     if (!canRedo) return;
     redo();
     setSelectionState(createSelectionState());
     setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-  }, [canRedo, redo, setEditorState]);
+  }, [canRedo, redo, setEditorState, setSelectionState]);
 
-  // Raccourcis d'historique : Ctrl/Cmd+Z annule, Ctrl/Cmd+Maj+Z (ou Ctrl+Y)
-  // rétablit. Ils sont ignorés pendant une saisie, pour ne pas voler
-  // l'annulation native d'un champ ni l'édition en cours.
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
@@ -826,9 +743,21 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       setEditorState(draft => {
         draft.activeModal = 'addContent';
       });
-  }, [setEditorState]);
+  }, [setEditorState, setSelectionState]);
 
   const handleClearSearch = useCallback(() => setEditorState(draft => { draft.searchQuery = ""; }), [setEditorState]);
+  const handleSetSearchQuery = useCallback((value: string) => setEditorState(draft => { draft.searchQuery = value; }), [setEditorState]);
+  const handleOpenDataTransfer = useCallback(() => setEditorState(draft => { draft.activeModal = 'dataTransfer'; }), [setEditorState]);
+  const handleOpenManageLessons = useCallback(() => setEditorState(draft => { draft.activeModal = 'manageLessons'; }), [setEditorState]);
+  const handleOpenGuideModal = useCallback(() => {
+    if (onOpenGuide) onOpenGuide();
+    else setEditorState(draft => { draft.activeModal = 'guide'; });
+  }, [onOpenGuide, setEditorState]);
+  const handleOpenAnalyse = useCallback(() => setEditorState(draft => { draft.activeModal = 'analyse'; }), [setEditorState]);
+  const handleOpenEvaluations = useCallback(() => {
+    persistCurrentData(false);
+    setEditorState(draft => { draft.activeModal = 'evaluations'; });
+  }, [persistCurrentData, setEditorState]);
 
   const handleModalClose = useCallback(() => {
     cancelSession();
@@ -847,6 +776,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     if (blocking) { showNotification(blocking.message, 'error'); return; }
     if (!warnings.length) { commit(); return; }
     setPendingEvaluationEdit({ message: warnings.map(warning => warning.message).join('\n'), commit: () => {
+      setPendingEvaluationEdit(null);
       if (!workspaceIsActive() || lessonsDataRef.current !== source || evaluationContext.current.config !== config) {
         showNotification(t('evaluations.conflict.stale'), 'info');
         return;
@@ -875,13 +805,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const formattedDate = rawStart ? (rawEnd && rawEnd > rawStart ? formatPedagogicalDateCell(rawStart, rawEnd, effectiveLocale, intersecting) : rawStart) : undefined;
 
       if (type === 'devoir_maison') {
-          // Le devoir maison n'est PAS un contenu du cahier : il rejoint la feuille
-          // « Contrôle continu et activités » (sujet, remise élève par élève) et sa
-          // séance porte l'annotation. Même écriture que la pastille de la remarque.
           const date = rawStart && /^\d{4}-\d{2}-\d{2}$/.test(rawStart) ? rawStart : todayInMorocco();
           const moments = homeworkMoments(config, classInfo.id);
           const declared = extractHomeworkNumber(typeof data.title === 'string' ? data.title : '');
-          // Numéro explicite s'il est saisi, sinon le rang chronologique de la date choisie.
           const num = declared && declared > 0 ? declared : getChronologicalHomeworkNumber({
             lessons: lessonsData,
             targetDate: date,
@@ -889,7 +815,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             assessmentDates: Object.fromEntries(moments.map(moment => [moment.id, moment.givenDateISO ?? ''])),
           });
           const effects = recordSessionSettings(assignHomeworkPatch(config, classInfo.id, date, num));
-          // L'attribution s'annule comme une édition (Ctrl+Z), sans toucher au cahier.
           if (effects) setState(() => lessonsData, 'assign-homework', effects);
           showNotification(t('editorNotice.homeworkAssigned', { num, date: date.split('-').reverse().join('/') }), 'success');
           setSelectionState(createSelectionState());
@@ -907,8 +832,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           }, 'add-top-level');
           notificationMessage = t('editorNotice.topLevelAdded');
       } else if (type === 'chapter') {
-          // Un chapitre est toujours un bloc de premier niveau : posé après le chapitre
-          // de l'ancre, ou en fin de cahier quand rien n'est sélectionné (premier chapitre).
           const newChapter: TopLevelItem = { type: 'chapter', title: data.title, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
           prepare(draft => addTopLevelItem(draft, newChapter, anchor?.chapterIndex), 'add-top-level');
           notificationMessage = t('editorNotice.topLevelAdded');
@@ -947,8 +870,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         nextLessons = withoutPristineStarterDiagnostic(nextLessons);
       }
 
-      // Aucune branche n'a reconnu la demande : on le dit et on garde la modale ouverte,
-      // au lieu de la fermer en silence sur un cahier inchangé.
       if (nextLessons === lessonsData) {
         showNotification(t('editorNotice.contentNotAdded'), 'error');
         return;
@@ -965,15 +886,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         setSelectionState(createSelectionState());
         handleModalClose();
       });
-  }, [selectedIndices, lessonsData, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, t, locale, config, classInfo.id, reviewNotebookChange, recordSessionSettings, isNotebookAwaitingContent, workspaceIsActive]);
+  }, [selectedIndices, lessonsData, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, t, locale, config, classInfo.id, reviewNotebookChange, recordSessionSettings, isNotebookAwaitingContent, workspaceIsActive, setSelectionState]);
 
-  /*
-   * Impression intelligente : la modale PrintModal montre ce qui a déjà été
-   * imprimé (dates mémorisées par classe) et recommande le mode économique.
-   * Le calcul des signatures parcourt tout le cahier : il n'a de sens que
-   * lorsque la modale est ouverte. Le refaire à chaque sauvegarde pendant la
-   * frappe coûtait plusieurs millisecondes par édition sur un gros cahier.
-   */
   const printStats = useMemo(() => {
       if (activeModal !== 'print') return EMPTY_PRINT_STATS;
       const meta = readPrintMeta(classInfo.id);
@@ -982,7 +896,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       return {
           totalDates: allDates.length,
           allDates,
-          // Évite une seconde lecture/parsing du même printMeta local.
           newDates,
           printedDates: allDates.filter(date => !newDates.includes(date)),
           lastPrintedAt: meta.lastPrintedAt,
@@ -994,25 +907,16 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       setEditorState(draft => { draft.activeModal = 'print'; });
   }, [setEditorState]);
 
-  // Emploi du temps « en attente » : cette classe a-t-elle au moins un créneau
-  // saisi ? L'invitation disparaît dès qu'un créneau existe (réactif à la config).
   const classHasTimetable = useMemo(
       () => (config.timetable ?? []).some(entry => entry.classId === classInfo.id),
       [config.timetable, classInfo.id]
   );
 
-  // Renseigner l'emploi du temps : ouvre Paramètres directement sur l'onglet
-  // « Emploi du temps » via un signal de session lu par ConfigModal au montage.
   const handleOpenTimetable = useCallback(() => {
       try { sessionStorage.setItem('config_initial_tab_v1', 'emploi'); } catch { /* stockage indisponible */ }
       onOpenSettings?.();
   }, [onOpenSettings]);
 
-  /*
-   * Ancien rappel conservé pour les comptes sans checklist de démarrage.
-   * Le nouveau parcours guide les horaires depuis le dashboard : ouvrir le
-   * premier cahier ou masquer sa checklist ne doit pas déclencher de modale.
-   */
   const [showTimetableNudge, setShowTimetableNudge] = useState(false);
   const timetableNudgeKey = `timetableNudge_v1_${classInfo.id}`;
   useEffect(() => {
@@ -1044,7 +948,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const allDates = collectSessionDates(lessonsData, absenceSessions);
       const newDates = getNewDates(lessonsData, classId, undefined, absenceSessions, sessionAnnotationTexts);
 
-      // sous-ensemble à imprimer selon le mode ; null = document complet
       let selection: LessonsData | null = null;
       let datesToRecord: string[] = allDates;
       if (mode === 'new') {
@@ -1059,8 +962,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               showNotification(t('editorNotice.selectSession'), 'info');
               return;
           }
-          // La modale peut être restée ouverte pendant une synchronisation ou
-          // une suppression : ne jamais enregistrer une date disparue.
           const currentDates = new Set(allDates);
           const validSelectedDates = uniq(selectedDates.filter(date => currentDates.has(date))).sort();
           if (validSelectedDates.length === 0) {
@@ -1071,24 +972,20 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           datesToRecord = validSelectedDates;
       }
 
-      // Capture the content being printed, not edits received while the
-      // system dialog or a remote printer is still processing the job.
       const currentSignatures = sessionPrintSignatures(lessonsData, absenceSessions, sessionAnnotationTexts);
       const signatures = Object.fromEntries(datesToRecord.map(date => [date, currentSignatures[date]]));
 
       isPrintingRef.current = true;
       setIsPrinting(true);
 
-      // mémorise les préférences de mise en page pour la prochaine impression
       savePrintPrefs(classId, {
-      textSize: options.textSize,
-      lineSpacing: options.lineSpacing,
-      pageNumbers: options.pageNumbers,
-      colorContent: options.colorContent ?? false,
-      headerMode: options.headerMode,
+        textSize: options.textSize,
+        lineSpacing: options.lineSpacing,
+        pageNumbers: options.pageNumbers,
+        colorContent: options.colorContent ?? false,
+        headerMode: options.headerMode,
       });
 
-      // Commit the frozen document before preparing fonts and formula layout.
       flushSync(() => {
           setPrintSnapshot({ lessonsData: selection ?? lessonsData, sessionAnnotations: sessionAnnotationTexts, absenceSessions: absenceSessions.filter(session => datesToRecord.includes(session.date)), classInfo, config, contentDirection, newlyAddedIds: [], ...options });
           setEditorState(draft => { draft.activeModal = null; });
@@ -1118,6 +1015,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               if (!historySaved) {
                   showNotification(t('editorNotice.printHistoryError'), 'warning');
               }
+              setPrintSnapshot(null);
           } catch (error) {
               setPrintSnapshot(null);
               if (!workspaceIsActive()) return;
@@ -1126,36 +1024,26 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           } finally {
               isPrintingRef.current = false;
               setIsPrinting(false);
-              // Refresh preferences even when the preview was cancelled.
               setPrintMetaVersion(version => version + 1);
-              // Keep the frozen surface for queued jobs awaiting confirmation.
           }
       };
 
       void launchPrint();
   }, [classInfo, config, contentDirection, lessonsData, absenceSessions, sessionAnnotationTexts, isNotebookAwaitingContent, setEditorState, showNotification, t, workspaceIsActive]);
 
-
-  /* Ouvrir l'editeur de contenu NE TOUCHE PAS la selection : un double-clic
-   * sur un titre (ou « Modifier » dans la barre) ne doit pas effacer le
-   * travail de selection en cours. La barre reparaît telle quelle a la
-   * fermeture de la modale, et Échap reste le seul raccourci qui efface. */
   const handleOpenContentEditor = useCallback((indices: Indices) => {
-    const targets = contentEditTargets.get(indicesKey(indices));
+    const targets = contentEditTargetsRef.current.get(indicesKey(indices));
     if (!targets?.length) return;
     setEditorState(draft => {
       draft.editingIndices = targets[0];
       draft.activeModal = 'editContent';
     });
-  }, [setEditorState, contentEditTargets]);
-
+  }, [setEditorState]);
 
   const handleOpenDateModal = useCallback((indices: Indices) => {
-    const targets = contentEditTargets.get(indicesKey(indices)) ?? [indices];
-    openSession(targets);
-  }, [contentEditTargets, openSession]);
-
-
+    const targets = contentEditTargetsRef.current.get(indicesKey(indices)) ?? [indices];
+    openSessionRef.current(targets);
+  }, []);
 
   const handleClearSelectedDates = useCallback(() => {
       if (selectedIndices.length === 0) return;
@@ -1163,7 +1051,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [selectedIndices, assignSessionDate]);
 
   const handleConfirmContentEdit = useCallback((indices: Indices, updatedData: ContentDraft) => {
-      const targets = contentEditTargets.get(indicesKey(indices));
+      const targets = contentEditTargetsRef.current.get(indicesKey(indices));
       if (!targets?.length) return;
       const normalizedType = updatedData.type ? (TYPE_MAP[updatedData.type.toLowerCase()] || updatedData.type) : undefined;
       const finalItem = { ...updatedData };
@@ -1192,7 +1080,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           draft.activeModal = null;
         });
       });
-  }, [setState, showNotification, setEditorState, contentEditTargets, contentDirection, locale, t, classInfo.id, config, reviewNotebookChange, sessionRemarkEntries, recordSessionSettings]);
+  }, [setState, showNotification, setEditorState, contentDirection, locale, t, classInfo.id, config, reviewNotebookChange, sessionRemarkEntries, recordSessionSettings]);
 
   const handleImport = useCallback(async (data: unknown, mode: 'replace' | 'append'): Promise<boolean> => {
       if (!workspaceIsActive()) return false;
@@ -1203,15 +1091,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           return false;
         }
 
-        // Ajouter à un cahier déjà structuré ne doit pas inverser brusquement
-        // toutes ses colonnes. Un import de remplacement (ou le premier import)
-        // adopte immédiatement l'écriture détectée à partir du titre.
         const shouldAdoptImportedDirection = mode === 'replace' || isNotebookAwaitingContent;
         const nextDirection = shouldAdoptImportedDirection ? direction.direction : contentDirectionRef.current;
         const combined = mode === 'replace' ? preparedLessons : [...lessonsDataRef.current, ...preparedLessons];
         const nextLessons = withStarterDiagnostic(combined, contentLocaleFromDirection(nextDirection));
-        // Persist before closing the import dialog or announcing success. On failure,
-        // keep both the existing editor and the dialog available for recovery.
         try {
           saveNotebook(classInfo.id, nextLessons, nextDirection);
         } catch (error) {
@@ -1246,7 +1129,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         showNotification(t('editorNotice.importInvalidStructure'), "error");
         return false;
       }
-  }, [setState, showNotification, handleModalClose, setEditorState, isNotebookAwaitingContent, t, workspaceIsActive, classInfo.id, syncNow]);
+  }, [setState, showNotification, handleModalClose, setEditorState, isNotebookAwaitingContent, t, workspaceIsActive, classInfo.id, syncNow, setSelectionState]);
 
   const handleUpdateLessons = useCallback((newLessons: LessonsData) => {
       setSelectionState(createSelectionState());
@@ -1254,8 +1137,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       handleModalClose();
       showNotification(t('editorNotice.lessonsUpdated'), 'success');
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-
-  }, [setState, showNotification, handleModalClose, setEditorState, t]);
+  }, [setState, showNotification, handleModalClose, setEditorState, t, setSelectionState]);
 
   const handleEvaluationsLessonsChange = useCallback((newLessons: LessonsData) => {
       if (!workspaceIsActive()) return;
@@ -1291,7 +1173,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const selectedItemsData = useSelectionData(selectedIndices, lessonsData);
 
   const hasSelectedDate = selectedItemsData.some(item => Boolean(item.date));
-  // Tout porte déjà la date du jour : la barre n'a plus à proposer « Aujourd'hui ».
   const allSelectedToday = selectedItemsData.length > 0 && selectedItemsData.every(item => item.date === today);
   const canAddAfterSelection = addAfterTarget !== null;
   const canAssignDateSelection = selectedCount > 0 && selectedItemsData.every(item => item.canDate);
@@ -1301,15 +1182,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   );
   const canEditSelection = editSelectionTargets !== null;
 
-
-  // « Dater aujourd'hui » : un tap, réutilise le circuit handleAssignDates
-  // (donc aussi la garde intelligente sur la date du jour).
   const handleAssignToday = useCallback(() => {
       assignSessionDate(selectedIndices, todayInMorocco());
   }, [assignSessionDate, selectedIndices]);
 
-  // Actions de la barre de sélection : références stables, pour que la barre
-  // (mémoïsée) ne se redessine que lorsqu'une valeur affichée change réellement.
   const handleSelectionAdd = useCallback(() => {
     if (addAfterTarget) handleOpenAddContentModal(addAfterTarget);
   }, [addAfterTarget, handleOpenAddContentModal]);
@@ -1317,10 +1193,28 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const handleSelectionEdit = useCallback(() => {
     if (editSelectionTargets?.length) handleOpenContentEditor(editSelectionTargets[0]);
   }, [editSelectionTargets, handleOpenContentEditor]);
-  // Offset sticky dynamique : l'en-tête de colonnes du tableau se cale juste
-  // sous la barre d'outils collante (top-2 = 8 px). La hauteur de la barre
-  // varie (retour à la ligne sur mobile, ouverture de la recherche), un
-  // ResizeObserver republie la variable CSS --cdt-sticky-top en temps réel.
+
+  const hasBlockingOverlay = Boolean(
+    activeModal ||
+    sessionAssignment.review ||
+    confirmBulkDelete ||
+    pendingEvaluationEdit ||
+    pendingPrintConfirmation ||
+    openDocument
+  );
+
+  // Garde-fou contre le verrouillage `pointer-events: none` sur `document.body`
+  // laissé par une transition entre deux primitives Radix (DropdownMenu → ConfirmDialog).
+  useEffect(() => {
+    if (hasBlockingOverlay) return;
+    const timer = window.setTimeout(() => {
+      if (document.body.style.pointerEvents === 'none') {
+        document.body.style.pointerEvents = '';
+      }
+    }, 50);
+    return () => window.clearTimeout(timer);
+  }, [hasBlockingOverlay]);
+
   const isLoading = isClassLoading || isConfigLoading;
   const isInitialMathPreparing = notebookHasMath && !initialMathTypesetComplete;
 
@@ -1332,6 +1226,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     return <EditorSkeleton />;
   }
 
+  const isSearchActive = Boolean(displayedQuery?.trim());
+
   return (
     <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="relative w-full pb-8 safe-bottom print:bg-card print:p-0" data-editor-root data-pwa-update-blocked={editorState.saveStatus !== 'saved'}>
       <div className="max-w-screen-2xl mx-auto flex min-h-dvh w-full flex-col px-3 sm:px-5 lg:px-8 print:mx-0 print:w-full print:max-w-none print:min-h-0 print:bg-card print:p-0 print:shadow-none">
@@ -1341,11 +1237,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             onClassInfoChange={handleClassInfoChange}
             onBack={onBack}
           />
-          {/* Barre d'outils COLLANTE : masquée tant que le cahier est vide
-              en attente du choix de démarrage (importer le programme ou créer un chapitre).
-              Elle s'affiche dès que du contenu est créé ou importé. */}
           {(!isNotebookAwaitingContent || absenceSessions.length > 0) && (
-            /* Les actions restent dans une seule surface, sans bouton de retour. */
             <div className="editor-toolbar-row sticky top-0 z-[50] flex items-center gap-2 print:hidden">
               <div className="min-w-0 flex-1">
                 <Toolbar
@@ -1354,28 +1246,25 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
                   canUndo={canUndo}
                   canRedo={canRedo}
                   saveStatus={saveStatus}
-                  onOpenDataTransfer={() => setEditorState(draft => { draft.activeModal = 'dataTransfer'; })}
-                  onOpenManageLessons={() => setEditorState(draft => { draft.activeModal = 'manageLessons'; })}
-                  onOpenGuide={onOpenGuide ?? (() => setEditorState(draft => { draft.activeModal = 'guide'; }))}
-                  onOpenAnalyse={() => setEditorState(draft => { draft.activeModal = 'analyse'; })}
-                  onOpenEvaluations={() => {
-                    persistCurrentData(false);
-                    setEditorState(draft => { draft.activeModal = 'evaluations'; });
-                  }}
+                  onOpenDataTransfer={handleOpenDataTransfer}
+                  onOpenManageLessons={handleOpenManageLessons}
+                  onOpenGuide={handleOpenGuideModal}
+                  onOpenAnalyse={handleOpenAnalyse}
+                  onOpenEvaluations={handleOpenEvaluations}
                   onPrint={handleSmartPrint}
                   searchQuery={searchQuery}
-                  setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
+                  setSearchQuery={handleSetSearchQuery}
                 />
               </div>
             </div>
           )}
-          {/* Bloc tableau aligne sur le padding interieur de la carte parente. */}
           <main className="flex-1 pb-24 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
             <MainTable
               supportClass={classInfo}
               lessonsData={lessonsData}
               absenceSessions={absenceSessions}
               visibleRows={visibleRows}
+              precomputedCourseRows={!isSearchActive && !isNotebookAwaitingContent ? groupedRows : undefined}
               onClearSearch={handleClearSearch}
               contentDirection={contentDirection}
               onOpenAddContentModal={handleOpenAddContentModal}
@@ -1409,10 +1298,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         {printSnapshot && <PrintView {...printSnapshot} />}
       </div>
 
-
       <EditorOverlays
-        selectionBar={!activeModal && !sessionAssignment.review ? {
-          count: selectedCount,
+        selectionBar={{
+          count: !hasBlockingOverlay ? selectedCount : 0,
           hasDate: hasSelectedDate,
           allToday: allSelectedToday,
           canAdd: canAddAfterSelection,
@@ -1425,7 +1313,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           onDelete: handleBulkDelete,
           onClear: handleDeselectAll,
           canEdit: canEditSelection,
-        } : null}
+        }}
         printModal={{
           classId: classInfo.id,
           isOpen: activeModal === 'print',
@@ -1475,7 +1363,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         evaluationConflict={{
           open: !!pendingEvaluationEdit,
           message: pendingEvaluationEdit?.message ?? '',
-          onConfirm: () => pendingEvaluationEdit?.commit(),
+          onConfirm: () => {
+            const commit = pendingEvaluationEdit?.commit;
+            setPendingEvaluationEdit(null);
+            commit?.();
+          },
           onCancel: () => setPendingEvaluationEdit(null),
         }}
         dateReview={{
@@ -1506,10 +1398,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         }}
         printConfirmation={{
           open: pendingPrintConfirmation !== null,
-          onOpenChange: open => { if (!open) setPendingPrintConfirmation(null); },
+          onOpenChange: open => {
+            if (!open) {
+              setPendingPrintConfirmation(null);
+              setPrintSnapshot(null);
+            }
+          },
           onConfirm: () => {
-            if (!pendingPrintConfirmation || !workspaceIsActive()) return;
-            if (!recordPrint(pendingPrintConfirmation.classId, pendingPrintConfirmation.signatures)) {
+            const current = pendingPrintConfirmation;
+            setPendingPrintConfirmation(null);
+            setPrintSnapshot(null);
+            if (!current || !workspaceIsActive()) return;
+            if (!recordPrint(current.classId, current.signatures)) {
               showNotification(t('editorNotice.printHistoryError'), 'warning');
             }
             setPrintMetaVersion(version => version + 1);

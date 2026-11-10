@@ -96,17 +96,13 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     // Contrôle des cahiers : la trace de l'activité vit dans la cellule
     // « remarque » de la séance du même jour, sans ajouter la moindre ligne au
     // cahier. Elle n'est écrite qu'UNE fois par date — la première ligne datée
-    // la porte — pour ne pas la répéter quand la séance garde une cellule de
-    // remarque par contenu.
+    // la porte.
     const annotationsByDate = new Map<string, string>();
-    const annotationOwners = new Map<string, string>();
     for (const item of items) {
       const date = getMergeableDate(item);
-      if (!date) continue;
+      if (!date || annotationsByDate.has(date)) continue;
       const text = getSessionAnnotation?.(date);
-      if (!text) continue;
-      annotationsByDate.set(date, text);
-      annotationOwners.set(date, item.key);
+      if (text) annotationsByDate.set(date, text);
     }
     const sessionAnnotations = [...annotationsByDate.values()];
     /*
@@ -132,12 +128,9 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
             ? 'border-e border-e-alert/45'
             : 'border-e border-e-border';
 
-    // Separateur INTERNE d'une seance (contenus d'une MEME date) : filet fin
-    // POINTILLE, plus discret qu'un trait plein, pour marquer la suite sans
-    // couper la seance. Le « ! » final (importance, syntaxe Tailwind v4) est
-    // necessaire car `border-b` impose un style plein ; il ne porte que sur
-    // le bas, donc le filet vertical `border-e` reste net. Les autres
-    // frontieres (bornes de sequence datee, fin de seance) restent pleines.
+    // Séparateur INTERNE d'une séance (contenus d'une MÊME date) : filet fin
+    // POINTILLÉ, plus discret qu'un trait plein, pour marquer la suite sans
+    // couper la séance.
     const innerLineClass = `${groupIsSelected
         ? 'border-b border-b-primary/25'
         : hasWarning
@@ -195,8 +188,6 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 hasWarning
                     ? 'bg-alert/[0.07]'
                     : 'bg-card',
-                // La séance garde la surface de la carte : l’accent ne teinte que
-                // les lignes visées, ce qui les rend d’autant plus lisibles.
             ].filter(Boolean).join(' ')}
             style={{ gridTemplateRows: `repeat(${visualRowCount}, minmax(38px, auto))` }}
         >
@@ -209,11 +200,6 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                     e.stopPropagation();
                     if (onOpenDateModal && items[0]) {
                         const selected = items.filter(item => selectedKeys.has(item.key));
-                        // A shared date cell still belongs to separate content rows.
-                        // Honour a single selected row, otherwise the row at click height.
-                        // `e.clientY` is valide pour le toucher comme pour la souris :
-                        // autrefois filtré par `e.detail > 0`, ce garde-fou excluait le
-                        // tap mobile (detail === 0) et tombait toujours sur items[0].
                         const cells = e.currentTarget.parentElement?.querySelectorAll<HTMLElement>('[data-session-cell="content"]');
                         const hit = Array.from(cells ?? []).find(cell => {
                             const rect = cell.getBoundingClientRect();
@@ -248,7 +234,7 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 </div>
             ) : items.map((item, index) => (
                 <div
-                    key={`content-${item.key}`}
+                    key={`content-${getSortId(item.data)}`}
                     data-session-cell="content"
                     {...(sortable ? sortAttributes(item, getSortId(item.data)) : {})}
                     data-focus-key={item.key === focusKey ? focusKey : undefined}
@@ -264,9 +250,8 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
             {/* Colonne 3 : Remarque unique et fusionnée pour toute la séance */}
             <div
                 data-session-cell="remark"
-                className={`flex flex-col justify-center items-start min-w-0 self-stretch p-1 sm:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
+                className={`flex flex-col justify-center items-start min-w-0 self-stretch p-1 sm:p-1.5 transition-colors ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
                 style={{ gridColumn: 3, gridRow: `1 / span ${visualRowCount}` }}
-                onClick={() => onOpenRemark?.(items[0].indices)}
             >
                 <button
                     type="button"

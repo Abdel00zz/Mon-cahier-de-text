@@ -192,8 +192,6 @@ export const RemarkCell: FC<{
       ? 'bg-card/55'
       : 'bg-card';
 
-  const borderClass = '';
-
   // La remarque d'une séance fusionnée s'écrit PARTOUT : une seule cible, donc
   // une seule saisie et une seule annulation pour tout le groupe.
   const editable = typeof onOpenRemark === 'function';
@@ -248,7 +246,7 @@ export const RemarkCell: FC<{
 
   if (shouldMerge) {
     return (
-      <div data-editor-cell="remark" className={`relative flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors items-center justify-start ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
+      <div data-editor-cell="remark" className={`relative flex min-w-0 p-1 md:p-1.5 transition-colors items-center justify-start ${lineClass} ${bgClass}`}>
         <div className="relative z-10 h-full flex flex-col justify-center items-start text-start w-full">
           {body(true)}
         </div>
@@ -257,7 +255,7 @@ export const RemarkCell: FC<{
   }
 
   return (
-    <div data-editor-cell="remark" className={`flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors items-center justify-start ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
+    <div data-editor-cell="remark" className={`flex min-w-0 p-1 md:p-1.5 transition-colors items-center justify-start ${lineClass} ${bgClass}`}>
       {body(false)}
     </div>
   );

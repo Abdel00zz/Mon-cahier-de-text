@@ -1,5 +1,5 @@
 import type { ContentDirection, LessonsData } from '../../types';
-import { commitClassMutation } from '../sync/syncBus';
+import { markClassDirty, touchClassSyncMeta } from '../sync/syncBus';
 import { readStoredNotebook } from './notebookStorage';
 import { LocalSyncDataError } from './localJson';
 import { quarantineRaw, writeDurably } from './safeStorage';
@@ -31,5 +31,6 @@ export function saveNotebook(classId: string, lessonsData: LessonsData, contentD
     writeDurably(key, serialized, storage);
     lastWritten.set(key, serialized);
     if (lastWritten.size > 24) lastWritten.delete(lastWritten.keys().next().value!);
-    commitClassMutation(classId);
+    touchClassSyncMeta(classId);
+    markClassDirty(classId);
 }

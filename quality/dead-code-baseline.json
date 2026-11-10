@@ -77,6 +77,41 @@
     },
     {
       "kind": "fichier",
+      "file": "src/hooks/useBusEvent.ts",
+      "name": "src/hooks/useBusEvent.ts"
+    },
+    {
+      "kind": "type",
+      "file": "src/hooks/useDevice.ts",
+      "name": "DeviceType"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/hooks/useForeground.ts",
+      "name": "src/hooks/useForeground.ts"
+    },
+    {
+      "kind": "type",
+      "file": "src/hooks/useHapticFeedback.ts",
+      "name": "HapticImpactStyle"
+    },
+    {
+      "kind": "type",
+      "file": "src/hooks/useHapticFeedback.ts",
+      "name": "HapticNotificationType"
+    },
+    {
+      "kind": "fichier",
+      "file": "src/hooks/useLatest.ts",
+      "name": "src/hooks/useLatest.ts"
+    },
+    {
+      "kind": "export",
+      "file": "src/hooks/useModalHaptics.ts",
+      "name": "modalHaptics"
+    },
+    {
+      "kind": "fichier",
       "file": "src/i18n/messages/ar/dateModal.ts",
       "name": "src/i18n/messages/ar/dateModal.ts"
     },

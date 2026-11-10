@@ -1,4 +1,4 @@
-import React, { FC, memo, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FC, memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
   Plus, CalendarDays, CalendarCheck, CalendarX,
@@ -86,10 +86,45 @@ const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = (
   const rootRef = useRef<HTMLDivElement>(null);
   const gesture = useRef<{ x: number; y: number; id: number; dragging: boolean } | null>(null);
   const swallowClick = useRef(false);
+  const swallowTimerRef = useRef<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => () => {
+    if (swallowTimerRef.current !== null) window.clearTimeout(swallowTimerRef.current);
+  }, []);
+
+  const releaseFocusInsideBar = () => {
+    const activeEl = document.activeElement as HTMLElement | null;
+    if (activeEl && rootRef.current?.contains(activeEl)) {
+      activeEl.blur();
+    }
+  };
+
+  // Dès que la barre passe en état fermé (ou qu'une modale s'ouvre par-dessus),
+  // on ferme le menu déroulant et on relâche le focus pour éviter tout blocage
+  // `aria-hidden` ou `pointer-events: none` avec Radix Dialog.
+  useLayoutEffect(() => {
+    if (state === 'closed') {
+      setMenuOpen(false);
+      releaseFocusInsideBar();
+    }
+  }, [state]);
 
   const run = (action: () => void, strong = false) => () => {
     if (strong) impact('medium'); else selection();
+    releaseFocusInsideBar();
     action();
+  };
+
+  const handleMenuSelect = (action: () => void) => (event: Event) => {
+    event.preventDefault();
+    setMenuOpen(false);
+    releaseFocusInsideBar();
+    // Laisse Radix DropdownMenu terminer sa fermeture avant d'ouvrir une modale
+    // (ConfirmDialog / ContentModal) afin qu'elle ne capture jamais `pointer-events: none`.
+    window.setTimeout(() => {
+      action();
+    }, 0);
   };
 
   const showToday = canAssignDate && Boolean(onAssignToday) && !allToday;
@@ -145,9 +180,13 @@ const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = (
     const node = rootRef.current;
     gesture.current = null;
     if (!g || !node || !g.dragging) return;
+    if (node.hasPointerCapture(event.pointerId)) {
+      node.releasePointerCapture(event.pointerId);
+    }
     const dismissed = event.clientY - g.y > DISMISS_DISTANCE && event.type === 'pointerup';
     swallowClick.current = true;
-    window.setTimeout(() => { swallowClick.current = false; }, 0);
+    if (swallowTimerRef.current !== null) window.clearTimeout(swallowTimerRef.current);
+    swallowTimerRef.current = window.setTimeout(() => { swallowClick.current = false; swallowTimerRef.current = null; }, 0);
     node.style.transition = 'transform 180ms cubic-bezier(0.2, 0, 0, 1), opacity 180ms ease';
     node.style.transform = '';
     node.style.opacity = '';
@@ -160,6 +199,7 @@ const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = (
         ref={rootRef}
         className="selection-bar"
         data-state={state}
+        inert={state === 'closed' ? true : undefined}
         role="toolbar"
         dir={dir}
         aria-label={t('selection.actionsAria')}
@@ -181,7 +221,7 @@ const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = (
         {showEdit && <ActionButton icon={Pencil} onClick={run(onEdit!)}
           title={t('selection.edit')} disabled={isPending} className="hidden sm:inline-flex" />}
 
-        <DropdownMenu dir={dir}>
+        <DropdownMenu modal={false} dir={dir} open={state === 'open' && menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
@@ -193,18 +233,27 @@ const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = (
               <MoreVertical aria-hidden className="size-[22px]" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="end" sideOffset={10} collisionPadding={12}
-            className="w-max max-w-[calc(100vw-1.5rem)]">
-            {showEdit && <DropdownMenuItem onSelect={onEdit} disabled={isPending} className="min-h-11 gap-3 sm:hidden">
+          <DropdownMenuContent
+            side="top"
+            align="end"
+            sideOffset={10}
+            collisionPadding={12}
+            className="w-max max-w-[calc(100vw-1.5rem)]"
+            onCloseAutoFocus={event => {
+              event.preventDefault();
+              releaseFocusInsideBar();
+            }}
+          >
+            {showEdit && <DropdownMenuItem onSelect={handleMenuSelect(onEdit!)} disabled={isPending} className="min-h-11 gap-3 sm:hidden">
               <Pencil aria-hidden className="size-4" />{t('selection.edit')}
             </DropdownMenuItem>}
             {menu.map(({ id, icon: Icon, onSelect, title }) => (
-              <DropdownMenuItem key={id} onSelect={onSelect} disabled={isPending} className="min-h-11 gap-3">
+              <DropdownMenuItem key={id} onSelect={handleMenuSelect(onSelect)} disabled={isPending} className="min-h-11 gap-3">
                 <Icon aria-hidden className="size-4" />{title}
               </DropdownMenuItem>
             ))}
             {(menu.length > 0 || showEdit) && <DropdownMenuSeparator />}
-            <DropdownMenuItem onSelect={onDelete} disabled={isPending} destructive className="min-h-11 gap-3">
+            <DropdownMenuItem onSelect={handleMenuSelect(onDelete)} disabled={isPending} destructive className="min-h-11 gap-3">
               <Trash2 aria-hidden className="size-4" />{t('selection.delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>

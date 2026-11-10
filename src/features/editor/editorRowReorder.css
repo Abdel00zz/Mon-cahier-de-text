@@ -138,18 +138,16 @@
 }
 
 /* ── Poignée de déplacement ────────────────────────────────────────────────
-   Un rail de préhension discret, ancré au bord GAUCHE de la cellule de
-   contenu (et au bord droit en RTL). Elle ne réserve aucune largeur : elle
-   flotte au-dessus de la marge, donc la grille ne bouge pas quand elle
-   apparaît.
+   Un rail de préhension discret, ancré au bord DROIT de la cellule de
+   contenu. Elle ne réserve aucune largeur : elle flotte au-dessus de la
+   marge, donc la grille ne bouge pas quand elle apparaît.
 
-   Cible tactile : 44 px (Loi de Fitts), mais l'encre visible ne fait que
-   14 px — le glyphe est centré dans une zone morte transparente. On gagne en
-   précision sans alourdir la ligne.
+   Cible tactile : 44 px (Loi de Fitts) via ::before transparent, tandis que
+   la boîte visible reste compacte (24 × 32 px).
 
-   Le fond n'est plus un voile flouté : c'était un `backdrop-filter` recalculé
-   à chaque apparition, coûteux sur un tableau long. Un aplat de carte suffit
-   et se compose sur le GPU. */
+   Aucun `backdrop-filter` : recalculer un flou gaussien par ligne lors de la
+   sélection ou du déplacement provoquait un gel du compositeur GPU sur les
+   tableaux longs. Un aplat de carte opaque se compose directement sur le GPU. */
 .editor-reorder-handle {
   position: absolute;
   top: 50%;
@@ -162,9 +160,7 @@
   place-items: center;
   padding: 0;
   color: hsl(var(--muted-foreground) / .65);
-  background: hsl(var(--card) / .75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: hsl(var(--card) / .92);
   border: 1px solid hsl(var(--border) / .6);
   border-radius: 7px;
   box-shadow: 0 1px 3px rgba(47, 35, 24, .06), inset 0 1px 0 rgba(255, 255, 255, .8);
@@ -179,6 +175,12 @@
   transition: color 160ms ease, opacity 160ms ease, transform 160ms cubic-bezier(.34, 1.4, .5, 1), background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
   z-index: 5;
 }
+/* Extension invisible de la zone de saisie tactile à 44 × 44 px (Loi de Fitts). */
+.editor-reorder-handle::before {
+  content: '';
+  position: absolute;
+  inset: -6px -10px;
+}
 /* Le glyphe porte l'encre : plus fin, plus net, et il s'anime seul. */
 .editor-reorder-handle > svg {
   width: 13px;
@@ -186,23 +188,20 @@
   stroke-width: 2.2;
   transition: transform 160ms ease;
 }
+/* Ne jamais afficher toutes les poignées du tableau pendant `[data-editor-sorting="true"]` :
+   seule la ligne sélectionnée, éditée, pressée ou en cours de déplacement montre sa poignée. */
 [data-row-state~="selected"] .editor-reorder-handle,
 [data-row-state~="editing"] .editor-reorder-handle,
 [data-editor-dragging="true"] .editor-reorder-handle,
-[data-editor-sorting="true"] .editor-reorder-handle {
+[data-editor-pressing="true"] .editor-reorder-handle {
   display: grid;
 }
-[data-editor-pressing="true"] .editor-reorder-handle { display: grid; }
-/* Ancrage : la poignée vit au bord DROIT du contenu (à droite et pas à gauche).
-   Le retrait de la cellule lui laisse la place, donc elle ne recouvre jamais le texte. */
-[data-reorder-direction="ltr"] > .editor-reorder-handle,
-[data-content-direction="ltr"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 8px; left: auto; }
-[data-reorder-direction="rtl"] > .editor-reorder-handle,
-[data-content-direction="rtl"] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle { right: 8px; left: auto; }
-/* Un seul repère : le glyphe, centré dans sa cible. Le rail séparé faisait
-   doublon avec lui et alourdissait la marge — deux traits pour dire une chose. */
-.editor-reorder-handle::before { content: none; }
-.editor-reorder-handle:focus-visible { display: grid; color: hsl(var(--foreground)); }
+/* Ancrage : la poignée vit au bord DROIT du contenu (en LTR comme en RTL). */
+[data-reorder-direction] > .editor-reorder-handle,
+[data-content-direction] [data-row-content]:not([data-reorder-direction]) > .editor-reorder-handle {
+  right: 8px;
+  left: auto;
+}
 /* Pointeur fin : le survol de la LIGNE ne révèle plus la poignée (c'est le
    clic qui sélectionne et la fait apparaître). Seule la poignée DÉJÀ visible
    réagit au survol, pour confirmer la cible avant la saisie. */
@@ -224,7 +223,7 @@
   border-color: hsl(var(--primary) / .5);
 }
 .dark .editor-reorder-handle {
-  background: hsl(var(--card) / .85);
+  background: hsl(var(--card) / .92);
   border-color: hsl(var(--border));
   box-shadow: 0 1px 3px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .06);
 }
@@ -236,6 +235,7 @@
 /* Focus clavier : une teinte douce, pas un anneau. Un contour de 2 px autour
    d'une cible de 44 px dessinait un carré lourd dans la marge du cahier. */
 .editor-reorder-handle:focus-visible {
+  display: grid;
   outline: none;
   color: hsl(var(--foreground));
   background: hsl(var(--primary) / .08);

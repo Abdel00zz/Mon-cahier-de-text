@@ -46,6 +46,10 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
     searchContainerRef, mobilePanelRef, mobileInputRef, desktopInputRef, clearSearch, closeSearch,
   } = useTableSearch(searchQuery, setSearchQuery);
 
+  const runMenuAction = (action: () => void) => () => {
+    window.setTimeout(action, 0);
+  };
+
   return (
     <div data-editor-toolbar dir={isRtl ? 'rtl' : 'ltr'} role="toolbar" aria-label={t('toolbar.actions')} className="editor-toolbar rtl-flow rtl-toolbar print:hidden">
       <div className="editor-toolbar__status">
@@ -98,7 +102,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
           </div>
         </div>
 
-        <DropdownMenu dir={isRtl ? 'rtl' : 'ltr'}>
+        <DropdownMenu modal={false} dir={isRtl ? 'rtl' : 'ltr'}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -109,26 +113,34 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
               <MoreVertical className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent data-editor-actions align="end" side="bottom" sideOffset={6} collisionPadding={8} className="z-[70] w-64">
+          <DropdownMenuContent
+            data-editor-actions
+            align="end"
+            side="bottom"
+            sideOffset={6}
+            collisionPadding={8}
+            className="z-[70] w-64"
+            onCloseAutoFocus={event => event.preventDefault()}
+          >
             <DropdownMenuLabel>
               {t('toolbar.actions')}
             </DropdownMenuLabel>
 
-            <DropdownMenuItem onClick={onOpenEvaluations}>
+            <DropdownMenuItem onClick={runMenuAction(onOpenEvaluations)}>
               <CalendarCheck className="h-5 w-5" />
               <span>{t('toolbar.evaluations')}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem onClick={onOpenDataTransfer}>
+            <DropdownMenuItem onClick={runMenuAction(onOpenDataTransfer)}>
               <Database className="h-5 w-5" />
               <span>{t('toolbar.data')}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenManageLessons}>
+            <DropdownMenuItem onClick={runMenuAction(onOpenManageLessons)}>
               <ListChecks className="h-5 w-5" />
               <span>{t('toolbar.contents')}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenAnalyse}>
+            <DropdownMenuItem onClick={runMenuAction(onOpenAnalyse)}>
               <PieChart className="h-5 w-5" />
               <span>{t('toolbar.progress')}</span>
             </DropdownMenuItem>
@@ -137,11 +149,11 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             <DropdownMenuLabel>
               {t('toolbar.document')}
             </DropdownMenuLabel>
-            <DropdownMenuItem onClick={onPrint}>
+            <DropdownMenuItem onClick={runMenuAction(onPrint)}>
               <Printer className="h-5 w-5" />
               <span>{t('toolbar.print')}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenGuide}>
+            <DropdownMenuItem onClick={runMenuAction(onOpenGuide)}>
               <CircleHelp className="h-5 w-5" />
               <span>{t('toolbar.help')}</span>
             </DropdownMenuItem>
@@ -189,3 +201,4 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
     </div>
   );
 });
+Toolbar.displayName = 'Toolbar';

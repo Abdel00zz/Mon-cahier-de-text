@@ -1,19 +1,19 @@
 {
   "max": 400,
   "files": {
-    "src/features/editor/Editor.tsx": 1513,
+    "src/features/editor/Editor.tsx": 1428,
     "src/admin/components/TeacherDetail.tsx": 1377,
     "src/features/editor/modals/AssignDateModal.tsx": 867,
     "src/contexts/SyncContext.tsx": 839,
     "src/features/dashboard/modals/CreateClassModal.tsx": 790,
     "server/dev/mockApi.ts": 712,
     "src/styles/editor-surface.css": 690,
-    "src/admin/components/TeacherList.tsx": 682,
+    "src/admin/components/TeacherList.tsx": 680,
     "src/features/dashboard/Dashboard.tsx": 634,
     "api/_lib/validate.ts": 600,
     "api/_admin/teachers.ts": 556,
     "src/features/evaluations/DevoirsView.tsx": 523,
     "src/app/App.tsx": 437,
-    "src/features/editor/useEditorRowReorder.ts": 435
+    "src/features/editor/useEditorRowReorder.ts": 434
   }
 }

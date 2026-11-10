@@ -37,8 +37,6 @@ interface ContentRendererProps {
   onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
 }
 
-/** Champs qu'un JSON importé peut remplir n'importe comment. */
-
 /** Comparateur memo : liste fixe de props (indices exclu, comparé par sa clé). */
 const COMPARATOR_KEYS = [
   'data',
@@ -369,3 +367,4 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
   }
   return true;
 });
+ContentRenderer.displayName = 'ContentRenderer';

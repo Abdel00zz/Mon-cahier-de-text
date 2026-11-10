@@ -27,6 +27,8 @@ interface MainTableProps {
   supportClass?: Pick<ClassInfo, 'id' | 'name'> & Partial<Pick<ClassInfo, 'createdAt' | 'subject'>>;
   lessonsData: LessonsData;
   visibleRows: LessonRow[];
+  /** Groupement déjà calculé par Editor lorsque la recherche est vide : évite un second parcours complet. */
+  precomputedCourseRows?: RenderRow[];
   absenceSessions?: readonly AbsenceSession[];
   onClearSearch: () => void;
   /** Sens de lecture du cahier importé, indépendant de l'interface générale. */
@@ -72,9 +74,9 @@ interface MainTableProps {
   canReorder?: (sourceKey: string, targetKey: string, side: 'before' | 'after') => boolean;
 }
 
-const VIRTUALIZATION_THRESHOLD = 140;
+const VIRTUALIZATION_THRESHOLD = 60;
 const ESTIMATED_ROW_HEIGHT = 72;
-const VIRTUAL_OVERSCAN = 16;
+const VIRTUAL_OVERSCAN = 10;
 /** Référence stable : un `[]` littéral par défaut créait un nouveau tableau à
  *  chaque rendu et invalidait les `useMemo` dont il est une dépendance. */
 const NO_DESCRIPTION_TYPES: string[] = [];
@@ -106,11 +108,11 @@ const TableHeader: React.FC = React.memo(() => {
 });
 TableHeader.displayName = 'TableHeader';
 
-
 export const MainTable: React.FC<MainTableProps> = React.memo(({
   supportClass,
   lessonsData,
   visibleRows,
+  precomputedCourseRows,
   absenceSessions = NO_ABSENCES,
   onClearSearch,
   contentDirection,
@@ -140,7 +142,15 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   canReorder,
 }) => {
   const { t } = useLocale();
-  const { flatData, renderRows: courseRows } = useMemo(() => groupRowsWithAbsences(hasOnlyPristineStarterDiagnostic(lessonsData) ? [] : visibleRows, absenceSessions), [visibleRows, absenceSessions, lessonsData]);
+  const isStarterOnly = useMemo(() => hasOnlyPristineStarterDiagnostic(lessonsData), [lessonsData]);
+  const courseRows = useMemo(() => {
+    if (isStarterOnly) return [] as RenderRow[];
+    if (precomputedCourseRows) return precomputedCourseRows;
+    return groupRowsWithAbsences(visibleRows, absenceSessions).renderRows;
+  }, [isStarterOnly, precomputedCourseRows, visibleRows, absenceSessions]);
+
+  const totalFlatRowsCount = isStarterOnly ? 0 : visibleRows.length;
+
   const renderRows = useMemo(() => {
     const query = searchQuery?.trim().toLocaleLowerCase();
     const sessions = query ? absenceSessions.filter(session =>
@@ -174,7 +184,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     cancel: t('common.cancel'),
   }, searchQuery?.trim() ? undefined : onReorder, canReorder);
   const sortable = Boolean(onReorder && canReorder && !searchQuery?.trim());
-  const shouldVirtualize = flatData.length > VIRTUALIZATION_THRESHOLD;
+  const shouldVirtualize = totalFlatRowsCount > VIRTUALIZATION_THRESHOLD;
   const focusIndex = useMemo(() => focusKey ? renderRows.findIndex(row => row.kind !== 'absence' && (
     row.kind === 'single' ? row.item.key === focusKey : row.items.some(item => item.key === focusKey)
   )) : -1, [focusKey, renderRows]);
@@ -231,7 +241,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
 
   useEffect(() => {
     logger.debug('MainTable profile', {
-      totalRowsInMemory: flatData.length,
+      totalRowsInMemory: totalFlatRowsCount,
       renderedLogicalRows: renderRows.length,
       renderedRows: renderedCount,
       virtualized: shouldVirtualize,
@@ -242,9 +252,9 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
         ? Math.round((1 - renderedCount / Math.max(1, renderRows.length)) * 100)
         : 0,
     });
-  }, [flatData.length, renderRows.length, renderedCount, shouldVirtualize, totalSize, virtualItems]);
+  }, [totalFlatRowsCount, renderRows.length, renderedCount, shouldVirtualize, totalSize, virtualItems]);
 
-  if ((!lessonsData || lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData)) && absenceSessions.length === 0) {
+  if ((!lessonsData || lessonsData.length === 0 || isStarterOnly) && absenceSessions.length === 0) {
       return (
           <div dir={contentDirection} data-content-direction={contentDirection}>
               <NotebookEmptyState
@@ -309,8 +319,9 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                   }
                   if (row.kind === 'session') {
                       const rowFocusKey = row.items.some(item => item.key === focusKey) ? focusKey : undefined;
+                      const stableSessionKey = `session-${row.items.map(it => getSortId(it.data)).join('-')}`;
                       return (
-                          <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} className={rowFocusKey ? 'action-source-highlight' : undefined}>
+                          <VirtualListRow key={stableSessionKey} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} className={rowFocusKey ? 'action-source-highlight' : undefined}>
                               <SessionGroupRow
                                   getSortId={getSortId}
                                   items={row.items}
@@ -341,13 +352,14 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
 
                   const { item } = row;
                   const itemDate = getMergeableDate(item);
+                  const sortId = getSortId(item.data);
 
                   const isSelected = selectedKeys.has(item.key);
                   const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
 
                   return (
-                      <VirtualListRow key={item.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
-                        <div {...sortAttributes(item, getSortId(item.data))}>
+                      <VirtualListRow key={`single-${sortId}`} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
+                        <div {...sortAttributes(item, sortId)}>
                           <TableRow
                               data={item.data}
                               indices={item.indices}
@@ -378,7 +390,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
               });
           })()}
         </div>
-        {(lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData)) && (
+        {(lessonsData.length === 0 || isStarterOnly) && (
           <div className="border-t border-border p-3"><Button variant="outline" className="min-h-11 w-full" onClick={() => onOpenAddContentModal()}>{t('emptyNotebook.createChapter')}</Button></div>
         )}
       </CardContent>

@@ -3,9 +3,11 @@ import type { PointerEvent as ReactPointerEvent, TouchEvent as ReactTouchEvent, 
 import { clamp } from 'es-toolkit';
 import { rows, type CanReorder, type DragState, type Reorder, type ReorderMessages, type Side } from './rowReorderTypes';
 import { createRowDragPreview } from './rowDragPreview';
+
 /** Durée d'appui qui arme le déplacement sur écran tactile. Sous ce seuil,
  * un balayage vertical rend le geste au défilement natif (iOS-like). */
 const TOUCH_ARM_DELAY_MS = 220;
+
 /** One animation frame owns pointer feedback and edge scrolling. React only
  * renders when the gesture starts/ends or the notebook order changes. */
 export function useEditorRowReorder(
@@ -19,8 +21,7 @@ export function useEditorRowReorder(
   const cleanup = useRef<(() => void) | null>(null);
   const beforeRects = useRef<Map<string, DOMRect> | null>(null);
   const focusId = useRef<string | null>(null);
-  const keyboardMove = useRef(false);
-  const ignoreClickUntil = useRef(0);
+  const keyboardMove = useRef(false), ignoreClickUntil = useRef(0);
   const placePicked = useRef<((x: number, y: number) => void) | null>(null);
   const callbacks = useRef({ onReorder, canReorder, messages });
   callbacks.current = { onReorder, canReorder, messages };
@@ -100,12 +101,26 @@ export function useEditorRowReorder(
     drag.current = current;
     source.setAttribute('data-editor-pressing', 'true');
 
+    let cachedRowRects: Array<{ row: HTMLElement; top: number; bottom: number }> | null = null;
+    let cachedScrollY = window.scrollY;
+    const invalidateRowRects = () => { cachedRowRects = null; };
+    const getRowRects = () => {
+      if (!cachedRowRects || cachedScrollY !== window.scrollY) {
+        cachedScrollY = window.scrollY;
+        cachedRowRects = rows(rootRef.current).map(row => {
+          const r = row.getBoundingClientRect();
+          return { row, top: r.top, bottom: r.bottom };
+        });
+      }
+      return cachedRowRects;
+    };
     const clearTarget = () => {
-      current.target?.removeAttribute('data-editor-drop-side');
-      current.target?.removeAttribute('data-editor-drop-inside');
-      current.target = undefined;
-      current.targetKey = undefined;
-      current.side = undefined;
+      if (current.target) {
+        current.target.removeAttribute('data-editor-drop-side');
+        current.target.removeAttribute('data-editor-drop-inside');
+        invalidateRowRects();
+      }
+      current.target = undefined; current.targetKey = undefined; current.side = undefined;
     };
     const viewport = () => {
       const vv = window.visualViewport;
@@ -119,9 +134,8 @@ export function useEditorRowReorder(
       let candidate = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-editor-sort-row]');
       if (!candidate && table && x >= table.left && x <= table.right && y >= table.top - 12 && y <= table.bottom + 12) {
         let nearest = 13;
-        for (const row of rows(rootRef.current)) {
-          const rect = row.getBoundingClientRect();
-          const distance = Math.max(rect.top - y, y - rect.bottom, 0);
+        for (const { row, top, bottom } of getRowRects()) {
+          const distance = Math.max(top - y, y - bottom, 0);
           if (distance < nearest) { candidate = row; nearest = distance; }
         }
       }
@@ -150,11 +164,16 @@ export function useEditorRowReorder(
         current.target = candidate;
         current.targetKey = key;
         current.side = side;
+        invalidateRowRects();
       }
       if (current.ghost) current.ghost.dataset.valid = allowed ? 'true' : 'false';
     };
     const schedule = () => {
       if (!ended && current.ghost && !frame) frame = window.requestAnimationFrame(tick);
+    };
+    const onViewportChange = () => {
+      invalidateRowRects();
+      schedule();
     };
     const tick = (time: number) => {
       frame = 0;
@@ -189,7 +208,10 @@ export function useEditorRowReorder(
       if (speed) {
         const previousScroll = window.scrollY;
         window.scrollBy({ top: speed * elapsed / 16.7, behavior: 'instant' });
-        if (window.scrollY !== previousScroll) schedule();
+        if (window.scrollY !== previousScroll) {
+          invalidateRowRects();
+          schedule();
+        }
       } else previousTime = 0;
     };
     const dispose = () => {
@@ -197,20 +219,11 @@ export function useEditorRowReorder(
       ended = true;
       window.clearTimeout(armTimer);
       window.cancelAnimationFrame(frame);
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerup', end);
-      window.removeEventListener('pointercancel', cancelPointer);
-      window.removeEventListener('touchmove', moveTouch);
-      window.removeEventListener('touchend', endTouch);
-      window.removeEventListener('touchcancel', cancel);
-      window.removeEventListener('touchstart', multipleTouches);
-      window.removeEventListener('keydown', cancelKey, true);
-      window.removeEventListener('blur', cancel);
-      window.removeEventListener('pointerdown', outsidePick, true);
-      window.removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', schedule);
-      window.visualViewport?.removeEventListener('resize', schedule);
-      window.visualViewport?.removeEventListener('scroll', schedule);
+      const off = (t: EventTarget | undefined | null, ev: string, fn: EventListenerOrEventListenerObject, opt?: boolean) => t?.removeEventListener(ev, fn, opt);
+      off(window, 'pointermove', move); off(window, 'pointerup', end); off(window, 'pointercancel', cancelPointer);
+      off(window, 'touchmove', moveTouch); off(window, 'touchend', endTouch); off(window, 'touchcancel', cancel); off(window, 'touchstart', multipleTouches);
+      off(window, 'keydown', cancelKey, true); off(window, 'blur', cancel); off(window, 'pointerdown', outsidePick, true);
+      ['scroll', 'resize'].forEach(ev => { off(window, ev, onViewportChange); off(window.visualViewport, ev, onViewportChange); });
       captureElement.removeEventListener('lostpointercapture', cancelPointer);
       document.removeEventListener('visibilitychange', onVisibility);
       clearTarget();
@@ -230,13 +243,9 @@ export function useEditorRowReorder(
       dispose();
       if (wasDragging) announce(callbacks.current.messages.cancelled);
     };
-    const cancelPointer = (pointer: Event) => { if ((pointer as PointerEvent).pointerId === pointerId) cancel(); };
-    const outsidePick = (event: Event) => {
-      if (picked && !rootRef.current?.contains(event.target as Node)) cancel();
-    };
-    const cancelKey = (key: KeyboardEvent) => {
-      if (key.key === 'Escape') { key.preventDefault(); key.stopPropagation(); cancel(); }
-    };
+    const cancelPointer = (p: Event) => { if ((p as PointerEvent).pointerId === pointerId) cancel(); };
+    const outsidePick = (e: Event) => { if (picked && !rootRef.current?.contains(e.target as Node)) cancel(); };
+    const cancelKey = (k: KeyboardEvent) => { if (k.key === 'Escape') { k.preventDefault(); k.stopPropagation(); cancel(); } };
     const onVisibility = () => { if (document.hidden) cancel(); };
     const activate = () => {
       if (ended || current.ghost) return;
@@ -361,22 +370,16 @@ export function useEditorRowReorder(
     } else activate();
     if (touch) {
       window.addEventListener('touchmove', moveTouch, { passive: false });
-      window.addEventListener('touchend', endTouch);
-      window.addEventListener('touchcancel', cancel);
+      window.addEventListener('touchend', endTouch); window.addEventListener('touchcancel', cancel);
       window.addEventListener('touchstart', multipleTouches, { passive: true });
     } else {
       window.addEventListener('pointermove', move, { passive: false });
-      window.addEventListener('pointerup', end);
-      window.addEventListener('pointercancel', cancelPointer);
+      window.addEventListener('pointerup', end); window.addEventListener('pointercancel', cancelPointer);
       captureElement.addEventListener('lostpointercapture', cancelPointer);
     }
-    window.addEventListener('keydown', cancelKey, true);
-    window.addEventListener('blur', cancel);
+    window.addEventListener('keydown', cancelKey, true); window.addEventListener('blur', cancel);
     window.addEventListener('pointerdown', outsidePick, true);
-    window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule, { passive: true });
-    window.visualViewport?.addEventListener('resize', schedule, { passive: true });
-    window.visualViewport?.addEventListener('scroll', schedule, { passive: true });
+    ['scroll', 'resize'].forEach(ev => { window.addEventListener(ev, onViewportChange, { passive: true }); window.visualViewport?.addEventListener(ev, onViewportChange, { passive: true }); });
     document.addEventListener('visibilitychange', onVisibility);
   }, [announce, captureRects, rootRef]);
 
@@ -400,8 +403,10 @@ export function useEditorRowReorder(
     if (index < 0) return;
     const step = event.key === 'ArrowUp' ? -1 : 1;
     for (let i = index + step; i >= 0 && i < visible.length; i += step) {
-      const targetKey = visible[i].dataset.editorSortKey;
       const side: Side = step < 0 ? 'before' : 'after';
+      const targetKey = side === 'after'
+        ? (visible[i].dataset.editorSortLastKey ?? visible[i].dataset.editorSortKey)
+        : visible[i].dataset.editorSortKey;
       if (!targetKey || !callbacks.current.canReorder(sourceKey, targetKey, side)) continue;
       captureRects();
       focusId.current = source?.dataset.editorSortId ?? null;
@@ -413,23 +418,17 @@ export function useEditorRowReorder(
   }, [announce, captureRects, rootRef]);
 
   const onClickCapture = useCallback((event: ReactMouseEvent<HTMLElement>) => {
-    if (placePicked.current && !(event.target as Element).closest('button,input,textarea,select,a')) {
+    if ((event.target as Element).closest('button,input,textarea,select,a')) return;
+    if (placePicked.current) {
       event.preventDefault(); event.stopPropagation();
       if (Date.now() >= ignoreClickUntil.current) placePicked.current(event.clientX, event.clientY);
-      return;
-    }
-    if (Date.now() < ignoreClickUntil.current && !(event.target as Element).closest('button,input,textarea,select,a')) {
+    } else if (Date.now() < ignoreClickUntil.current) {
       event.preventDefault(); event.stopPropagation();
     }
   }, []);
-  const onContextMenu = useCallback((event: ReactMouseEvent<HTMLElement>) => {
-    if (drag.current) event.preventDefault();
-  }, []);
+  const onContextMenu = useCallback((e: ReactMouseEvent<HTMLElement>) => { if (drag.current) e.preventDefault(); }, []);
   const cancelReorder = useCallback(() => {
-    if (!drag.current) return;
-    cleanup.current?.();
-    announce(callbacks.current.messages.cancelled);
+    if (drag.current) { cleanup.current?.(); announce(callbacks.current.messages.cancelled); }
   }, [announce]);
   return { onPointerDown, onTouchStart: onPointerDown, onKeyDown, onClickCapture, onContextMenu, cancelReorder, announcement };
 }
-

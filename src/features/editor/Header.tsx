@@ -2,7 +2,6 @@ import React from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { EditorBackButton } from './EditorBackButton';
 import './header.css';
 
 interface HeaderProps {
@@ -23,6 +22,10 @@ const EditableHeader: React.FC<{
 }> = ({ value, displayValue = value, locale, onSave }) => {
   const handleBlur = (event: React.FocusEvent<HTMLSpanElement>) => {
     const nextValue = (event.currentTarget.textContent || '').trim();
+    if (!nextValue || nextValue === value || nextValue === displayValue) {
+      event.currentTarget.textContent = displayValue;
+      return;
+    }
     onSave(nextValue);
     event.currentTarget.textContent = formatLocalizedClassDisplayName(nextValue, locale);
   };
@@ -57,14 +60,13 @@ const EditableHeader: React.FC<{
   );
 };
 
-export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, teacherName, onClassInfoChange, onBack }) => {
+export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, teacherName, onClassInfoChange }) => {
   const { locale } = useLocale();
   const resolvedTeacher = teacherName?.trim() || classInfo.teacherName;
 
   return (
     <div className="editor-heading rtl-flow relative mb-0 mt-0 px-1 pb-4 pt-2 sm:px-2 sm:pb-5 sm:pt-3" data-teacher-name={resolvedTeacher || undefined}>
       <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="flex items-start gap-3 sm:gap-4">
-        {onBack && <EditorBackButton onBack={onBack} />}
         <header dir={locale === 'ar' ? 'rtl' : 'ltr'} className="min-w-0 flex-1 text-start">
           <h1 className="editor-heading__title flex min-w-0 items-center justify-start overflow-visible text-start font-semibold tracking-tight leading-[1.3] text-foreground">
             <EditableHeader
@@ -79,3 +81,4 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, teacherNam
     </div>
   );
 });
+Header.displayName = 'Header';
