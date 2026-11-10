@@ -11,11 +11,19 @@ export function useTableSearch(query: string, onChange: (query: string) => void)
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const latest = useRef({ query, onChange });
   latest.current = { query, onChange };
+  const lastSentQuery = useRef(query);
 
-  useEffect(() => { setLocalSearch(query); }, [query]);
   useEffect(() => {
-    if (isComposing || localSearch === query) return;
-    const timer = window.setTimeout(() => latest.current.onChange(localSearch), 150);
+    if (query === lastSentQuery.current) return;
+    lastSentQuery.current = query;
+    setLocalSearch(query);
+  }, [query]);
+  useEffect(() => {
+    if (isComposing || localSearch === query || localSearch === lastSentQuery.current) return;
+    const timer = window.setTimeout(() => {
+      lastSentQuery.current = localSearch;
+      latest.current.onChange(localSearch);
+    }, 150);
     return () => window.clearTimeout(timer);
   }, [localSearch, query, isComposing]);
 

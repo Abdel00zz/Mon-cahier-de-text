@@ -291,7 +291,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                     const dates = row.sessions.map(session => session.date);
                     const remarks = absenceRemarkGroups(row.sessions);
                     return (
-                      <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement}>
+                      <VirtualListRow key={`absence-${row.key}`} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement}>
                           <div data-absence-session={row.session.date} data-absence-dates={dates.join(',')} className={`grid min-h-14 border-b border-border bg-muted/20 ${TABLE_GRID_CLASS}`}>
                               <div title={dates.map(date => formatDateDDMMYYYY(date) ?? date).join(' · ')} className="flex min-w-0 items-center justify-center border-e border-border px-1 py-3 text-center editor-type-table-side"><MultiDateCard dates={dates} /></div>
                               <div dir={textDirectionAttribute(t('notifications.absenceCertificate'))} className="flex items-center justify-start text-start border-e border-border px-3 py-3 font-medium editor-type-table-main">{t('notifications.absenceCertificate')}</div>
@@ -310,7 +310,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                   if (row.kind === 'session') {
                       const rowFocusKey = row.items.some(item => item.key === focusKey) ? focusKey : undefined;
                       return (
-                          <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} className={rowFocusKey ? 'action-source-highlight' : undefined}>
+                          <VirtualListRow key={`session-${row.items.map(item => getSortId(item.data)).join(':')}`} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} className={rowFocusKey ? 'action-source-highlight' : undefined}>
                               <SessionGroupRow
                                   getSortId={getSortId}
                                   items={row.items}
@@ -346,7 +346,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                   const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
 
                   return (
-                      <VirtualListRow key={item.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
+                      <VirtualListRow key={`content-${getSortId(item.data)}`} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
                         <div {...sortAttributes(item, getSortId(item.data))}>
                           <TableRow
                               data={item.data}
