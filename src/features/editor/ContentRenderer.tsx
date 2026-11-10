@@ -139,23 +139,21 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       );
     }
 
-    const IconComponent = config.icon;
-    const badgeColorClass = config.badgeColor || 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800';
+    const badgeColorClass = config.badgeColor || 'bg-[#f5f2fd] text-[#532985] border-[#ddd1fa] dark:bg-[#231a38] dark:text-[#d8c5fa] dark:border-[#4d3975]';
 
     return (
       // MaybeKaTeX : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeKaTeX key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
         <div dir={textDirectionAttribute(item.title)} className={`editor-type-top w-full font-bold tracking-tight py-0.5 flex items-center ${titleColorClass} ${indentClass} ${justificationClass}`}>
-            <span className={`editor-assessment-pill inline-flex min-w-0 max-w-[calc(100%-2.5rem)] items-center justify-center gap-2 rounded-full border px-3.5 py-1 text-xs sm:text-sm font-semibold shadow-xs transition-transform duration-150 ${badgeColorClass}`}>
-              {IconComponent && <IconComponent className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 opacity-80" aria-hidden="true" />}
+            <span className={`editor-assessment-pill inline-flex min-w-0 max-w-[calc(100%-2.5rem)] items-center justify-center rounded-full border px-4 py-1 text-xs sm:text-sm font-semibold shadow-xs transition-transform duration-150 ${badgeColorClass}`}>
               {documentPreview ? (
                 <button
                   type="button"
                   dir={textDirectionAttribute(item.title)}
                   data-document-title-link="true"
                   data-document-highlight="true"
-                  className="editor-document-highlight group max-w-full inline-flex items-center gap-1.5"
+                  className="editor-document-highlight group max-w-full inline-flex items-center cursor-pointer"
                   onClick={(event) => {
                     event.stopPropagation();
                     onOpenDocumentPreview?.(documentPreview);
@@ -163,7 +161,6 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                   title={t('documentPreview.openAria', { title: documentPreview.title })}
                   aria-label={t('documentPreview.openAria', { title: documentPreview.title })}
                 >
-                  <FileText className="h-3.5 w-3.5 shrink-0 opacity-60 group-hover:opacity-95 transition-opacity pointer-events-none" aria-hidden="true" />
                   <span dir={textDirectionAttribute(item.title)}>
                     <HighlightedText text={item.title} query={highlight} />
                   </span>

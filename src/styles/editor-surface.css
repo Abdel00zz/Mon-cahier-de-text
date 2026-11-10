@@ -686,22 +686,49 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
   .dark [data-editor-table] .editor-date-value:not(.text-alert-strong) { color: #efaab2; }
   /* Badge spécial arrondi, clean, coloré et moderne pour contrôles et devoirs */
   .editor-assessment-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 9999px !important;
     font-family: var(--notebook-heading, var(--font-display, system-ui));
+    font-size: 0.85rem;
+    font-weight: 650;
+    line-height: 1.35;
     letter-spacing: -0.01em;
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+    padding: 0.35rem 1.15rem !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 0 0 1px inset rgb(255 255 255 / 0.3);
     transition: transform 150ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 150ms ease;
   }
   .editor-assessment-pill:hover {
     transform: translateY(-0.5px);
-    box-shadow: 0 3px 8px -1px rgb(0 0 0 / 0.08);
+    box-shadow: 0 3px 8px -1px rgb(0 0 0 / 0.08), 0 0 0 1px inset rgb(255 255 255 / 0.5);
   }
+  /* Élimination TOTALE de tout cadre intérieur et respect absolu de la couleur chic */
   [data-editor-table] .editor-assessment-pill,
-  [data-editor-table] .editor-assessment-pill :is(span, button, svg, bdi) {
+  [data-editor-table] .editor-assessment-pill * {
     color: inherit !important;
   }
+  [data-editor-table] .editor-assessment-pill :is(button, .editor-document-highlight) {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    border-radius: 0 !important;
+    outline: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    cursor: pointer !important;
+  }
+  [data-editor-table] .editor-assessment-pill button:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
   .dark .editor-assessment-pill {
-    box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.35), 0 0 0 1px inset rgb(255 255 255 / 0.05);
   }
   [data-editor-table] :is(.editor-table-grid > :first-child, [data-session-cell='date']) {
     border-inline-end: 2px solid hsl(var(--border));
