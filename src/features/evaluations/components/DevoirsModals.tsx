@@ -17,6 +17,7 @@ import { bidiIsolate, textDirectionAttribute } from '@/lib/text/textDirection';
 import { translateLocaleMessage } from '@/i18n/messages';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { detectDocumentContentDirection } from '@/domain/evaluations/documentSheet';
+import { buildNotebookControlInsights } from '@/domain/evaluations/notebookControlIntelligence';
 import { ContentDocumentModal } from './ContentDocumentModal';
 import { StudentNamesEditor } from './StudentNamesEditor';
 import { StudentReviewDialog } from './StudentReviewDialog';
@@ -249,6 +250,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
             initialNames={studentsFor.students?.names ?? []}
             trackNotebookCondition={studentsReview && notebookCheck}
             initialNotebookConditions={studentsFor.students?.notebookConditions}
+            notebookInsights={notebookCheck ? buildNotebookControlInsights(config.pedagogicalEvents?.[selectedClass.id], studentsFor.date, studentsFor.id) : undefined}
             trackOral={studentsReview && !notebookCheck}
             trackGrades={Boolean(studentsPolicy?.grades)}
             initialOralOutcomes={studentsFor.students?.oralOutcomes}

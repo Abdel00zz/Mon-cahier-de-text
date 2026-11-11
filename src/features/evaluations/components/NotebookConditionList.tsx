@@ -9,6 +9,7 @@ import { NOTEBOOK_CONDITIONS } from '@/domain/evaluations/notebookConditions';
 import { HOMEWORK_OUTCOMES } from '@/domain/evaluations/homeworkSubmissions';
 import { studentSearchKey } from '@/domain/evaluations/studentRoster';
 import type { HomeworkOutcome, OralOutcome } from '@/types';
+import type { NotebookControlInsight } from '@/domain/evaluations/notebookControlIntelligence';
 import { StudentSearchBar } from './StudentSearchBar';
 import { ChoiceSelect, type ChoiceOption } from './ChoiceSelect';
 
@@ -45,11 +46,12 @@ interface StudentRowProps<T extends string> {
     gradeLabel?: string;
     gradePlaceholder?: string;
     appearance?: 'oral';
+    insight?: NotebookControlInsight;
 }
 
 /* Une fiche d'élève. Mémoïsée : choisir un retour pour un élève ne refait que SA fiche, pas toute la liste. */
-function StudentRowView<T extends string>({ name, value, options, pendingLabel, hintId, removeLabel, onPick, onRemove, grade, onGrade, gradeLabel, gradePlaceholder, appearance }: StudentRowProps<T>) {
-    return <fieldset className="notebook-student student-card" data-has-grade={Boolean(onGrade)} aria-describedby={hintId}>
+function StudentRowView<T extends string>({ name, value, options, pendingLabel, hintId, removeLabel, onPick, onRemove, grade, onGrade, gradeLabel, gradePlaceholder, appearance, insight }: StudentRowProps<T>) {
+    return <fieldset className="notebook-student student-card" data-history-trend={insight?.trend ?? 'new'} data-has-grade={Boolean(onGrade)} aria-describedby={hintId}>
         <legend className="sr-only">{name}</legend>
         <div className="card-main-line">
             <div className="notebook-student__identity student-text-group">
@@ -87,7 +89,7 @@ function StudentRowView<T extends string>({ name, value, options, pendingLabel, 
     </fieldset>;
 }
 const StudentRow = memo(StudentRowView) as typeof StudentRowView;
-export function StudentReviewList<T extends string>({ names, conditions, onChange, onRemove, entry, footer, choices, mode = 'notebook', grades, onGradesChange, addField }: {
+export function StudentReviewList<T extends string>({ names, conditions, onChange, onRemove, entry, footer, choices, mode = 'notebook', grades, onGradesChange, addField, historyInsights }: {
     names: string[];
     conditions: Record<string, T>;
     onChange: (conditions: Record<string, T>) => void;
@@ -100,6 +102,7 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
     grades?: Record<string, string>;
     onGradesChange?: (grades: Record<string, string>) => void;
     addField?: ReactNode;
+    historyInsights?: Record<string, NotebookControlInsight>;
 }) {
     const { t, locale } = useLocale();
     const id = useId();
@@ -183,6 +186,7 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
                     gradeLabel={mode === 'oral' && onGradesChange ? t('evaluations.oral.gradeLabel', { name }) : undefined}
                     gradePlaceholder={mode === 'oral' && onGradesChange ? t('evaluations.oral.gradePlaceholder') : undefined}
                     appearance={mode === 'oral' ? 'oral' : undefined}
+                    insight={historyInsights?.[name]}
                 />)}
             </div>
         </div>

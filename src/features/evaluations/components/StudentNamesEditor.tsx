@@ -7,6 +7,7 @@ import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import type { ClassRoster, HomeworkOutcome, NotebookCondition, OralOutcome } from '@/types';
+import type { NotebookControlInsight } from '@/domain/evaluations/notebookControlIntelligence';
 import { retainNotebookConditions, notebookConditionReport } from '@/domain/evaluations/notebookConditions';
 import { countHomeworkOutcomes, retainHomeworkOutcomes } from '@/domain/evaluations/homeworkSubmissions';
 import { namesWithRoster, normalizeStudentNames, studentSearchKey, retainOralOutcomes, retainOralGrades } from '@/domain/evaluations/studentRoster';
@@ -83,6 +84,7 @@ interface StudentNamesEditorProps {
   initialHomeworkOutcomes?: Record<string, HomeworkOutcome>;
   /** Habillage : absents d'un devoir, ou élèves consignés sur une activité. */
   variant?: StudentNamesVariant;
+  notebookInsights?: Record<string, NotebookControlInsight>;
 }
 
 export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
@@ -102,6 +104,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
   initialOralOutcomes,
   trackHomework = false,
   initialHomeworkOutcomes,
+  notebookInsights,
 }) => {
   const { t, locale } = useLocale();
   const copy = VARIANT_COPY[variant];
@@ -186,7 +189,9 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
       grades={trackOral && trackGrades ? grades : undefined}
       onGradesChange={trackOral && trackGrades ? setGrades : undefined}
       addField={manageStudents}
+      historyInsights={notebookInsights}
       entry={<>
+        {notebookInsights && Object.keys(notebookInsights).length > 0 && <div className="notebook-intelligence-hint" role="status">{t('evaluations.notebook.historyHint')}</div>}
         {roster && <p className="student-roster-source">{t('evaluations.students.rosterSource', { count: numberFormat(locale).format(roster.names.length) })}</p>}
         {roster?.names.some(name => !names.includes(name)) && <div className="notebook-filter-info"><button type="button" onClick={() => { setNames(namesWithRoster(names, roster)); setRemoved(null); }}>{t('evaluations.students.restoreRoster')}</button></div>}
         {/* Le professeur constate les exceptions : « tout rendu » en un geste, puis on décoche. */}

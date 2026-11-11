@@ -1,5 +1,6 @@
 // Traductions en — evaluations.
 export const messages: Record<string, string> = {
+  'evaluations.notebook.historyHint': 'Students already checked this semester are marked: orange = needs attention, green = improving, grey = stable follow-up.',
   'evaluations.doc.concurrentTitle': 'Another version was saved',
   'evaluations.doc.concurrentBody': 'Your draft is preserved. Replace the current version with your text?',
   'evaluations.doc.keepDraft': 'Save my text',
