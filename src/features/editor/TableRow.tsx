@@ -264,7 +264,7 @@ export const TableRow = memo(TableRowComponent, (prev, next) => {
   if (hasDate && prev.getDateOrder !== next.getDateOrder) {
     const prevOrder = prev.getDateOrder?.(prev.indices);
     const nextOrder = next.getDateOrder?.(next.indices);
-    if (prevOrder?.previousDate !== nextOrder?.previousDate || prevOrder?.nextDate !== nextOrder?.nextDate) {
+    if (prevOrder?.previous !== nextOrder?.previous || prevOrder?.following !== nextOrder?.following) {
       return false;
     }
   }

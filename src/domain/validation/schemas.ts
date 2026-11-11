@@ -100,3 +100,14 @@ export const ClassDraftSchema = z.object({
 });
 
 export type ClassDraftValues = z.infer<typeof ClassDraftSchema>;
+
+/** Formulaire normalisé pour un devoir saisi manuellement. */
+export const ManualAssessmentDraftSchema = z.object({
+  type: z.enum(['controle', 'controle_court', 'controle_global', 'oral', 'maison', 'colle']),
+  num: z.string().trim().min(1),
+  date: ISODateSchema,
+  duree: z.string().trim().max(40),
+  semestre: z.union([z.literal(1), z.literal(2)]),
+});
+
+export type ManualAssessmentDraftValues = z.infer<typeof ManualAssessmentDraftSchema>;

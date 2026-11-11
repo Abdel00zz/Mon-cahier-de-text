@@ -28,11 +28,15 @@ export function buildNotebookControlInsights(
   const result: Record<string, NotebookControlInsight> = {};
   for (const event of previous) {
     for (const name of event.students?.names ?? []) {
-      if (result[name]) continue;
       const condition = event.students?.notebookConditions?.[name];
       if (!condition || !validConditions.has(condition)) continue;
+      const existing = result[name];
+      if (existing) {
+        existing.previousCount += 1;
+        continue;
+      }
       const trend = condition === 'good' ? 'stable' : condition === 'missing' || condition === 'needs_work' ? 'attention' : 'improving';
-      result[name] = { previousCount: (result[name]?.previousCount ?? 0) + 1, lastDate: event.date, previous: condition, trend };
+      result[name] = { previousCount: 1, lastDate: event.date, previous: condition, trend };
     }
   }
   return result;
