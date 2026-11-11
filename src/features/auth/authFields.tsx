@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, TriangleAlert } from '@/components/ui/icons';
-import { AUTH_COPY, type AuthCopy } from './authCopy';
+import type { AuthCopy } from './authCopy';
 
 export const FIELD_CLASS =
   "auth-field placeholder:text-muted-foreground";
