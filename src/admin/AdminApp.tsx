@@ -222,16 +222,18 @@ export const AdminApp: React.FC = () => {
                     </Button>
                 </div>
             </nav>
-            {overviewError && <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-8"><StatusNotice tone="warning" title={overviewError} announce /></div>}
-            <TeacherList
-                teachers={teachers}
-                isLoading={isLoading}
-                lastUpdatedAt={lastUpdatedAt}
-                refreshFailed={refreshFailed}
-                onRefresh={loadOverview}
-                onSelect={openTeacher}
-                onLogout={handleLogout}
-            />
+            <main className="admin-main">
+                {overviewError && <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-8"><StatusNotice tone="warning" title={overviewError} announce /></div>}
+                <TeacherList
+                    teachers={teachers}
+                    isLoading={isLoading}
+                    lastUpdatedAt={lastUpdatedAt}
+                    refreshFailed={refreshFailed}
+                    onRefresh={loadOverview}
+                    onSelect={openTeacher}
+                    onLogout={handleLogout}
+                />
+            </main>
         </div>
     );
 };
