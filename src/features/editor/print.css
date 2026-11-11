@@ -1,4 +1,5 @@
 /* Shared A4 composition for preparation, preview and native printing. */
+@page { size: A4; margin: 14mm 13mm 16mm; }
 /* Le plan se lit aussi sur le papier : un cran de marge par niveau.
    Aucun filet vertical : le retrait suffit à marquer la profondeur. */
 .print-document {
@@ -184,7 +185,11 @@
     font-weight: 600;
     margin-bottom: 2px;
 }
-.print-table {
+.print-    .print-view h1, .print-view h2, .print-view h3 { break-after: avoid; }
+    .print-view section, .print-view article { break-inside: avoid; }
+    thead { display: table-header-group; }
+    tfoot { display: table-footer-group; }
+    table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;

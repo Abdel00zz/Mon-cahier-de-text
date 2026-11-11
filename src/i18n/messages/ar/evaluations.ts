@@ -1,5 +1,6 @@
 // Traductions ar — evaluations.
 export const messages: Record<string, string> = {
+  'evaluations.notebook.historyHint': 'يتم تمييز التلاميذ الذين تمت مراقبتهم هذا الفصل: البرتقالي = يحتاج إلى متابعة، الأخضر = تحسن، الرمادي = متابعة مستقرة.',
   'evaluations.doc.concurrentTitle': 'تم حفظ نسخة أخرى',
   'evaluations.doc.concurrentBody': 'مسودتك محفوظة هنا. هل تريد استبدال النسخة الحالية بالنص الذي كتبته؟',
   'evaluations.doc.keepDraft': 'حفظ نصي',

@@ -5,29 +5,29 @@
    micro-bordures 1px, surfaces pures et micro-interactions 160ms fluides.
    ═══════════════════════════════════════════════════════════════════════════ */
 #admin-root {
-  --background: 45 20% 96.5%;
-  --foreground: 25 35% 13%;
+  --background: 220 24% 97%;
+  --foreground: 222 35% 13%;
   --card: 0 0% 100%;
-  --card-foreground: 25 35% 13%;
+  --card-foreground: 222 35% 13%;
   --popover: 0 0% 100%;
-  --popover-foreground: 25 35% 13%;
-  --primary: 25.56 33.75% 31.37%;
-  --primary-foreground: 37.5 44.44% 96.47%;
-  --secondary: 40 14% 92%;
-  --secondary-foreground: 25 25% 18%;
-  --muted: 40 12% 93.5%;
-  --muted-foreground: 25 10% 46%; /* Notion clean calm secondary gray */
-  --accent: 25 22% 92%;
-  --accent-foreground: 25 40% 20%;
+  --popover-foreground: 222 35% 13%;
+  --primary: 233 66% 46%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 18% 93%;
+  --secondary-foreground: 222 30% 18%;
+  --muted: 220 16% 94%;
+  --muted-foreground: 220 12% 45%;
+  --accent: 168 42% 91%;
+  --accent-foreground: 175 48% 20%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
   --warning: 38 92% 45%;
   --warning-strong: 36 88% 28%;
-  --success: 142 70% 32%;
-  --border: 35 15% 85%;
-  --input: 35 14% 82%;
-  --ring: 25.56 33.75% 31.37%;
-  --clr-bg: hsl(45 20% 96.5%);
+  --success: 160 68% 32%;
+  --border: 220 18% 86%;
+  --input: 220 16% 82%;
+  --ring: 233 66% 46%;
+  --clr-bg: hsl(220 24% 97%);
   --font-display: 'Readex Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-sans: var(--font-display);
   --font-body: var(--font-display);
@@ -48,9 +48,36 @@
   color: hsl(var(--foreground));
   background: hsl(var(--background));
   background-image:
-    radial-gradient(at 0% 0%, hsl(var(--primary) / .03) 0px, transparent 40%),
-    radial-gradient(at 100% 100%, hsl(var(--warning) / .03) 0px, transparent 40%);
+    radial-gradient(at 0% 0%, hsl(var(--primary) / .08) 0px, transparent 42%),
+    radial-gradient(at 100% 12%, hsl(var(--accent) / .5) 0px, transparent 34%),
+    linear-gradient(180deg, hsl(var(--background)), hsl(220 28% 95%));
 }
+.admin-main { padding-bottom: 3rem; }
+.admin-commandbar {
+  background: hsl(222 35% 13% / .96);
+  border-bottom-color: hsl(222 30% 24%);
+  color: hsl(0 0% 100%);
+  box-shadow: 0 10px 30px -18px hsl(222 35% 13% / .7);
+}
+.admin-commandbar [data-slot="badge"] { border-color: hsl(0 0% 100% / .18); color: hsl(0 0% 100% / .86); }
+.admin-commandbar [data-slot="badge"].bg-primary\/10 { background: hsl(0 0% 100% / .1); }
+.admin-commandbar .admin-commandbar__action,
+.admin-commandbar a[data-slot="button"] {
+  border-color: hsl(0 0% 100% / .18);
+  background: hsl(0 0% 100% / .08);
+  color: hsl(0 0% 100% / .92);
+  box-shadow: none;
+}
+.admin-commandbar .admin-commandbar__action:hover,
+.admin-commandbar a[data-slot="button"]:hover {
+  border-color: hsl(168 58% 66% / .6);
+  background: hsl(0 0% 100% / .14);
+}
+.admin-commandbar .admin-commandbar__action--primary,
+.admin-commandbar .admin-commandbar__action--ink { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+.admin-commandbar__icon { color: hsl(168 58% 66%); }
+.admin-commandbar .text-primary { color: hsl(168 58% 66%); }
+.admin-commandbar .text-muted-foreground { color: hsl(0 0% 100% / .56); }
 .admin-commandbar {
   position: sticky;
   top: 0;

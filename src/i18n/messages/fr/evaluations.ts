@@ -1,5 +1,6 @@
 // Traductions fr — evaluations.
 export const messages: Record<string, string> = {
+  'evaluations.notebook.historyHint': 'Les élèves déjà contrôlés ce semestre sont repérés : orange = attention à reprendre, vert = progression, gris = suivi stable.',
   'evaluations.doc.concurrentTitle': 'Une autre version a été enregistrée',
   'evaluations.doc.concurrentBody': 'Votre brouillon est conservé. Voulez-vous remplacer la version actuelle par votre texte ?',
   'evaluations.doc.keepDraft': 'Enregistrer mon texte',

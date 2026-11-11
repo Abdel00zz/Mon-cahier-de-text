@@ -219,7 +219,7 @@ export function useEditorRowReorder(
       ended = true;
       window.clearTimeout(armTimer);
       window.cancelAnimationFrame(frame);
-      const off = (t: EventTarget | undefined | null, ev: string, fn: EventListenerOrEventListenerObject, opt?: boolean) => t?.removeEventListener(ev, fn, opt);
+      const off = (t: EventTarget | undefined | null, ev: string, fn: unknown, opt?: boolean) => t?.removeEventListener(ev, fn as EventListener, opt);
       off(window, 'pointermove', move); off(window, 'pointerup', end); off(window, 'pointercancel', cancelPointer);
       off(window, 'touchmove', moveTouch); off(window, 'touchend', endTouch); off(window, 'touchcancel', cancel); off(window, 'touchstart', multipleTouches);
       off(window, 'keydown', cancelKey, true); off(window, 'blur', cancel); off(window, 'pointerdown', outsidePick, true);

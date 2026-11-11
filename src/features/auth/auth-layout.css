@@ -1,4 +1,20 @@
-.auth-page-shell { background: color-mix(in srgb, hsl(var(--background)) 97%, hsl(var(--primary))); color: hsl(var(--foreground)); }
+.auth-page-shell {
+  background:
+    radial-gradient(circle at 12% 18%, hsl(var(--primary) / .10), transparent 30%),
+    radial-gradient(circle at 88% 82%, hsl(var(--accent) / .14), transparent 28%),
+    hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+.auth-page-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: .18;
+  background-image: linear-gradient(hsl(var(--foreground) / .035) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground) / .035) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to bottom, black, transparent 74%);
+}
 /* Largeur unique pour connexion et préparation : la marque ne saute plus d'une vue à l'autre. */
 .auth-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; max-width: 1080px; margin-inline: auto; padding: 16px 32px; }
 .auth-brand { display: flex; min-height: 44px; min-width: 0; align-items: center; gap: 10px; border-radius: 10px; text-align: start; }
@@ -147,8 +163,9 @@ button.auth-brand { cursor: pointer; }
     border: 1px solid hsl(var(--border));
     border-radius: 24px;
     box-shadow:
-      0 1px 2px hsl(var(--foreground) / .04),
-      0 12px 40px -18px hsl(var(--primary) / .22);
+      0 1px 2px hsl(var(--foreground) / .05),
+      0 24px 70px -28px hsl(var(--primary) / .34);
+    backdrop-filter: blur(16px);
   }
 }
 @media (min-width: 1024px) and (max-width: 1180px) {
