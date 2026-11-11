@@ -4,11 +4,11 @@
   position: fixed;
   inset-block-start: 0;
   inset-inline: 0;
-  height: 2px;
+  height: 3px;
   z-index: 80;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 150ms ease-out;
+  transition: opacity 180ms ease-out;
   background-image: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.85), transparent);
   background-repeat: no-repeat;
   background-size: 38% 100%;
@@ -29,6 +29,51 @@
 @keyframes sync-strip-slide {
   from { background-position: -38% 0; }
   to { background-position: 138% 0; }
+}
+
+.sync-status {
+  position: fixed;
+  inset-block-start: 16px;
+  inset-inline-end: 18px;
+  z-index: 79;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(320px, calc(100vw - 36px));
+  padding: 8px 10px;
+  border: 1px solid hsl(var(--border) / .82);
+  border-radius: 999px;
+  background: color-mix(in srgb, hsl(var(--card)) 92%, transparent);
+  box-shadow: 0 10px 28px -18px hsl(var(--foreground) / .5);
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 650;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity 180ms ease, transform 220ms var(--ease-spring-smooth);
+  backdrop-filter: blur(14px);
+}
+.sync-status[data-visible='true'] { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.sync-status[data-state='syncing'] { color: hsl(var(--primary)); }
+.sync-status[data-state='error'] { color: hsl(var(--destructive)); }
+.sync-status[data-state='offline'] { color: hsl(var(--warning-strong)); }
+.sync-status__action {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-inline-start: 2px;
+  border-radius: 999px;
+  color: currentColor;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+.sync-status__action:hover { background: hsl(var(--muted)); }
+.sync-status__action:active { transform: scale(.92); }
+.sync-status__action:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+
+@media (max-width: 639px) {
+  .sync-status { inset-block-start: 10px; inset-inline-end: 10px; max-width: calc(100vw - 20px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
