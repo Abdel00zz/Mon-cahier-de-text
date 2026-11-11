@@ -156,10 +156,23 @@ export function OnboardingShell({
       </header>
       <main
         className={
-          'mx-auto flex w-full flex-1 flex-col px-3 py-3.5 sm:px-6 sm:py-8 ' +
-          (step === 4 ? 'max-w-5xl' : 'max-w-3xl')
+          'onboarding-layout mx-auto flex w-full flex-1 gap-8 px-3 py-3.5 sm:px-6 sm:py-8 ' +
+          (step === 4 ? 'max-w-6xl' : 'max-w-5xl')
         }
       >
+        <aside className="onboarding-rail hidden lg:flex" aria-label={rtl ? 'ملخص الإعداد' : 'Résumé de la configuration'}>
+          <div className="onboarding-rail-inner">
+            <span className="onboarding-rail-kicker">{rtl ? 'مساحة هادئة للبدء' : 'Un départ sans friction'}</span>
+            <h2>{rtl ? 'نرتّب مساحتك التعليمية معاً.' : 'On organise votre espace pédagogique, ensemble.'}</h2>
+            <p>{rtl ? 'كل اختيار هنا يبقى قابلاً للتعديل لاحقاً.' : 'Chaque choix reste modifiable plus tard, sans rien perdre.'}</p>
+            <div className="onboarding-rail-list" aria-label={rtl ? 'مزايا الإعداد' : 'Bénéfices de la configuration'}>
+              <span><b>01</b>{rtl ? 'إعداد واضح' : 'Un cadre clair'}</span>
+              <span><b>02</b>{rtl ? 'أقسام جاهزة' : 'Des classes prêtes'}</span>
+              <span><b>03</b>{rtl ? 'مزامنة آمنة' : 'Une synchronisation sûre'}</span>
+            </div>
+          </div>
+        </aside>
+        <section className="onboarding-workspace min-w-0 flex-1">
         <div className="onboarding-progress-caption flex items-center justify-between gap-3 text-sm text-muted-foreground">
           <span className="font-medium">{copy.step(step, ONBOARDING_TOTAL_STEPS)}</span>
           <button
@@ -256,6 +269,7 @@ export function OnboardingShell({
             </motion.button>
           </footer>
         )}
+        </section>
       </main>
     </div>
   );
