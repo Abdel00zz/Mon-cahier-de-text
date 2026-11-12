@@ -51,14 +51,15 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
                         <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
                         {isAr ? 'فضاء الإدارة والمدير' : 'Espace Direction & Administration'}
                     </span>
-                    <button
+                    <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() => setLocale(current => (current === 'fr' ? 'ar' : 'fr'))}
-                        className="rounded-lg border border-border px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted"
                         title={isAr ? 'Changer de langue' : 'تغيير اللغة'}
                     >
                         {isAr ? 'FR' : 'العربية'}
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="mb-6 text-center">
@@ -106,13 +107,12 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
                     <p className="text-xs text-muted-foreground">
                         {isAr ? 'هل أنت أستاذ وتبحث عن دفتر نصوصك؟' : 'Vous êtes enseignant et cherchez votre cahier ?'}
                     </p>
-                    <a
-                        href="/"
-                        className="mt-2 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-border/80 bg-background/50 px-3.5 text-xs font-semibold text-foreground shadow-2xs hover:border-primary/40 hover:bg-muted/50 transition-colors"
-                    >
-                        <BookOpen className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                        <span>{isAr ? 'الولوج إلى فضاء الأستاذ (دفتر نصوصي)' : 'Accéder à la session enseignant'}</span>
-                    </a>
+                    <Button asChild variant="outline" className="mt-2 min-h-10 w-full text-xs font-semibold">
+                        <a href="/">
+                            <BookOpen data-icon="inline-start" className="text-primary" aria-hidden="true" />
+                            <span>{isAr ? 'الولوج إلى فضاء الأستاذ (دفتر نصوصي)' : 'Accéder à la session enseignant'}</span>
+                        </a>
+                    </Button>
                 </div>
             </form>
         </div>

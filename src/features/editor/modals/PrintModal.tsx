@@ -192,10 +192,11 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                       : t('print.complete')}
                 </div>
                 <div className="border-t border-dashed border-[#d8d8d4] dark:border-[#3e3e38] my-1" />
-                <div className="flex justify-between text-[11px] text-primary font-semibold">
-                  <span>{locale === 'ar' ? 'الوثيقة' : 'Document'}</span>
-                  <span className="animate-pulse">{t('print.preparing')}...</span>
-                </div>
+              <div className="flex justify-between text-[11px] text-primary font-semibold">
+                <span>{locale === 'ar' ? 'الوثيقة' : 'Document'}</span>
+                <span aria-hidden="true">&nbsp;</span>
+              </div>
+
               </div>
             </div>
           </div>
