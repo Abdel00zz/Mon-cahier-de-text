@@ -58,6 +58,7 @@ import { PrintMode, PrintOptions } from './modals/PrintModal';
 import { printDocument, preparePrintContent } from '@/infrastructure/printing/printUtils';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, ContentDirection } from '@/types';
 import { PrintView } from './PrintView';
+import { EditorSyncFab } from './EditorSyncFab';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, formatLocalizedClassDisplayName, normalizeOfficialClassName } from '@/constants';
 import { insertFreeContent } from '@/domain/notebook/freeContent';
 import { logger } from '@/lib/logger';
@@ -1319,6 +1320,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               predefinedProgramTitle={predefinedOffer?.titre}
               onLoadPredefined={predefinedOffer ? handleLoadPredefined : undefined}
             />
+            <EditorSyncFab />
           </main>
         </div>
 

@@ -249,16 +249,16 @@
     print-color-adjust: exact;
 }
 .print-col-date {
-    width: 12%;
+    width: 11%;
     text-align: center !important;
     vertical-align: top;
     color: #4b5563;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
 }
-.print-col-content { width: 74%; }
+.print-col-content { width: 81.4%; }
 .print-col-remark {
-    width: 14%;
+    width: 7.6%;
     font-size: calc(var(--print-size-description) * var(--print-fill));
     color: #4b5563;
     overflow-wrap: anywhere;

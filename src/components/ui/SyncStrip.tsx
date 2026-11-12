@@ -15,7 +15,6 @@ export const SyncStrip: React.FC = () => {
     const { syncStatus, lastSyncAt, syncNow } = useSync();
     const progress = useSyncProgress();
     const { t } = useLocale();
-    const visible = syncStatus !== 'idle' && syncStatus !== 'synced';
     const label = syncStatusLabel({ status: syncStatus, lastSyncAt, progress });
     const text = t(label.key, label.values);
     const canRetry = syncStatus === 'error' || syncStatus === 'offline' || syncStatus === 'pending';
@@ -23,7 +22,7 @@ export const SyncStrip: React.FC = () => {
     return (
         <>
             <div className="sync-strip" data-state={syncStatus} aria-hidden="true" />
-            <div className="sync-status" data-visible={visible ? 'true' : 'false'} data-state={syncStatus} role="status" aria-live="polite">
+            <div className="sync-status" data-visible="false" data-state={syncStatus} role="status" aria-live="polite">
                 <Cloud size={15} aria-hidden="true" />
                 <span>{text}</span>
                 {canRetry && (
