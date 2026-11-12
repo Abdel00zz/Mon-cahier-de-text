@@ -1,5 +1,6 @@
 import React from 'react';
 import { Cloud, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useSync } from '@/contexts/SyncContext';
 import { useSyncProgress } from '@/hooks/useSyncProgress';
 import { syncStatusLabel } from '@/domain/sync/syncStatusLabel';
@@ -26,9 +27,16 @@ export const SyncStrip: React.FC = () => {
                 <Cloud size={15} aria-hidden="true" />
                 <span>{text}</span>
                 {canRetry && (
-                    <button type="button" className="sync-status__action" onClick={() => void syncNow()} aria-label={t('sync.syncNow')}>
-                        <RefreshCw size={14} aria-hidden="true" />
-                    </button>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="sync-status__action"
+                        onClick={() => void syncNow()}
+                        aria-label={t('sync.syncNow')}
+                    >
+                        <RefreshCw aria-hidden="true" />
+                    </Button>
                 )}
             </div>
         </>
