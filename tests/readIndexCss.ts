@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 const STYLES_DIR = resolve('src/styles');
 
 const MODULAR_IMPORTS = new Set([
+  './mobile-performance.css',
   './theme-tokens.css',
   './theme-palette.css',
   './theme-base.css',

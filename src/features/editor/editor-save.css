@@ -7,27 +7,15 @@
 .dark .editor-sync-dot { background: #e5a451; }
 .dark .editor-sync-status[data-sync-tone='green'] .editor-sync-dot { background: #79c99a; }
 .dark .editor-sync-status[data-sync-tone='red'] .editor-sync-dot { background: #ed8585; }
-/* Barre d'outils posée à plat : aucune couche de verre ni de couleur. */
 .editor-toolbar-row {
-  position: relative;
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
   z-index: 45;
-  width: 100%;
-  gap: 0;
-  padding: 0;
   margin-bottom: 8px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-.dark .editor-toolbar-row {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: none;
+  background: hsl(var(--background));
+  box-shadow: 0 1px 0 hsl(var(--border) / .65);
 }
 .editor-toolbar {
-  position: relative;
-  z-index: 45;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
@@ -39,7 +27,6 @@
   background: transparent;
   box-shadow: none;
 }
-.editor-toolbar-row [data-editor-toolbar] { position: relative; top: auto; min-height: 48px; margin: 0; border: 0; border-radius: inherit; background: transparent; box-shadow: none; }
 .editor-toolbar__status { display: flex; min-width: 0; align-items: center; }
 .editor-toolbar__history, .editor-toolbar__tools { display: flex; align-items: center; gap: 2px; }
 .editor-toolbar__history { justify-content: center; }
@@ -63,12 +50,6 @@
 /* The Android system button/gesture owns editor back navigation. */
 html[data-platform='android'] [data-editor-root] .editor-back-button { display: none; }
 @media (max-width: 639px) {
-  .editor-toolbar-row {
-    position: relative;
-    top: auto;
-    margin-bottom: 8px;
-    border-radius: 0;
-  }
   [data-editor-toolbar] { grid-template-columns: 24px minmax(88px, 1fr) auto; gap: 4px; padding-inline: 4px; }
   [data-editor-toolbar] .editor-sync-status { min-width: 24px; padding-inline: 4px; }
   .editor-toolbar__mobile-search > div { gap: 4px; }

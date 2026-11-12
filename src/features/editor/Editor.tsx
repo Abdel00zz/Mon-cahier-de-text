@@ -1263,7 +1263,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             onBack={onBack}
           />
           {(!isNotebookAwaitingContent || absenceSessions.length > 0) && (
-            <div className="editor-toolbar-row sticky top-0 z-[50] flex items-center gap-2 print:hidden">
+            <div className="editor-toolbar-row flex items-center print:hidden">
               <div className="min-w-0 flex-1">
                 <Toolbar
                   onUndo={handleUndo}

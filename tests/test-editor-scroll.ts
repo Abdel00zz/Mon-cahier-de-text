@@ -44,11 +44,12 @@ test('portrait page does not create a second vertical scroll container; horizont
   const css = (path: string) => postcss.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
   const index = postcss.parse(readIndexCss());
   let checkedPortrait = false;
-  index.walkAtRules('media', media => {
-    if (media.params !== '(max-width: 639px)') return;
-    media.walkRules('html, body', rule => {
-      checkedPortrait = true;
-      rule.walkDecls('overflow-x', declaration => assert.equal(declaration.value, 'clip'));
+  index.walkRules(rule => {
+    if (!rule.selectors.some(selector => selector === 'html' || selector === 'body')) return;
+    rule.walkDecls('overflow-x', declaration => {
+      assert.ok(['visible', 'clip'].includes(declaration.value), 'the body must pass swipes to the viewport');
+      if (declaration.value === 'clip' && rule.parent?.type === 'atrule'
+        && rule.parent.params === '(max-width: 767px)') checkedPortrait = true;
     });
   });
   assert.ok(checkedPortrait);
@@ -59,4 +60,16 @@ test('portrait page does not create a second vertical scroll container; horizont
       assert.equal(declaration.value, 'auto', 'a horizontal rail cannot trap vertical scrolling');
     });
   });
+});
+
+test('editor history stays within reach below the device safe area at every width', () => {
+  const toolbar = postcss.parse(readFileSync(new URL('../src/features/editor/editor-save.css', import.meta.url), 'utf8'));
+  const positions: string[] = [];
+  const offsets: string[] = [];
+  toolbar.walkRules('.editor-toolbar-row', rule => {
+    rule.walkDecls('position', declaration => { positions.push(declaration.value); });
+    rule.walkDecls('top', declaration => { offsets.push(declaration.value); });
+  });
+  assert.deepEqual(positions, ['sticky']);
+  assert.deepEqual(offsets, ['env(safe-area-inset-top, 0px)']);
 });

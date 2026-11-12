@@ -376,7 +376,7 @@ function Preview() {
   const renderEditorBase = () => (
     <>
       <Header classInfo={classes[0]} teacherName={config.defaultTeacherName} establishmentName={config.establishmentName} onClassInfoChange={noop} onBack={noop} />
-      <div className="editor-toolbar-row sticky top-0 z-[50] flex items-center gap-2 print:hidden">
+      <div className="editor-toolbar-row flex items-center print:hidden">
         <div className="min-w-0 flex-1">
           <Toolbar canUndo={false} canRedo={false} saveStatus="saved" onUndo={noop} onRedo={noop}
             onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop}

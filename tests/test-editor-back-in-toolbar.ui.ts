@@ -64,7 +64,7 @@ test('le défilement ne fait pas réapparaître une flèche de retour dans la ba
 
 test('le sens de lecture place la barre sans règle dédiée', () => {
   const editor = source('src/features/editor/Editor.tsx');
-  assert.ok(editor.match(/sticky top-0 z-\[50\] flex items-center gap-2/), 'rangée flex logique');
+  assert.match(editor, /editor-toolbar-row flex items-center/, 'rangée flex logique');
   assert.doesNotMatch(editor, /order-(first|last)|float-(left|right)/, 'aucune règle de direction dupliquée');
 });
 
