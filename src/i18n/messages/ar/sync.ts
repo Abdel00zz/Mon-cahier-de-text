@@ -6,6 +6,7 @@ export const messages: Record<string, string> = {
   'sync.pending': 'في انتظار المزامنة',
   'sync.offline': 'غير متصل',
   'sync.error': 'خطأ في المزامنة',
+  'sync.clickToSync': 'اضغط للمزامنة',
   'sync.syncNow': 'المزامنة الآن',
   'sync.statusAria': 'حالة المزامنة: {status}',
   'sync.status.preparing': 'جارٍ التحضير {done}/{total}',

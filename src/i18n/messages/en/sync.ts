@@ -6,6 +6,7 @@ export const messages: Record<string, string> = {
   'sync.pending': 'Pending',
   'sync.offline': 'Offline',
   'sync.error': 'Error',
+  'sync.clickToSync': 'Click to sync',
   'sync.syncNow': 'Sync now',
   'sync.statusAria': 'Sync status: {status}',
   'sync.status.preparing': 'Preparing {done}/{total}',

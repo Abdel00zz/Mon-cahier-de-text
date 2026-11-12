@@ -287,7 +287,7 @@ test('chaque teinte du catalogue de natures a sa couleur, en clair comme en somb
   // Toutes les déclarations de teinte passent par la MÊME forme de sélecteur :
   // la palette est partagée entre les cartes de rubrique et les pastilles
   // d'étape, il n'existe pas de liste jumelle à tenir à jour.
-  const declarations = [...css.matchAll(/(\.dark\s+)?:is\(\.hub-card, \.evaluation-tone\)\[data-tone='([a-z]+)'\] \{ --tone: ([^;]+);/g)];
+  const declarations = [...css.matchAll(/(\.dark\s+)?:is\(\.hub-card, \.evaluation-tone, \.settings-overview__section\)\[data-tone='([a-z]+)'\] \{ --tone: ([^;]+);/g)];
   const declared = new Set(declarations.map(match => match[2]));
   assert.equal(
     (css.match(/\[data-tone='[a-z]+'\] \{ --tone:/g) ?? []).length,

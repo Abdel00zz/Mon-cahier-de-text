@@ -6,19 +6,22 @@ import './editor-save.css';
 
 export const EditorSaveControl: React.FC<{
     status: 'saved' | 'saving' | 'unsaved';
-}> = ({ status }) => {
+    onSync?: () => void;
+}> = ({ status, onSync }) => {
     const { syncStatus } = useSync();
     const { t } = useLocale();
     const tone = editorSyncTone(status, syncStatus);
     const local = t(status === 'unsaved' ? 'toolbar.localChanges' : `toolbar.${status}`);
     const cloud = syncStatus === 'idle' ? t('toolbar.localOnly') : t(`sync.${syncStatus}`);
-    const description = `${local}. ${cloud}`;
+    const actionable = !!onSync && status !== 'saving' && (syncStatus === 'pending' || syncStatus === 'error' || (status === 'unsaved' && syncStatus !== 'offline' && syncStatus !== 'syncing'));
+    const caption = actionable ? t('sync.clickToSync') : cloud;
+    const description = [local, cloud, ...(actionable ? [caption] : [])].join('. ');
     return (
-        <span className="editor-sync-status" data-save-state={status} data-cloud-state={syncStatus}
-            data-sync-tone={tone} role="status" aria-live="polite" aria-atomic="true"
+        <button type="button" disabled={!actionable} onClick={onSync} className="editor-sync-status" data-save-state={status} data-cloud-state={syncStatus}
+            data-sync-tone={tone} aria-live="polite" aria-atomic="true"
             title={description} aria-label={description}>
             <span className="editor-sync-dot" aria-hidden="true" />
-            <span className="editor-sync-label" aria-hidden="true">{cloud}</span>
-        </span>
+            <span className="editor-sync-label" aria-hidden="true">{caption}</span>
+        </button>
     );
 };

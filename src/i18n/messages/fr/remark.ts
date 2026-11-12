@@ -1,5 +1,6 @@
 // Traductions fr — remark.
 export const messages: Record<string, string> = {
+  'remark.savedNotification': 'Remarque enregistrée',
   'remark.title': 'Remarque de la séance',
   'remark.placeholder': 'Écrire une remarque…',
   'remark.editTitle': 'Saisir une remarque',

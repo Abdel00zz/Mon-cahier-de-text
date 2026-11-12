@@ -3,7 +3,17 @@
 .editor-sync-status[data-sync-tone='green'] .editor-sync-dot { background: #27834a; box-shadow: 0 0 0 3px rgb(39 131 74 / .10); }
 .editor-sync-status[data-sync-tone='red'] .editor-sync-dot { background: #c34343; box-shadow: 0 0 0 3px rgb(195 67 67 / .10); }
 .editor-sync-label { font-size: 12px; color: hsl(var(--muted-foreground)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-@media (max-width: 639px) { .editor-sync-label { display: none; } .editor-sync-status { padding-inline: 10px; } }
+.editor-sync-status:enabled { cursor: pointer; border-radius: .6rem; color: hsl(var(--primary)); background: hsl(var(--primary) / .07); }
+.editor-sync-status:enabled .editor-sync-label { color: inherit; }
+.editor-sync-status:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: -2px; }
+@media (prefers-reduced-motion: no-preference) {
+  .editor-sync-status[data-cloud-state='syncing'] .editor-sync-dot { animation: editor-sync-pulse 1.2s ease-in-out infinite alternate; }
+  @keyframes editor-sync-pulse { to { opacity: .45; } }
+}
+@media (max-width: 639px) {
+  .editor-sync-label { white-space: normal; line-height: 1.15; text-align: start; }
+  .editor-sync-status { max-width: 100%; gap: 5px; }
+}
 .dark .editor-sync-dot { background: #e5a451; }
 .dark .editor-sync-status[data-sync-tone='green'] .editor-sync-dot { background: #79c99a; }
 .dark .editor-sync-status[data-sync-tone='red'] .editor-sync-dot { background: #ed8585; }
@@ -50,8 +60,8 @@
 /* The Android system button/gesture owns editor back navigation. */
 html[data-platform='android'] [data-editor-root] .editor-back-button { display: none; }
 @media (max-width: 639px) {
-  [data-editor-toolbar] { grid-template-columns: 24px minmax(88px, 1fr) auto; gap: 4px; padding-inline: 4px; }
-  [data-editor-toolbar] .editor-sync-status { min-width: 24px; padding-inline: 4px; }
+  [data-editor-toolbar] { grid-template-columns: minmax(44px, 1fr) auto auto; gap: 4px; padding-inline: 4px; }
+  [data-editor-toolbar] .editor-sync-status { min-width: 44px; padding-inline: 4px; }
   .editor-toolbar__mobile-search > div { gap: 4px; }
   .editor-toolbar__mobile-search > div > .app-icon { display: none; }
 }

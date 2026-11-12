@@ -55,7 +55,7 @@ export function SettingsOverview({ initialSection, ...props }: Props) {
       {PAGE_SECTIONS.map(({ id, titleKey, hintKey, icon: Icon, tone }) => {
         const isCollapsible = COLLAPSIBLE_CATEGORIES.has(id);
         if (!isCollapsible) {
-          return <section key={id} aria-labelledby={`settings-${id}`} data-settings-section={id} className="settings-overview__section">
+          return <section key={id} aria-labelledby={`settings-${id}`} data-settings-section={id} data-tone={tone} className="settings-overview__section">
             <header className="settings-overview__section-header">
               <h2 id={`settings-${id}`} tabIndex={-1} data-route-focus={target === id || undefined}><Icon aria-hidden="true" />{t(titleKey)}</h2>
               {id === 'profil' && <span role="status" className="settings-overview__save">{t(profile.hasChanges ? 'toolbar.saving' : 'toolbar.saved')}</span>}

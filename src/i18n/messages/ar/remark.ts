@@ -1,5 +1,6 @@
 // Traductions ar — remark.
 export const messages: Record<string, string> = {
+  'remark.savedNotification': 'تم حفظ الملاحظة',
   'remark.title': 'ملاحظة الحصة',
   'remark.placeholder': 'اكتب ملاحظة…',
   'remark.editTitle': 'كتابة ملاحظة',

@@ -58,7 +58,7 @@
   margin: 0;
   border-radius: 13px;
   color: var(--tone);
-  background: hsl(var(--muted));
+  background: color-mix(in srgb, var(--tone) 12%, hsl(var(--card)));
   box-shadow: none;
   transition: transform 240ms var(--ease-spring, cubic-bezier(0.2, 0, 0, 1)), background-color 200ms ease;
 }
@@ -88,22 +88,22 @@ html[lang='ar'] .hub-card__hint { font-size: 0.8125rem; line-height: 1.45; }
    et `slate` avait fini par une seconde déclaration ailleurs dans le fichier.
    Toute teinte du catalogue vit ici, et le test de parité refuse à la fois une
    famille sans couleur et une déclaration hors de cette palette partagée. */
-:is(.hub-card, .evaluation-tone)[data-tone='blue'] { --tone: #2563eb; }
-:is(.hub-card, .evaluation-tone)[data-tone='violet'] { --tone: #7c3aed; }
-:is(.hub-card, .evaluation-tone)[data-tone='pink'] { --tone: #db2777; }
-:is(.hub-card, .evaluation-tone)[data-tone='amber'] { --tone: #b45309; }
-:is(.hub-card, .evaluation-tone)[data-tone='green'] { --tone: #15803d; }
-:is(.hub-card, .evaluation-tone)[data-tone='teal'] { --tone: #0f766e; }
-:is(.hub-card, .evaluation-tone)[data-tone='rose'] { --tone: #be123c; }
-:is(.hub-card, .evaluation-tone)[data-tone='slate'] { --tone: #475569; }
-.dark :is(.hub-card, .evaluation-tone)[data-tone='blue'] { --tone: #86a9f5; }
-.dark :is(.hub-card, .evaluation-tone)[data-tone='violet'] { --tone: #b79bf2; }
-.dark :is(.hub-card, .evaluation-tone)[data-tone='pink'] { --tone: #f08cba; }
-.dark :is(.hub-card, .evaluation-tone)[data-tone='amber'] { --tone: #f0b45c; }
-.dark :is(.hub-card, .evaluation-tone)[data-tone='green'] { --tone: #76d59a; }
-.dark :is(.hub-card, .evaluation-tone)[data-tone='teal'] { --tone: #6fcfc5; }
-.dark :is(.hub-card, .evaluation-tone)[data-tone='rose'] { --tone: #f2a3b6; }
-.dark :is(.hub-card, .evaluation-tone)[data-tone='slate'] { --tone: #9aa7b4; }
+:is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='blue'] { --tone: #2563eb; }
+:is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='violet'] { --tone: #7c3aed; }
+:is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='pink'] { --tone: #db2777; }
+:is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='amber'] { --tone: #b45309; }
+:is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='green'] { --tone: #15803d; }
+:is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='teal'] { --tone: #0f766e; }
+:is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='rose'] { --tone: #be123c; }
+:is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='slate'] { --tone: #475569; }
+.dark :is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='blue'] { --tone: #86a9f5; }
+.dark :is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='violet'] { --tone: #b79bf2; }
+.dark :is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='pink'] { --tone: #f08cba; }
+.dark :is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='amber'] { --tone: #f0b45c; }
+.dark :is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='green'] { --tone: #76d59a; }
+.dark :is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='teal'] { --tone: #6fcfc5; }
+.dark :is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='rose'] { --tone: #f2a3b6; }
+.dark :is(.hub-card, .evaluation-tone, .settings-overview__section)[data-tone='slate'] { --tone: #9aa7b4; }
 .dark .hub-card {
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.32), 0 12px 24px -20px rgb(0 0 0 / 0.6);
 }

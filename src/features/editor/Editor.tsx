@@ -1271,6 +1271,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
                   canUndo={canUndo}
                   canRedo={canRedo}
                   saveStatus={saveStatus}
+                  onSync={saveData}
                   onOpenDataTransfer={handleOpenDataTransfer}
                   onOpenManageLessons={handleOpenManageLessons}
                   onOpenGuide={handleOpenGuideModal}
