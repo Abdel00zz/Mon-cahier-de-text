@@ -62,13 +62,22 @@ button.auth-brand { cursor: pointer; }
   .auth-form-main { align-self: start; padding: 32px 24px; }
 }
 @media (max-width: 639px) {
-  .auth-header { gap: 8px; padding: 12px max(20px, env(safe-area-inset-left)) 12px max(20px, env(safe-area-inset-right)); }
+  .auth-header { gap: 8px; padding: 10px max(16px, env(safe-area-inset-left)) 10px max(16px, env(safe-area-inset-right)); }
   .auth-brand { gap: 8px; }
   .auth-brand__name { font-size: 13px; }
-  .auth-languages button { padding: 0 8px; font-size: 13px; }
-  .auth-form-main { justify-content: flex-start; padding: 12px 24px max(32px, env(safe-area-inset-bottom)); }
-  .auth-form-content h1 { font-size: 29px; }
-  .auth-form-detail { font-size: 13px; }
+  .auth-languages button { min-height: 40px; padding: 0 8px; font-size: 13px; }
+  .auth-form-main { justify-content: flex-start; padding: 8px 20px max(28px, env(safe-area-inset-bottom)); }
+  .auth-form-content h1 { font-size: clamp(25px, 7vw, 29px); line-height: 1.3; }
+  .auth-form-detail { margin-top: 6px; margin-bottom: 20px; font-size: 13px; line-height: 1.6; }
+  .auth-mobile-hero { gap: 3px; padding-top: 4px; }
+  .auth-mobile-hero__title { font-size: clamp(18px, 5vw, 22px); }
+  .auth-mobile-hero__figure { margin-top: 0; transform: scale(.82); transform-origin: top center; margin-bottom: -12px; }
+  .auth-google { min-height: 48px; font-size: 14px; }
+  .auth-divider { margin-block: 16px; }
+  .auth-field { height: 50px; }
+  .auth-submit { min-height: 50px; }
+  .auth-account-switch { margin-top: 14px; }
+  .auth-footer { margin-top: 12px; }
 }
 @media (max-width: 359px) {
   .auth-header { padding-inline: 14px; }

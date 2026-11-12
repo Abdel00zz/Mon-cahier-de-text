@@ -92,4 +92,25 @@ html[data-platform="android"] {
     scroll-behavior: auto !important;
   }
 
+  /* Cibles tactiles et surfaces fiables sur iPhone 16, Pixel et Galaxy S25. */
+  :is([role='dialog'], [role='alertdialog'], .modal-motion-surface, .bottom-sheet) {
+    max-width: min(100vw - 20px, 720px);
+    max-height: min(90dvh, 760px);
+  }
+  :is([role='dialog'], [role='alertdialog']) button {
+    min-height: 44px;
+  }
+  img, svg, video, canvas { max-width: 100%; }
+}
+
+@media (max-width: 767px) {
+  html, body { max-width: 100%; overflow-x: hidden; }
+  #root { min-width: 0; }
+  .modal-motion-surface, .bottom-sheet { border-radius: 18px 18px 0 0; }
+}
+
+@media (max-width: 380px) {
+  .mobile-tab-bar { padding-inline: 4px; }
+  .workspace-nav-button--mobile { min-height: 56px; }
+  .mobile-tab-bar .mobile-tab-label { font-size: 10px; }
 }
