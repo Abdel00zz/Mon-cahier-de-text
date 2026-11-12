@@ -73,3 +73,15 @@ test('editor history stays within reach below the device safe area at every widt
   assert.deepEqual(positions, ['sticky']);
   assert.deepEqual(offsets, ['env(safe-area-inset-top, 0px)']);
 });
+
+test('a touch notification leaves vertical scrolling and pinch zoom to the browser', () => {
+  const css = postcss.parse(readIndexCss());
+  const touchActions: string[] = [];
+  css.walkAtRules('media', media => {
+    if (media.params !== '(pointer: coarse)') return;
+    media.walkRules('[data-sonner-toaster] [data-sonner-toast]', rule => {
+      rule.walkDecls('touch-action', declaration => { touchActions.push(declaration.value); });
+    });
+  });
+  assert.deepEqual(touchActions, ['pan-y pinch-zoom']);
+});

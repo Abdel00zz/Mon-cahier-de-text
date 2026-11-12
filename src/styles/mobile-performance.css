@@ -47,6 +47,10 @@ html[data-platform="android"] {
      overlays below isolate scrolling from the page behind them. */
   .overflow-x-auto { overscroll-behavior-x: contain; overscroll-behavior-y: auto; }
 
+  /* A notification accepts horizontal dismiss gestures while the page keeps
+     vertical swipes and pinch zoom. Sonner otherwise claims both axes. */
+  [data-sonner-toaster] [data-sonner-toast] { touch-action: pan-y pinch-zoom; }
+
   /* Confinement du sur-défilement (overscroll) pour éviter le rebond parasite de la page sous-jacente */
   [role="dialog"],
   [role="alertdialog"],
