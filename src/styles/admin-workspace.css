@@ -305,9 +305,7 @@
 }
 .admin-detail__tabs [data-state='active'] svg { color: hsl(var(--primary)); }
 .admin-login {
-  background-image:
-    radial-gradient(circle at 50% 25%, hsl(var(--primary) / .05) 0px, transparent 60%),
-    radial-gradient(circle at 80% 80%, hsl(var(--warning) / .04) 0px, transparent 60%);
+  background-image: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted) / .55));
 }
 .admin-login__card {
   border-radius: 1.25rem;
@@ -315,7 +313,7 @@
   background: hsl(var(--card) / .96);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  box-shadow: 0 16px 48px -12px rgba(47, 35, 24, .1), 0 2px 8px -1px rgba(47, 35, 24, .04), inset 0 1px 0 rgba(255, 255, 255, .9);
+  box-shadow: 0 18px 42px -20px hsl(var(--foreground) / .22), 0 1px 3px hsl(var(--foreground) / .05);
   font-variant-numeric: tabular-nums;
 }
 .admin-login__card input {
