@@ -1,5 +1,5 @@
 /* Shared A4 composition for preparation, preview and native printing. */
-@page { size: A4; margin: 14mm 13mm 16mm; }
+@page { size: A4; margin: 12mm 8mm 14mm; }
 /* Le plan se lit aussi sur le papier : un cran de marge par niveau.
    Aucun filet vertical : le retrait suffit à marquer la profondeur. */
 .print-document {
@@ -38,8 +38,8 @@
     justify-content: center;
     width: 1.55em; min-width: 1.55em; height: 1.55em; padding: 0;
     border: 0.65pt solid var(--print-ink);
-    border-radius: 1.5pt !important;
-    background-color: #f1f3f5 !important;
+    border-radius: 2.5pt !important;
+    background-color: transparent !important;
     color: var(--print-ink) !important;
     font-family: var(--content-font-latin), Arial, sans-serif;
     font-size: 7.6pt; font-weight: 800; letter-spacing: 0.02em; line-height: 1;
@@ -124,9 +124,12 @@
 .print-document[data-print-color='mono'] .print-col-content :is(.editor-section-letter, .editor-type-subsection > bdi, .editor-type-subsubsection > bdi, .print-item-kind) {
     background-color: #f3f4f6 !important; border-color: #515a63 !important; color: var(--print-ink) !important;
 }
-.print-document[data-print-color='color'] .print-col-content .print-item-kind {
-    color: var(--print-tone-ink) !important; background-color: var(--print-tone-fill) !important; border-color: var(--print-tone-ink) !important;
-}
+  .print-document[data-print-color='color'] .print-col-content .print-item-kind {
+    color: var(--print-tone-ink) !important;
+    background-color: color-mix(in srgb, var(--print-tone-fill) 78%, white) !important;
+    border-color: color-mix(in srgb, var(--print-tone-ink) 72%, white) !important;
+    border-radius: 3pt !important;
+  }
 .print-document[data-print-color='color'] .print-col-content .print-item-description {
     border-color: var(--print-tone-ink) !important; background-color: color-mix(in srgb, var(--print-tone-fill) 35%, white) !important;
 }
