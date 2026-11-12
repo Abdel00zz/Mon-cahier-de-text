@@ -301,7 +301,7 @@
      > Description/Corps (0.86) > Remarque (0.80) > En-tête/Page (0.71) > Badge (0.65). */
   [data-editor-table] {
     --editor-scale: max(0.875rem, calc(clamp(0.9375rem, calc(0.875rem + 0.2vw), 1rem) * var(--app-text-scale, 1)));
-    --cdt-table-cols: minmax(5rem, 20%) minmax(0, 1fr) minmax(3.5rem, 19%);
+    --cdt-table-cols: minmax(5rem, 17%) minmax(0, 1fr) minmax(3.5rem, 19%);
     --editor-fs-chapter: calc(var(--editor-scale) * 1.38);
     --editor-fs-top: calc(var(--editor-scale) * 1.19);
     --editor-fs-section: calc(var(--editor-scale) * 1.10);
@@ -341,7 +341,7 @@
      (20% de date, 19% de remarque) qui mangeait la moitié de la largeur utile. */
   @media (max-width: 767px) {
     [data-editor-table] {
-      --cdt-table-cols: minmax(3.5rem, 14.5%) minmax(0, 1fr) minmax(3rem, 13.5%);
+      --cdt-table-cols: minmax(3.5rem, 12.3%) minmax(0, 1fr) minmax(3rem, 13.5%);
       --editor-description-indent: 0px;
       --editor-description-padding: 6px;
       --editor-scale: max(0.73rem, calc(clamp(0.725rem, calc(0.725rem + 0.12vmin), 0.78rem) * var(--app-text-scale, 1)));
@@ -368,7 +368,7 @@
 
   @media (min-width: 768px) {
     [data-editor-table] {
-      --cdt-table-cols: minmax(9rem, 16%) minmax(0, 1fr) minmax(9.5rem, 16%);
+      --cdt-table-cols: minmax(9rem, 13.6%) minmax(0, 1fr) minmax(9.5rem, 16%);
     }
   }
   /* Esprit éditeur de livre : la marge raconte la profondeur. */

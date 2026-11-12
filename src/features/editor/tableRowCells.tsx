@@ -70,9 +70,10 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
         <div key={date.source} className="editor-date-entry">
           {i > 0 && <span className="editor-date-join">{separator}</span>}
           <span data-date-token className="editor-date-stamp" title={date.full}>
+            {locale === 'ar' && date.weekday && <small className="editor-date-weekday">{date.weekday}</small>}
             <bdi className="editor-date-day">{date.day}</bdi>
             <span>{date.month}</span>
-            {date.weekday && <small>{date.weekday}</small>}
+            {locale !== 'ar' && date.weekday && <small className="editor-date-weekday">{date.weekday}</small>}
           </span>
         </div>
       ))}

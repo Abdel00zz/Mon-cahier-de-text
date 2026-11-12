@@ -6,12 +6,18 @@
     --reading-teal: #326c70;
     --reading-date: #805d29;
     --reading-note: #326c70;
-    border-radius: 1.25rem;
+    border-radius: 1.15rem;
     padding: 0;
     background: hsl(var(--card));
-    box-shadow: 0 16px 40px -30px hsl(var(--foreground) / .2);
+    box-shadow: inset 0 0 0 1px hsl(var(--border) / .65), 0 4px 20px -10px hsl(var(--foreground) / .12);
+    overflow: hidden;
   }
-  .dark .editor-reading-table[data-editor-table] { --reading-teal: #a0ceca; --reading-date: #dcc394; --reading-note: #a0ceca; }
+  .dark .editor-reading-table[data-editor-table] {
+    --reading-teal: #a0ceca;
+    --reading-date: #dcc394;
+    --reading-note: #a0ceca;
+    box-shadow: inset 0 1px 0 hsl(40 20% 96% / .05), inset 0 0 0 1px hsl(var(--border) / .45), 0 12px 32px -16px rgb(0 0 0 / .6);
+  }
   .editor-reading-table, .editor-reading-table :is([dir], [data-row-content]) {
     --font-latin-reading: 'Lexend', system-ui;
     --font-latin-body: 'Lexend', system-ui;
@@ -37,10 +43,28 @@
     font-weight: 600;
     line-height: 1.4;
   }
-  .editor-reading-table [data-editor-table-header] { display: block; background: hsl(var(--muted) / .35); }
+  .editor-reading-table [data-editor-table-header] {
+    display: block;
+    background: hsl(var(--muted) / .28);
+    border-bottom: 1px solid hsl(var(--border) / .55);
+  }
   .editor-reading-table [data-editor-table-header] .editor-type-table-side,
-  .editor-reading-table [data-editor-table-header] .editor-type-table-main { font: 500 .75rem/1.5 var(--font-content); letter-spacing: normal; text-transform: none; }
-  .editor-reading-table [data-editor-table-header] .sr-only { position: static; width: auto; height: auto; padding: 0; margin: 0; overflow: visible; clip: auto; clip-path: none; white-space: normal; }
+  .editor-reading-table [data-editor-table-header] .editor-type-table-main {
+    font: 500 .75rem/1.5 var(--font-content);
+    letter-spacing: normal;
+    text-transform: none;
+  }
+  .editor-reading-table [data-editor-table-header] .sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+  }
   .editor-reading-table [data-editor-table-header] [aria-hidden='true'] { display: none; }
   .editor-reading-table .editor-section-letter {
     display: inline-flex; align-items: center; justify-content: center; align-self: center;
@@ -104,28 +128,52 @@
     font: 500 .65rem/1.2 var(--font-content); text-align: center;
     font-variant-numeric: tabular-nums;
   }
-  .editor-reading-table :is([data-session-cell='date'], [data-editor-cell='date'], [data-absence-session] > :first-child):has(.editor-date-value) {
-    background-image: linear-gradient(color-mix(in srgb, var(--reading-date) 25%, transparent), color-mix(in srgb, var(--reading-date) 25%, transparent));
-    background-position: center; background-size: 1px 100%; background-repeat: no-repeat;
-  }
   .editor-reading-table [data-editor-cell='date'] > div:has(.editor-date-value) { background-color: transparent; }
   .editor-reading-table .editor-date-entry { display: grid; justify-items: center; min-width: 0; max-width: 100%; gap: 2px; }
   .editor-reading-table .editor-date-stamp {
-    display: grid; justify-items: center; min-width: 0; max-width: 100%;
-    padding: .2rem .12rem; border-radius: .55rem;
-    border: 1px solid color-mix(in srgb, currentColor 30%, hsl(var(--border)));
-    background: hsl(var(--card)); white-space: nowrap;
+    display: grid;
+    justify-items: center;
+    min-width: 0;
+    max-width: 100%;
+    padding: .24rem .14rem;
+    border-radius: .55rem;
+    border: 1px solid color-mix(in srgb, var(--reading-date) 22%, hsl(var(--border) / .7));
+    background: color-mix(in srgb, var(--reading-date) 7%, hsl(var(--card)));
+    box-shadow: 0 1px 2px rgb(0 0 0 / .03);
+    white-space: nowrap;
+    transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
   }
-  .editor-reading-table .editor-date-day { font-size: .95rem; font-weight: 650; line-height: 1.05; }
+  .dark .editor-reading-table .editor-date-stamp {
+    border-color: color-mix(in srgb, var(--reading-date) 26%, hsl(var(--border) / .4));
+    background: color-mix(in srgb, var(--reading-date) 10%, hsl(var(--card)));
+  }
+  .editor-reading-table .editor-date-day { font-size: 1.02rem; font-weight: 700; line-height: 1.05; letter-spacing: -0.01em; }
   .editor-reading-table .editor-date-stamp small, .editor-reading-table .editor-date-join {
-    font-size: .625rem; color: hsl(var(--muted-foreground)); background: hsl(var(--card));
+    font-size: .625rem; text-transform: uppercase; letter-spacing: .03em;
+    color: hsl(var(--muted-foreground)); background: transparent;
+  }
+  .editor-reading-table .editor-date-stamp .editor-date-weekday {
+    font-size: .62rem;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--reading-date) 80%, hsl(var(--foreground)));
+    line-height: 1.15;
+    margin-bottom: 1px;
   }
   .editor-reading-table .editor-date-value:not(.text-alert-strong) { color: var(--reading-date) !important; }
   .editor-reading-table :is([data-session-cell='remark'], [data-editor-cell='remark']) { min-width: 0; padding: .25rem; background: transparent; }
   .editor-reading-table [data-remark-cell] { min-height: 44px; padding: .25rem; border-radius: .75rem; }
   .editor-reading-table :is(.editor-type-remark, .editor-session-note) {
-    font-size: .8125rem; color: var(--reading-note); padding: .3rem .45rem;
-    border-radius: .75rem; background: color-mix(in srgb, var(--reading-note) 8%, transparent);
+    font-size: .8125rem; line-height: 1.4; color: var(--reading-note); padding: .32rem .5rem;
+    border-radius: .625rem; background: color-mix(in srgb, var(--reading-note) 8%, hsl(var(--card)));
+    border: 1px solid color-mix(in srgb, var(--reading-note) 14%, transparent);
+    transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+  }
+  .editor-reading-table [data-remark-cell]:hover :is(.editor-type-remark, .editor-session-note) {
+    background: color-mix(in srgb, var(--reading-note) 14%, hsl(var(--card)));
+    border-color: color-mix(in srgb, var(--reading-note) 24%, transparent);
+  }
+  .editor-reading-table [data-remark-cell]:active :is(.editor-type-remark, .editor-session-note) {
+    transform: scale(0.97);
   }
   .editor-reading-table [data-absence-session] > * { padding: .5rem .25rem; }
   
@@ -133,15 +181,30 @@
   .editor-reading-table [data-editor-drop-side] { --primary: 184 37% 32%; }
   .dark .editor-reading-table [data-editor-drop-side] { --primary: 174 35% 63%; }
   .editor-reading-table [data-editor-dragging='true'] { box-shadow: 0 10px 28px -16px hsl(var(--foreground) / .3); }
+  
+  .editor-reading-table .editor-table-grid {
+    transition: background-color 160ms ease;
+  }
+  .editor-reading-table :is([data-row-state~="selected"]) {
+    background: color-mix(in srgb, hsl(var(--primary)) 8%, hsl(var(--card)));
+  }
+  @media (hover: hover) {
+    .editor-reading-table .editor-table-grid:hover {
+      background: color-mix(in srgb, hsl(var(--muted)) 28%, transparent);
+    }
+  }
+  .editor-reading-table .editor-table-grid:active {
+    background: color-mix(in srgb, hsl(var(--muted)) 45%, transparent);
+  }
+
   @media (max-width: 639px) {
     .editor-reading-table .editor-table-grid {
-      grid-template-columns: clamp(46px, 12vw, 52px) minmax(0, 1fr) clamp(66px, 21vw, 88px);
+      grid-template-columns: clamp(39px, 10vw, 44px) minmax(0, 1fr) clamp(66px, 21vw, 88px);
     }
     .editor-reading-table :is([data-session-cell='remark'], [data-editor-cell='remark'], [data-remark-cell]) { padding-inline: .1rem; }
     .editor-reading-table :is(.editor-type-remark, .editor-session-note) { padding-inline: .25rem; }
   }
 }
-
 
 @media screen and (max-width: 767px), screen and (pointer: coarse) and (max-height: 540px) and (orientation: landscape) {
   .editor-reading-table[data-editor-table] {

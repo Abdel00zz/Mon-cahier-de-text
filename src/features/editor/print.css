@@ -1,5 +1,5 @@
 /* Shared A4 composition for preparation, preview and native printing. */
-@page { size: A4; margin: 12mm 8mm 14mm; }
+@page { size: A4; margin: 10mm 5mm 12mm; }
 /* Le plan se lit aussi sur le papier : un cran de marge par niveau.
    Aucun filet vertical : le retrait suffit à marquer la profondeur. */
 .print-document {
@@ -249,16 +249,16 @@
     print-color-adjust: exact;
 }
 .print-col-date {
-    width: 11%;
+    width: 8.5%;
     text-align: center !important;
     vertical-align: top;
     color: #4b5563;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
 }
-.print-col-content { width: 81.4%; }
+.print-col-content { width: 71.9%; }
 .print-col-remark {
-    width: 7.6%;
+    width: 19.6%;
     font-size: calc(var(--print-size-description) * var(--print-fill));
     color: #4b5563;
     overflow-wrap: anywhere;
@@ -327,4 +327,6 @@
 .print-separator-row { break-inside: avoid; page-break-inside: avoid; }
 .print-separator-row > td { border-bottom: 0.65pt solid var(--print-rule-strong) !important; }
 .print-separator-row .print-col-date { vertical-align: middle; }
+
+.sync-strip { display: none !important; }
 

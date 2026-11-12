@@ -31,6 +31,21 @@
   to { background-position: 138% 0; }
 }
 
+/* L'éditeur de cahier de textes possède son propre contrôle d'enregistrement
+   dans la barre d'outils (EditorSaveControl). Le liseré de synchronisation
+   global est masqué dans l'éditeur pour éviter tout trait parasite sur le tableau. */
+html:has([data-editor-root]) .sync-strip,
+body:has([data-editor-root]) .sync-strip {
+  display: none !important;
+}
+
+/* Le liseré de synchronisation ne doit en aucun cas apparaître à l'impression. */
+@media print {
+  .sync-strip {
+    display: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sync-strip[data-state='syncing'],
   .sync-strip[data-state='pending'] {

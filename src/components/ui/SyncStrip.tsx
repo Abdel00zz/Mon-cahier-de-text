@@ -18,7 +18,7 @@ export const SyncStrip: React.FC = () => {
 
     return (
         <>
-            <div className="sync-strip" data-state={syncStatus} aria-hidden="true" />
+            <div className="sync-strip print:hidden" data-state={syncStatus} aria-hidden="true" />
             <span className="sr-only" role="status">{text}</span>
         </>
     );
