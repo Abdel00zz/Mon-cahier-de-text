@@ -2,7 +2,7 @@ import { uniq } from 'es-toolkit';
 import type { DateMergeMeta } from '@/domain/notebook/tableRows';
 import { FC, memo } from 'react';
 import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
-import { numberFormat } from '@/lib/formatters';
+import { dateTimeFormat } from '@/lib/formatters';
 import { parseDateInput } from '@/domain/notebook/dataUtils';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
@@ -10,48 +10,22 @@ import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { SessionDocuments } from './SessionDocuments';
 
-const DATE_CARD_NUMBER_OPTIONS: Intl.NumberFormatOptions = { minimumIntegerDigits: 2, useGrouping: false };
-const dateCardNumberFormatters = new Map<AppLocale, Intl.NumberFormat>();
+const calendarOptions = { day: '2-digit', month: 'short', weekday: 'short', calendar: 'gregory' } as const;
 
-/**
- * Formateur jour/mois partagé par toutes les lignes. L'ancien appel créait un
- * objet d'options puis une clé JSON à CHAQUE cellule datée et à chaque rendu ;
- * la carte de date n'a pourtant que trois locales possibles.
- */
-const dateCardNumberFormat = (locale: AppLocale): Intl.NumberFormat => {
-  let formatter = dateCardNumberFormatters.get(locale);
-  if (!formatter) {
-    formatter = numberFormat(locale, DATE_CARD_NUMBER_OPTIONS);
-    dateCardNumberFormatters.set(locale, formatter);
-  }
-  return formatter;
-};
-
-const parseDate = (dateStr: string | undefined, locale: AppLocale) => {
-  try {
-    // Un seul parseur pour tout le cahier (ISO, jj/mm/aaaa, horodatage).
-    const dateObj = parseDateInput(dateStr);
-    if (!dateObj) return null;
-
-    if (isNaN(dateObj.getTime())) return null;
-
-    const numberFormatter = dateCardNumberFormat(locale);
-    return {
-      day: numberFormatter.format(dateObj.getDate()),
-      numericMonth: numberFormatter.format(dateObj.getMonth() + 1),
-    };
-  } catch {
-    return null;
-  }
-};
-
-interface ParsedRange {
-  kind: 'range' | 'pair';
-  start: { day: string; numericMonth: string };
-  end: { day: string; numericMonth: string };
+function calendarDate(source: string, locale: AppLocale) {
+  // Some imported notebooks store only day/month. A leap year provides the
+  // month name for those entries, but cannot provide their actual weekday.
+  const partial = /^(\d{1,2})[/.-](\d{1,2})$/.exec(source);
+  const date = parseDateInput(partial ? `${source.replace(/[.-]/g, '/')}/2000` : source);
+  if (!date || !Number.isFinite(date.getTime())) return null;
+  const parts = dateTimeFormat(locale, calendarOptions).formatToParts(date);
+  const field = (type: Intl.DateTimeFormatPartTypes) => parts.find(part => part.type === type)?.value;
+  const dm = [date.getDate(), date.getMonth() + 1].map(n => String(n).padStart(2, '0')).join('/');
+  return { day: field('day'), month: field('month'), weekday: partial ? undefined : field('weekday'),
+    full: partial ? dm : `${dm}/${date.getFullYear()}`, source };
 }
 
-const parseRangeOrPair = (str: string, locale: AppLocale): ParsedRange | null => {
+const parseRangeOrPair = (str: string) => {
   if (!str) return null;
   const trimmed = str.trim();
 
@@ -59,27 +33,13 @@ const parseRangeOrPair = (str: string, locale: AppLocale): ParsedRange | null =>
   const rangeMatch = trimmed.match(
     /(?:Du|du|De|de|From|from|من)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)\s+(?:au|à|a|to|إلى)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)/i
   );
-  if (rangeMatch) {
-    const d1 = parseDate(rangeMatch[1], locale);
-    const d2 = parseDate(rangeMatch[2], locale);
-    if (d1 && d2) {
-      return { kind: 'range', start: d1, end: d2 };
-    }
-  }
+  if (rangeMatch) return { range: true, tokens: rangeMatch.slice(1) };
 
   // 2. Détection de deux jours avec 'et' / 'و' / 'and'
   const pairMatch = trimmed.match(
     /(?:^|\s)(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)\s+(?:et|and|و)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)(?:\s|$)/i
   );
-  if (pairMatch) {
-    const d1 = parseDate(pairMatch[1], locale);
-    const d2 = parseDate(pairMatch[2], locale);
-    if (d1 && d2) {
-      return { kind: 'pair', start: d1, end: d2 };
-    }
-  }
-
-  return null;
+  return pairMatch ? { range: false, tokens: pairMatch.slice(1) } : null;
 };
 
 /** Les dates simples et fusionnées partagent exactement la même typographie. */
@@ -90,27 +50,9 @@ export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ 
 DateCard.displayName = 'DateCard';
 
 export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo(({ dates, hasWarning }) => {
-  const { locale } = useLocale();
-
-  // Support direct des plages ("Du XX au YY") et des couples ("XX et YY")
-  // Les plages sont affichées avec le connecteur pédagogique ('et' / 'و'), jamais de texte brut 'Du XX au YY'
-  if (dates.length === 1) {
-    const rangeOrPair = parseRangeOrPair(dates[0], locale);
-    if (rangeOrPair) {
-      const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
-      return (
-        <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`editor-date-value flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center font-semibold leading-snug tabular-nums ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
-          <span data-date-token className="inline-flex shrink-0 items-baseline gap-1 whitespace-nowrap">
-            <bdi dir="ltr" className="whitespace-nowrap">{rangeOrPair.start.day}/{rangeOrPair.start.numericMonth}</bdi>
-            <span className="font-normal text-foreground text-xs">{conjunction}</span>
-            <bdi dir="ltr" className="whitespace-nowrap">{rangeOrPair.end.day}/{rangeOrPair.end.numericMonth}</bdi>
-          </span>
-        </div>
-      );
-    }
-  }
-
-  const allTokens = dates.flatMap(d => {
+  const { locale, t } = useLocale();
+  const compound = dates.length === 1 ? parseRangeOrPair(dates[0]) : null;
+  const allTokens = compound?.tokens ?? dates.flatMap(d => {
     if (!d) return [];
     const iso = d.match(/\b\d{4}-\d{2}-\d{2}\b/g);
     if (iso && iso.length > 0) return iso;
@@ -119,19 +61,20 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
     return [d.trim()];
   });
 
-  const parsedDates = uniq(allTokens).flatMap(date => {
-    const parsed = parseDate(date, locale);
-    return parsed ? [{ ...parsed, source: date }] : [];
-  });
-  if (parsedDates.length === 0) return null;
-  const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
+  const parsedDates = uniq(allTokens).map(token => calendarDate(token, locale)).filter(date => date !== null);
+  if (!parsedDates.length) return null;
+  const separator = compound?.range ? t('evaluations.rangeSeparator') : locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
   return (
-    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`editor-date-value flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center font-semibold leading-snug tabular-nums ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
-      {parsedDates.map((date, index) => (
-        <span key={date.source} data-date-token className="inline-flex shrink-0 items-baseline gap-0.5 whitespace-nowrap">
-          {index > 0 ? <span className="font-normal text-foreground">{conjunction}</span> : null}
-          <bdi dir="ltr" className="whitespace-nowrap">{date.day}/{date.numericMonth}</bdi>
-        </span>
+    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`editor-date-value ${hasWarning ? 'text-alert-strong' : ''}`}>
+      {parsedDates.map((date, i) => (
+        <div key={date.source} className="editor-date-entry">
+          {i > 0 && <span className="editor-date-join">{separator}</span>}
+          <span data-date-token className="editor-date-stamp" title={date.full}>
+            <bdi className="editor-date-day">{date.day}</bdi>
+            <span>{date.month}</span>
+            {date.weekday && <small>{date.weekday}</small>}
+          </span>
+        </div>
       ))}
     </div>
   );

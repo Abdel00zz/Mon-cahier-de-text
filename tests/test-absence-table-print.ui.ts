@@ -70,7 +70,8 @@ test('empty and RTL editor tables still expose scheduled absence dates', () => {
     const html = table([], 'ar');
     assert.ok(html.includes('شهادة مرضية'));
     assert.ok(html.includes('data-content-direction="rtl"'));
-    assert.ok(html.includes('dir="ltr" class="whitespace-nowrap">14/09</bdi>'));
+    assert.ok(html.includes('title="14/09/2026"'));
+    assert.ok(html.includes('الاثنين'));
 });
 
 

@@ -95,13 +95,30 @@
      inner date and note objects receive a pill treatment. */
   .editor-reading-table :is([data-session-cell='date'], [data-editor-cell='date']) {
     min-width: 0; min-height: 44px; align-self: stretch; justify-self: stretch;
-    padding: .25rem; background: transparent;
+    padding: .25rem 1px; background: transparent;
   }
   .editor-reading-table [data-editor-cell='date'] > div { min-height: 44px; padding: 0; background: transparent; }
   .editor-reading-table .editor-date-value {
-    width: fit-content; max-width: 100%; margin: auto; padding: .4rem .45rem;
-    border-radius: 99px; background: color-mix(in srgb, var(--reading-date) 10%, transparent);
-    font: 500 .75rem/1.4 'Lexend', sans-serif;
+    display: grid; justify-items: center; gap: 2px; position: relative;
+    width: fit-content; max-width: 100%; margin: .2rem auto;
+    font: 500 .65rem/1.2 var(--font-content); text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .editor-reading-table :is([data-session-cell='date'], [data-editor-cell='date'], [data-absence-session] > :first-child):has(.editor-date-value) {
+    background-image: linear-gradient(color-mix(in srgb, var(--reading-date) 25%, transparent), color-mix(in srgb, var(--reading-date) 25%, transparent));
+    background-position: center; background-size: 1px 100%; background-repeat: no-repeat;
+  }
+  .editor-reading-table [data-editor-cell='date'] > div:has(.editor-date-value) { background-color: transparent; }
+  .editor-reading-table .editor-date-entry { display: grid; justify-items: center; min-width: 0; max-width: 100%; gap: 2px; }
+  .editor-reading-table .editor-date-stamp {
+    display: grid; justify-items: center; min-width: 0; max-width: 100%;
+    padding: .2rem .12rem; border-radius: .55rem;
+    border: 1px solid color-mix(in srgb, currentColor 30%, hsl(var(--border)));
+    background: hsl(var(--card)); white-space: nowrap;
+  }
+  .editor-reading-table .editor-date-day { font-size: .95rem; font-weight: 650; line-height: 1.05; }
+  .editor-reading-table .editor-date-stamp small, .editor-reading-table .editor-date-join {
+    font-size: .625rem; color: hsl(var(--muted-foreground)); background: hsl(var(--card));
   }
   .editor-reading-table .editor-date-value:not(.text-alert-strong) { color: var(--reading-date) !important; }
   .editor-reading-table :is([data-session-cell='remark'], [data-editor-cell='remark']) { min-width: 0; padding: .25rem; background: transparent; }

@@ -20,8 +20,8 @@ export const EditorSaveControl: React.FC<{
         <button type="button" disabled={!actionable} onClick={onSync} className="editor-sync-status" data-save-state={status} data-cloud-state={syncStatus}
             data-sync-tone={tone} aria-live="polite" aria-atomic="true"
             title={description} aria-label={description}>
-            <span className="editor-sync-dot" aria-hidden="true" />
             <span className="editor-sync-label" aria-hidden="true">{caption}</span>
+            <span className="editor-sync-dot" aria-hidden="true" />
         </button>
     );
 };

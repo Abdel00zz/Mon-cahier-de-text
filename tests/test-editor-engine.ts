@@ -959,9 +959,9 @@ test('évaluations identiques : un titre commun et toutes les dates reliées par
   }));
   assert.equal(html.split('Évaluation diagnostique 1').length - 1, 1);
   const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
-  assert.match(text, /14\/09/);
-  assert.match(text, /16\/09/);
-  assert.match(text, /01\/10/);
+  assert.match(text, /14 sept\.? lun/);
+  assert.match(text, /16 sept\.? mer/);
+  assert.match(text, /01 oct\.? jeu/);
   assert.equal(/\b26\b/.test(text), false);
   assert.equal(text.includes('2026'), false);
   assert.equal(text.split(' et ').length - 1, 2);
