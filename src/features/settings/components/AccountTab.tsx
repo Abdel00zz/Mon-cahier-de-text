@@ -49,6 +49,11 @@ export const AccountTab: React.FC<AccountTabProps> = ({ config }) => {
     setIsSyncing(true);
     try {
       await syncNow();
+      toast.success(t('account.status.synced'));
+      window.dispatchEvent(new CustomEvent('companion:sync-alert', { detail: { status: 'synced' } }));
+    } catch (error) {
+      toast.error(t('account.status.error'));
+      window.dispatchEvent(new CustomEvent('companion:sync-alert', { detail: { status: 'error', error } }));
     } finally {
       setIsSyncing(false);
     }
@@ -106,10 +111,13 @@ export const AccountTab: React.FC<AccountTabProps> = ({ config }) => {
         }
         hint={lastSyncAt ? t('account.lastSync', { time: timeAgo(lastSyncAt, locale, t('account.unknownDate')) }) : undefined}
       >
-        <button type="button" onClick={handleSync} disabled={busy} className={settingsButtonClass}>
+        <button type="button" onClick={handleSync} disabled={busy} className={cn(settingsButtonClass, 'min-w-36 shadow-sm transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-md')} aria-describedby="sync-status-description">
           <RefreshCw className={cn('h-[18px] w-[18px] stroke-[1.5]', busy && 'animate-spin motion-reduce:animate-none')} />
-          <span>{t('account.syncNow')}</span>
+          <span>{busy ? t('account.status.syncing') : t('account.syncNow')}</span>
         </button>
+        <span id="sync-status-description" className="sr-only" role="status" aria-live="polite">
+          {t(`account.status.${syncStatus}`)}
+        </span>
       </SettingsRow>
     </SettingsSection>
   );

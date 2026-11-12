@@ -251,6 +251,11 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
 
             {/* Table */}
             <table className="print-table" dir={contentDirection} data-content-direction={contentDirection}>
+                <colgroup>
+                    <col className="print-col-date" />
+                    <col className="print-col-content" />
+                    <col className="print-col-remark" />
+                </colgroup>
                 <thead>
                     {headerMode === 'all' && (
                         <tr className="print-admin-header-row">

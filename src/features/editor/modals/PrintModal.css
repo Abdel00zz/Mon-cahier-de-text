@@ -1,6 +1,65 @@
-/* ══════════════════════════════════════════════════════════════
-   PrintModal – Micro-interaction de sortie ticket (Receipt Printer #1)
-   ══════════════════════════════════════════════════════════════ */
+/* PrintModal : hiérarchie sobre, lisible et cohérente en arabe et en latin. */
+.print-settings-modal {
+  font-family: 'Readex Pro', var(--font-sans), sans-serif;
+  color: hsl(var(--foreground));
+}
+.print-settings-modal button,
+.print-settings-modal [role='radio'],
+.print-settings-modal [role='checkbox'] {
+  font-family: inherit;
+}
+.print-settings-modal fieldset {
+  display: grid;
+  gap: 14px;
+}
+.print-settings-modal .rounded-xl.border,
+.print-settings-modal .rounded-2xl.border {
+  border-color: hsl(var(--border) / .62);
+  box-shadow: none;
+}
+.print-settings-modal .print-mode-segments {
+  padding: 3px;
+  border: 1px solid hsl(var(--border) / .68);
+  border-radius: 10px;
+  background: hsl(var(--muted) / .32);
+}
+.print-settings-modal .print-mode-segments [role='radio'] {
+  min-height: 40px;
+  border-radius: 7px;
+  font-size: .78rem;
+  font-weight: 600;
+}
+.print-settings-modal .print-layout-card {
+  gap: 12px;
+  padding: 14px;
+}
+.print-settings-modal .print-layout-card > div {
+  min-height: 38px;
+}
+.print-settings-modal .print-option-row {
+  min-height: 66px;
+}
+.print-settings-modal .print-footer-actions {
+  padding-top: 2px;
+}
+.print-settings-modal .print-cta {
+  min-height: 44px;
+  border-radius: 10px;
+  padding-inline: 18px;
+}
+
+/* Aperçu de préparation discret : il ne doit pas dominer les réglages. */
+.print-settings-modal .receipt-slot-container {
+  padding: 10px;
+  border-color: hsl(var(--border) / .58);
+  background: hsl(var(--muted) / .22);
+  box-shadow: none;
+}
+.print-settings-modal .receipt-paper {
+  box-shadow: 0 5px 14px hsl(var(--foreground) / .08);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 
 /* ── Pied de modale : le CTA d'impression au bord DROIT physique ──
    Avant : `justify-end` logique plaçait le bouton à GAUCHE en interface
