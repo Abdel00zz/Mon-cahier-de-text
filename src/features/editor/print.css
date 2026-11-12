@@ -249,19 +249,23 @@
     print-color-adjust: exact;
 }
 .print-col-date {
-    width: 8.5%;
+    width: 12.5%;
     text-align: center !important;
     vertical-align: top;
     color: #4b5563;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
 }
-.print-col-content { width: 71.9%; }
+.print-col-content { width: 67.9%; }
 .print-col-remark {
     width: 19.6%;
     font-size: calc(var(--print-size-description) * var(--print-fill));
     color: #4b5563;
     overflow-wrap: anywhere;
+}
+.print-table td.print-col-date,
+.print-date-text {
+    font-size: calc(var(--print-size-cell) * 0.9 * var(--print-fill));
 }
 
 /* Style for rows that start a new date (use cell borders with border-collapse) */
