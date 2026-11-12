@@ -8,6 +8,7 @@ import { AppBootSkeleton, PageTransitionLoader } from '../components/ui/PageSkel
 import { AppErrorBoundary } from '../components/ui/AppErrorBoundary';
 import { reportAppError } from '../platform/errorReporting';
 import { SyncStrip } from '../components/ui/SyncStrip';
+import { EditorSyncFab } from '../features/editor/EditorSyncFab';
 import { AppLocale } from '../types';
 import { useConfigManager } from '../hooks/useConfigManager';
 import { useSessionAlerts } from '../hooks/useSessionAlerts';
@@ -321,6 +322,7 @@ const App: React.FC = () => {
       /* Un seul canvas couvre le contenu, la navigation et les gouttières. */
       data-dashboard-surface={backgroundView === 'dashboard' && !isAuthView && !isBooting ? 'true' : undefined}
     >
+      <EditorSyncFab />
       {showNavigation && (
         <TabBar
           activeTab={activeTab}

@@ -188,11 +188,11 @@
     font-weight: 600;
     margin-bottom: 2px;
 }
-.print-    .print-view h1, .print-view h2, .print-view h3 { break-after: avoid; }
-    .print-view section, .print-view article { break-inside: avoid; }
-    thead { display: table-header-group; }
-    tfoot { display: table-footer-group; }
-    table {
+.print-document h1, .print-document h2, .print-document h3 { break-after: avoid; }
+.print-document section, .print-document article { break-inside: avoid; }
+.print-document thead { display: table-header-group; }
+.print-document tfoot { display: table-footer-group; }
+.print-document table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
