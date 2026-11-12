@@ -1228,8 +1228,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     openDocument
   );
 
-  // Garde-fou contre le verrouillage `pointer-events: none` sur `document.body`
-  // laissé par une transition entre deux primitives Radix (DropdownMenu → ConfirmDialog).
+  // Une transition entre le menu et le dialogue Radix peut laisser le corps verrouillé.
   useEffect(() => {
     if (hasBlockingOverlay) return;
     const timer = window.setTimeout(() => {

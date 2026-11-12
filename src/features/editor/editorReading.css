@@ -60,17 +60,10 @@
     color: var(--editor-number-color, var(--reading-teal, #a0ceca)) !important;
   }
   .editor-reading-table [data-row-content] { border-radius: 0; padding: .28rem .75rem; }
-  /* La poignée vit au bord droit : on réserve une gouttière de sécurité de 2.6rem
-     à droite (en LTR comme en RTL), pour que le texte ne touche JAMAIS le bouton. */
+  /* La poignée est physiquement à droite dans les deux sens de lecture. */
   .editor-reading-table [data-row-content].editor-row-content--sortable {
-    padding-inline-start: .75rem;
-    padding-inline-end: 2.6rem;
-    padding-right: 2.6rem !important;
-  }
-  .editor-reading-table [data-row-content].editor-row-content--sortable[data-reorder-direction="rtl"],
-  .editor-reading-table [dir="rtl"] [data-row-content].editor-row-content--sortable {
-    padding-right: 2.6rem !important;
-    padding-left: .75rem !important;
+    padding-left: var(--reading-cell-inset, .75rem);
+    padding-right: var(--reading-handle-inset, 2.6rem);
   }
   .editor-reading-table :is(.editor-type-chapter, .editor-type-top) { padding-block: .18rem; }
   .editor-reading-table .editor-lesson-row { gap: .65rem; }
@@ -124,21 +117,52 @@
   .dark .editor-reading-table [data-editor-drop-side] { --primary: 174 35% 63%; }
   .editor-reading-table [data-editor-dragging='true'] { box-shadow: 0 10px 28px -16px hsl(var(--foreground) / .3); }
   @media (max-width: 639px) {
-    .editor-reading-table[data-editor-table] { padding: 0; }
-    .editor-reading-table .editor-table-grid { grid-template-columns: 52px minmax(0, 1fr) 88px; }
-    .editor-reading-table [data-row-content] { padding: .22rem .5rem; }
-    .editor-reading-table [data-row-content].editor-row-content--sortable {
-      padding-inline-start: .5rem;
-      padding-inline-end: 2.4rem;
-      padding-right: 2.4rem !important;
-    }
-    .editor-reading-table [data-row-content].editor-row-content--sortable[data-reorder-direction="rtl"],
-    .editor-reading-table [dir="rtl"] [data-row-content].editor-row-content--sortable {
-      padding-right: 2.4rem !important;
-      padding-left: .5rem !important;
+    .editor-reading-table .editor-table-grid {
+      grid-template-columns: clamp(46px, 12vw, 52px) minmax(0, 1fr) clamp(66px, 21vw, 88px);
     }
     .editor-reading-table :is([data-session-cell='remark'], [data-editor-cell='remark'], [data-remark-cell]) { padding-inline: .1rem; }
     .editor-reading-table :is(.editor-type-remark, .editor-session-note) { padding-inline: .25rem; }
   }
 }
 
+
+@media screen and (max-width: 767px), screen and (pointer: coarse) and (max-height: 540px) and (orientation: landscape) {
+  .editor-reading-table[data-editor-table] {
+    --reading-cell-inset: clamp(5px, 1.4vw, 8px);
+    --reading-handle-inset: var(--reading-cell-inset);
+    --editor-indent-1: 3px;
+    --editor-indent-2: 6px;
+    --editor-indent-3: 9px;
+    --editor-lesson-indent: 0px;
+    --editor-description-indent: 0px;
+    --editor-description-padding: 2px;
+  }
+  .editor-reading-table [data-row-content] { padding: .28rem var(--reading-cell-inset); }
+  .editor-reading-table :is([data-row-state~="selected"], [data-row-state~="editing"], [data-editor-pressing="true"], [data-editor-dragging="true"]) {
+    --reading-handle-inset: 44px;
+  }
+  .editor-reading-table .editor-lesson-row { gap: .3rem; }
+  .editor-reading-table[data-editor-table] .editor-kind-badge { margin-inline-end: .25rem; }
+  .editor-reading-table [data-editor-table-header] .editor-column-icon {
+    display: block;
+    width: 14px;
+    height: 14px;
+    opacity: .75;
+    color: var(--reading-mute);
+  }
+  .editor-reading-table [data-editor-table-header] .editor-table-grid > div {
+    flex-direction: column;
+    gap: 2px;
+    padding-inline: 2px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .editor-reading-table [data-row-state~="selected"] .editor-reorder-handle > svg,
+    .editor-toolbar__mobile-search {
+      animation: editor-control-appear 180ms cubic-bezier(.2,.8,.2,1);
+    }
+    @keyframes editor-control-appear {
+      from { opacity: 0; transform: translateY(3px) scale(.94); }
+      to { opacity: 1; transform: none; }
+    }
+  }
+}

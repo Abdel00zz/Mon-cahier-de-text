@@ -8,7 +8,7 @@ interface AppIconProps extends React.SVGProps<SVGSVGElement> {
   absoluteStrokeWidth?: boolean;
 }
 type IconNode = readonly [string, Record<string, string | number>];
-const createIcon = (name: string, nodes: readonly IconNode[]) => {
+export const createIcon = (name: string, nodes: readonly IconNode[]) => {
   const Icon = React.forwardRef<SVGSVGElement, AppIconProps>(({
     size = 18, strokeWidth = 1.75, absoluteStrokeWidth = false, className = '', children, ...props
   }, ref) => React.createElement('svg', {

@@ -1,3 +1,4 @@
+import { CalendarDays, Remark } from './editorIcons';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { LessonsData, Indices, ContentDirection, ClassInfo } from '@/types';
 import { withAbsenceRows, groupRowsWithAbsences, absenceRemarkGroups, type AbsenceSession, type AbsenceDisplayRow } from '@/domain/notebook/absenceSessions';
@@ -89,18 +90,17 @@ const NO_ABSENCES: readonly AbsenceSession[] = [];
 const TableHeader: React.FC = React.memo(() => {
   const { t } = useLocale();
   return (
-  /* §G : aucun padding externe, les colonnes de l'en-tête restent alignées
-     avec celles des rangées. Style épuré inspiré de Google Keep. */
   <div data-editor-table-header className="border-b border-border/60 bg-muted/40">
-    {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-11 sm:min-h-12 ${TABLE_GRID_CLASS}`}>
       <div className="flex items-center justify-center border-e border-border/60 px-1 py-1.5 text-center sm:px-2.5 sm:py-2">
+        <CalendarDays className="editor-column-icon" />
         <span dir={textDirectionAttribute(t('editor.date'))} className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">{t('editor.date')}</span>
       </div>
       <div className="flex items-center justify-center border-e border-border px-2 py-1.5 text-center sm:px-3 sm:py-2">
         <span dir={textDirectionAttribute(t('editor.content'))} className="editor-type-table-main font-sans font-bold uppercase tracking-[0.08em] text-foreground">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
+        <Remark className="editor-column-icon" />
         <span dir={textDirectionAttribute(t('editor.remark'))} className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">
           <span className="sr-only sm:not-sr-only">{t('editor.remark')}</span>
           <span className="sm:hidden" aria-hidden="true">{t('editor.remarkShort')}</span>

@@ -10,10 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Undo2, Redo2, Search, X, ChevronUp, MoreVertical,
-  CalendarCheck, Database, ListChecks, PieChart, Printer, CircleHelp,
-} from '@/components/ui/icons';
+import { ChevronUp } from '@/components/ui/icons';
+import { Undo2, Redo2, Search, X, MoreVertical, CalendarCheck, Database, ListChecks, PieChart, Printer, CircleHelp } from './editorIcons';
 import { EditorSaveControl } from './EditorSaveControl';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -23,6 +21,7 @@ interface ToolbarProps {
   canUndo: boolean;
   canRedo: boolean;
   saveStatus: 'saved' | 'saving' | 'unsaved';
+  onSync?: () => void;
   onOpenDataTransfer: () => void;
   onOpenManageLessons: () => void;
   onOpenGuide: () => void;
@@ -36,7 +35,7 @@ interface ToolbarProps {
 }
 
 export const Toolbar: React.FC<ToolbarProps> = React.memo(({
-  onUndo, onRedo, canUndo, canRedo, saveStatus,
+  onUndo, onRedo, canUndo, canRedo, saveStatus, onSync,
   onOpenDataTransfer, onOpenManageLessons, onOpenGuide, onOpenAnalyse, onOpenEvaluations,
   onPrint,
   searchQuery, setSearchQuery,
@@ -53,7 +52,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   return (
     <div data-editor-toolbar dir={isRtl ? 'rtl' : 'ltr'} role="toolbar" aria-label={t('toolbar.actions')} className="editor-toolbar rtl-flow rtl-toolbar print:hidden">
       <div className="editor-toolbar__status">
-        <EditorSaveControl status={saveStatus} />
+        <EditorSaveControl status={saveStatus} onSync={onSync} />
       </div>
 
       <div className="editor-toolbar__history" role="group" aria-label={t('toolbar.undo') + ' / ' + t('toolbar.redo')}>

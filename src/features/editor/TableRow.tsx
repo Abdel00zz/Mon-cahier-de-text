@@ -9,7 +9,7 @@ import { DateCell, RemarkCell } from './tableRowCells';
 import type { TableRowProps } from './tableRowTypes';
 export { DateCard, MultiDateCard } from './tableRowCells';
 import './editorRowStates.css';
-import { GripVertical } from 'lucide-react';
+import { GripVertical } from './editorIcons';
 import { TABLE_GRID_CLASS } from './editorConstants';
 
 const TableRowComponent: FC<TableRowProps> = ({

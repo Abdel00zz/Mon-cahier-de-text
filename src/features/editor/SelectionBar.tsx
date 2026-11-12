@@ -1,9 +1,6 @@
 import React, { FC, memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
-import {
-  Plus, CalendarDays, CalendarCheck, CalendarX,
-  Pencil, Trash2, MoreVertical,
-} from '@/components/ui/icons';
+import { Plus, CalendarX, Pencil, Trash2, CalendarDays, CalendarCheck, MoreVertical } from './editorIcons';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuSeparator,
