@@ -4,19 +4,23 @@
   .editor-reading-table[data-editor-table] {
     --reading-mute: hsl(var(--muted-foreground));
     --reading-teal: #326c70;
-    --reading-date: #805d29;
+    --reading-date: #8d503b;
     --reading-note: #326c70;
     border-radius: 1.15rem;
+    border-width: .5px !important;
     padding: 0;
-    background: hsl(var(--card));
-    box-shadow: inset 0 0 0 1px hsl(var(--border) / .65), 0 4px 20px -10px hsl(var(--foreground) / .12);
+    --border: 19 23% 79%;
+    background: #fffcf8;
+    box-shadow: 0 2px 8px -7px rgb(79 41 28 / .16);
     overflow: hidden;
   }
   .dark .editor-reading-table[data-editor-table] {
     --reading-teal: #a0ceca;
-    --reading-date: #dcc394;
+    --reading-date: #e5b89e;
     --reading-note: #a0ceca;
-    box-shadow: inset 0 1px 0 hsl(40 20% 96% / .05), inset 0 0 0 1px hsl(var(--border) / .45), 0 12px 32px -16px rgb(0 0 0 / .6);
+    --border: 19 14% 32%;
+    background: hsl(var(--card));
+    box-shadow: inset 0 1px 0 rgb(255 216 196 / .04);
   }
   .editor-reading-table, .editor-reading-table :is([dir], [data-row-content]) {
     --font-latin-reading: 'Lexend', system-ui;
@@ -45,7 +49,7 @@
   }
   .editor-reading-table [data-editor-table-header] {
     display: block;
-    background: hsl(var(--muted) / .28);
+    background: color-mix(in srgb, var(--reading-date) 7%, hsl(var(--card)));
     border-bottom: 1px solid hsl(var(--border) / .55);
   }
   .editor-reading-table [data-editor-table-header] .editor-type-table-side,
