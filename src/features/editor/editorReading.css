@@ -4,9 +4,9 @@
   .editor-reading-table[data-editor-table] {
     --reading-mute: hsl(var(--muted-foreground));
     --reading-teal: #326c70;
-    --reading-date: #8d503b;
+    --reading-date: var(--editor-copper, #89452f);
     --reading-note: #326c70;
-    border-radius: 1.15rem;
+    border-radius: .5rem .5rem 1.125rem 1.125rem;
     border-width: .5px !important;
     padding: 0;
     --border: 19 23% 79%;
@@ -16,7 +16,7 @@
   }
   .dark .editor-reading-table[data-editor-table] {
     --reading-teal: #a0ceca;
-    --reading-date: #e5b89e;
+    --reading-date: var(--editor-copper, #e5b89e);
     --reading-note: #a0ceca;
     --border: 19 14% 32%;
     background: hsl(var(--card));
@@ -49,7 +49,7 @@
   }
   .editor-reading-table [data-editor-table-header] {
     display: block;
-    background: color-mix(in srgb, var(--reading-date) 7%, hsl(var(--card)));
+    background: color-mix(in srgb, var(--reading-date) 9%, hsl(var(--card)));
     border-bottom: 1px solid hsl(var(--border) / .55);
   }
   .editor-reading-table [data-editor-table-header] .editor-type-table-side,

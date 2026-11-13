@@ -73,15 +73,15 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             aria-label={t('toolbar.search')}
             aria-expanded={isSearchVisible}
             aria-controls="toolbar-search-panel toolbar-search-panel-mobile"
-            className={`editor-toolbar__action relative ${searchQuery || isSearchVisible ? 'bg-muted/70 text-foreground' : ''}`}
+            className="editor-toolbar__action relative"
           >
             <Search className="h-5 w-5" />
-            {searchQuery && <span aria-hidden className="toolbar-search-indicator absolute end-1 top-1 h-1.5 w-1.5 rounded-full bg-foreground" />}
+            {searchQuery && <span aria-hidden className="toolbar-search-indicator absolute end-2 top-2 h-1.5 w-1.5 rounded-full bg-current" />}
           </Button>
           {/* Desktop popover */}
           <div
             id="toolbar-search-panel"
-            className={`rtl-search-popover absolute hidden sm:block transition-all duration-200 ease-in-out top-1/2 -translate-y-1/2 w-56 ${isRtl ? 'left-[calc(100%+0.5rem)] origin-left' : 'right-[calc(100%+0.5rem)] origin-right'} ${isSearchVisible ? 'scale-x-100 opacity-100' : 'pointer-events-none scale-x-0 opacity-0'}`}
+            className={`editor-toolbar__desktop-search hidden ${isSearchVisible ? 'sm:block' : ''}`}
           >
             <div className="relative w-full">
               <Input
