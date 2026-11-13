@@ -1,5 +1,7 @@
 // Traductions fr — toolbar.
 export const messages: Record<string, string> = {
+  'toolbar.syncChanges': 'Synchroniser',
+  'toolbar.retrySync': 'Réessayer',
   'toolbar.undoShortcut': 'Annuler (Ctrl+Z)',
   'toolbar.undoAria': 'Annuler la dernière modification',
   'toolbar.redoShortcut': 'Rétablir (Ctrl+Y)',

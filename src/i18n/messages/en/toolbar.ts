@@ -1,5 +1,7 @@
 // Traductions en — toolbar.
 export const messages: Record<string, string> = {
+  'toolbar.syncChanges': 'Sync changes',
+  'toolbar.retrySync': 'Retry sync',
   'toolbar.undoShortcut': 'Undo (Ctrl+Z)',
   'toolbar.undoAria': 'Undo the last change',
   'toolbar.redoShortcut': 'Redo (Ctrl+Y)',

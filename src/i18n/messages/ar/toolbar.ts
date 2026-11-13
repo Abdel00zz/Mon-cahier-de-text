@@ -1,5 +1,7 @@
 // Traductions ar — toolbar.
 export const messages: Record<string, string> = {
+  'toolbar.syncChanges': 'مزامنة التغييرات',
+  'toolbar.retrySync': 'إعادة المزامنة',
   'toolbar.undoShortcut': 'تراجع (Ctrl+Z)',
   'toolbar.undoAria': 'التراجع عن آخر تعديل',
   'toolbar.redoShortcut': 'إعادة (Ctrl+Y)',

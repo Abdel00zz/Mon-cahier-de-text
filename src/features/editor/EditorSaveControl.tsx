@@ -14,8 +14,9 @@ export const EditorSaveControl: React.FC<{
     const local = t(status === 'unsaved' ? 'toolbar.localChanges' : `toolbar.${status}`);
     const cloud = syncStatus === 'idle' ? t('toolbar.localOnly') : t(`sync.${syncStatus}`);
     const actionable = !!onSync && status !== 'saving' && (syncStatus === 'pending' || syncStatus === 'error' || (status === 'unsaved' && syncStatus !== 'offline' && syncStatus !== 'syncing'));
-    const caption = actionable ? t('sync.clickToSync') : cloud;
-    const description = [local, cloud, ...(actionable ? [caption] : [])].join('. ');
+    const action = syncStatus === 'error' ? 'toolbar.retrySync' : 'toolbar.syncChanges';
+    const caption = actionable ? t(action) : status === 'saving' ? local : cloud;
+    const description = [...new Set([caption, local, cloud])].join('. ');
     return (
         <button type="button" disabled={!actionable} onClick={onSync} className="editor-sync-status" data-save-state={status} data-cloud-state={syncStatus}
             data-sync-tone={tone} aria-live="polite" aria-atomic="true"
