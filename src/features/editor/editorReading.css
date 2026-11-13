@@ -6,12 +6,12 @@
     --reading-teal: #326c70;
     --reading-date: var(--editor-copper, #89452f);
     --reading-note: #326c70;
-    border-radius: .5rem .5rem 1.125rem 1.125rem;
+    border-radius: 0;
     border-width: .5px !important;
     padding: 0;
     --border: 19 23% 79%;
     background: #fffcf8;
-    box-shadow: 0 2px 8px -7px rgb(79 41 28 / .16);
+    box-shadow: none;
     overflow: hidden;
   }
   .dark .editor-reading-table[data-editor-table] {
@@ -20,7 +20,6 @@
     --reading-note: #a0ceca;
     --border: 19 14% 32%;
     background: hsl(var(--card));
-    box-shadow: inset 0 1px 0 rgb(255 216 196 / .04);
   }
   .editor-reading-table, .editor-reading-table :is([dir], [data-row-content]) {
     --font-latin-reading: 'Lexend', system-ui;
@@ -49,7 +48,7 @@
   }
   .editor-reading-table [data-editor-table-header] {
     display: block;
-    background: color-mix(in srgb, var(--reading-date) 9%, hsl(var(--card)));
+    background: color-mix(in srgb, var(--reading-date) 4%, hsl(var(--card)));
     border-bottom: 1px solid hsl(var(--border) / .55);
   }
   .editor-reading-table [data-editor-table-header] .editor-type-table-side,
@@ -73,7 +72,7 @@
   .editor-reading-table .editor-section-letter {
     display: inline-flex; align-items: center; justify-content: center; align-self: center;
     min-width: 1.38rem; height: 1.38rem; padding-inline: .3rem;
-    border-radius: 5px !important;
+    border-radius: 0 !important;
     border: 1.25px solid color-mix(in srgb, var(--editor-number-color, var(--reading-teal, #326c70)) 55%, hsl(var(--border))) !important;
     background: transparent !important;
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
@@ -96,7 +95,8 @@
   .editor-reading-table :is(.editor-type-chapter, .editor-type-top) { padding-block: .18rem; }
   .editor-reading-table .editor-lesson-row { gap: .65rem; }
   .editor-reading-table .editor-type-item-title { font-size: max(.875rem, var(--editor-fs-item-title)); }
-  .editor-reading-table .editor-item-description { border-radius: .8rem; font-style: normal; box-shadow: none; }
+  .editor-reading-table .editor-item-description { font-style: normal; box-shadow: none; }
+  .editor-reading-table :is(.editor-item-description, .editor-assessment-pill) { border-radius: 0 !important; }
   /* Pastilles de type : AÉRÉES et nettes. Avant : 5px/1px de rembourrage et un
      coli au titre (me-1.5) — le jeton paraissait comprimé, surtout en arabe.
      Les paddings passent par VARIABLES : la règle !important qui les consomme
@@ -109,7 +109,7 @@
   }
   .editor-reading-table[data-editor-table] .editor-kind-badge {
     margin-inline-end: .5rem;
-    border-radius: 99px !important;
+    border-radius: 0 !important;
     font-family: var(--font-content);
     font-weight: 600 !important;
     font-size: var(--editor-fs-badge, 10.5px);
@@ -140,7 +140,7 @@
     min-width: 0;
     max-width: 100%;
     padding: .24rem .14rem;
-    border-radius: .55rem;
+    border-radius: 0;
     border: 1px solid color-mix(in srgb, var(--reading-date) 22%, hsl(var(--border) / .7));
     background: color-mix(in srgb, var(--reading-date) 7%, hsl(var(--card)));
     box-shadow: 0 1px 2px rgb(0 0 0 / .03);
@@ -165,10 +165,10 @@
   }
   .editor-reading-table .editor-date-value:not(.text-alert-strong) { color: var(--reading-date) !important; }
   .editor-reading-table :is([data-session-cell='remark'], [data-editor-cell='remark']) { min-width: 0; padding: .25rem; background: transparent; }
-  .editor-reading-table [data-remark-cell] { min-height: 44px; padding: .25rem; border-radius: .75rem; }
+  .editor-reading-table [data-remark-cell] { min-height: 44px; padding: .25rem; border-radius: 0; }
   .editor-reading-table :is(.editor-type-remark, .editor-session-note) {
     font-size: .8125rem; line-height: 1.4; color: var(--reading-note); padding: .32rem .5rem;
-    border-radius: .625rem; background: color-mix(in srgb, var(--reading-note) 8%, hsl(var(--card)));
+    border-radius: 0; background: color-mix(in srgb, var(--reading-note) 8%, hsl(var(--card)));
     border: 1px solid color-mix(in srgb, var(--reading-note) 14%, transparent);
     transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
   }

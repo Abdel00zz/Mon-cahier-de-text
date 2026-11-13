@@ -1,24 +1,18 @@
 :is([data-editor-root], [data-editor-actions]) {
   --editor-copper: #89452f;
-  --editor-tab: #8b4935;
-  --editor-tab-ink: #fff3e9;
   --editor-paper: #fffaf5;
-  --editor-bar-fill: #ecd9cc;
+  --editor-bar-fill: #f5efe9;
   --editor-bar-ink: #703f31;
   --editor-bar-muted: #665b55;
   --editor-bar-line: rgb(133 75 53 / .24);
-  --editor-bar-highlight: rgb(255 252 246 / .7);
 }
 .dark :is([data-editor-root], [data-editor-actions]) {
   --editor-copper: #e5b89e;
-  --editor-tab: #774737;
-  --editor-tab-ink: #ffeadd;
   --editor-paper: #322824;
-  --editor-bar-fill: #3e2d28;
+  --editor-bar-fill: #302b28;
   --editor-bar-ink: #edc9b9;
   --editor-bar-muted: #c1ada3;
   --editor-bar-line: rgb(233 174 147 / .22);
-  --editor-bar-highlight: rgb(255 216 196 / .06);
 }
 .editor-sync-status {
   display: inline-flex;
@@ -31,7 +25,7 @@
   padding-inline: 8px 10px;
   background: transparent;
   border: 0;
-  border-radius: 9999px;
+  border-radius: 0;
   box-shadow: none;
   color: var(--editor-bar-muted);
   touch-action: manipulation;
@@ -49,7 +43,6 @@
 .editor-sync-status:focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: -2px;
-  border-radius: 9999px;
 }
 .editor-sync-label {
   font-size: .6875rem;
@@ -93,11 +86,10 @@
   position: sticky;
   top: env(safe-area-inset-top, 0px);
   z-index: 45;
-  margin-bottom: 4px;
-  border-radius: 1.125rem 1.125rem .5rem .5rem;
+  border: 1px solid var(--editor-bar-line);
+  border-block-end: 0;
   background: var(--editor-bar-fill);
-  box-shadow: inset 0 0 0 .5px var(--editor-bar-line),
-    inset 0 1px 0 var(--editor-bar-highlight), 0 3px 8px -7px rgb(79 41 28 / .22);
+  box-shadow: inset 0 -1px var(--editor-bar-line);
 }
 .editor-toolbar {
   display: grid;
@@ -105,7 +97,7 @@
   align-items: center;
   gap: 4px;
   min-height: 48px;
-  padding: 2px;
+  padding: 4px clamp(4px, 1vw, 16px);
   border: 0;
   border-radius: inherit;
   background: transparent;
@@ -121,7 +113,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: clamp(2px, .6vw, 10px);
   margin-inline: auto;
   padding: 0;
 }
@@ -130,12 +122,7 @@
   align-items: center;
   justify-content: flex-end;
   justify-self: end;
-  padding-inline: 2px;
-  background: var(--editor-tab);
-  color: var(--editor-tab-ink);
-  border-radius: .5rem;
-  border-start-end-radius: 1rem;
-  box-shadow: inset 0 1px 0 var(--editor-bar-highlight);
+  color: var(--editor-copper);
   min-width: 0;
 }
 .editor-toolbar__action {
@@ -149,7 +136,7 @@
   min-height: 44px;
   padding: 0;
   border: 0;
-  border-radius: .625rem;
+  border-radius: 0;
   color: var(--editor-bar-ink);
   background: transparent;
   cursor: pointer;
@@ -170,9 +157,6 @@
   background: transparent;
   box-shadow: none;
 }
-.editor-toolbar__history .app-icon {
-  filter: drop-shadow(0 1px 0 var(--editor-bar-highlight));
-}
 .editor-toolbar__action:disabled {
   opacity: .32;
   cursor: default;
@@ -186,13 +170,14 @@
   color: inherit;
   outline-color: currentColor;
 }
-.editor-toolbar__tools .editor-toolbar__action:is(:hover, :active, [aria-expanded='true']) {
-  background: color-mix(in srgb, var(--editor-tab-ink) 13%, transparent);
+.editor-toolbar__tools .editor-toolbar__action[aria-expanded='true'] {
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  box-shadow: inset 0 -2px currentColor;
 }
 .editor-toolbar__desktop-search,
 [data-editor-actions].paper-menu {
   border: 1px solid var(--editor-bar-line);
-  border-radius: .875rem;
+  border-radius: 0;
   background: var(--editor-paper);
   box-shadow: 0 6px 18px -8px rgb(51 30 22 / .3);
   backdrop-filter: none;
@@ -203,6 +188,9 @@
   inset-inline-end: 0;
   width: 15rem;
   padding: 4px;
+}
+[data-editor-actions] [role='menuitem'] {
+  border-radius: 0;
 }
 [data-editor-actions] [role='menuitem'] svg {
   color: var(--editor-copper);
@@ -217,6 +205,7 @@
   padding: 2px 4px 4px;
 }
 .editor-toolbar__search-input {
+  border-radius: 0;
   border: 1px solid var(--editor-bar-line);
   background: var(--editor-paper);
   color: hsl(var(--foreground));
