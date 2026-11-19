@@ -18,7 +18,7 @@ interface EditorOverlaysProps {
   timetableNudge: ComponentProps<typeof TimetableNudgeModal>;
   documentPreview: ComponentProps<typeof DocumentPreview>;
   printConfirmation: { open: boolean; onOpenChange: (open: boolean) => void; onConfirm: () => void };
-  bulkDelete: { open: boolean; count: number; onOpenChange: (open: boolean) => void; onConfirm: () => void };
+  bulkDelete: { open: boolean; count: number; warning?: string; onOpenChange: (open: boolean) => void; onConfirm: () => void };
   mathPreparing: boolean;
 }
 
@@ -60,7 +60,7 @@ export const EditorOverlays: React.FC<EditorOverlaysProps> = ({
         open={bulkDelete.open}
         onOpenChange={bulkDelete.onOpenChange}
         title={t(bulkDelete.count === 1 ? 'bulkDelete.titleOne' : 'bulkDelete.titleMany', { count: bulkDelete.count })}
-        description={t('bulkDelete.description')}
+        description={bulkDelete.warning ? `${t('bulkDelete.description')}\n${bulkDelete.warning}` : t('bulkDelete.description')}
         confirmLabel={t('selection.delete')}
         onConfirm={bulkDelete.onConfirm}
       />

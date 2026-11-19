@@ -2,6 +2,7 @@ import type { AppConfig, ClassInfo, ContentDirection, ElementType, Indices, Less
 import type { AbsenceSession } from '@/domain/notebook/absenceSessions';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
+import { normalizeActivityText } from '@/domain/evaluations/pedagogicalActivities';
 import type { PrintHeaderMode } from './modals/PrintModal';
 
 export interface PrintViewProps {
@@ -83,4 +84,19 @@ export type PrintRow =
 export const splitPrintDates = (formatted: string): string[] => {
     const parts = formatted.split(/\s*(?:,|\bet\b|\band\b|\s\u0648\s)\s*/u).map(part => part.trim()).filter(Boolean);
     return parts.length > 1 ? parts : [formatted];
+};
+
+/** Ajoute les lignes d'annotations d'activités sans répéter celles déjà présentes dans les remarques. */
+export const appendUniqueActivityAnnotations = (remarks: string[], activityRemark?: string): void => {
+    if (!activityRemark) return;
+    const existing = new Set(remarks.flatMap(r => r.split('\n')).map(normalizeActivityText).filter(Boolean));
+    for (const raw of activityRemark.split('\n')) {
+        const trimmed = raw.trim();
+        if (!trimmed) continue;
+        const norm = normalizeActivityText(trimmed);
+        if (!existing.has(norm) && !remarks.some(r => r.includes(trimmed))) {
+            existing.add(norm);
+            remarks.push(trimmed);
+        }
+    }
 };

@@ -19,7 +19,7 @@ import { getAcademyById } from '@/domain/classes/moroccoEducation';
 import { isArabicText, renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { formatLocalizedClassDisplayName } from '@/constants';
-import { formatPrintDate, splitPrintDates, getSchoolYearLabel, type FlatDataItem, type PrintRow, type PrintViewProps } from './printViewModel';
+import { appendUniqueActivityAnnotations, formatPrintDate, splitPrintDates, getSchoolYearLabel, type FlatDataItem, type PrintRow, type PrintViewProps } from './printViewModel';
 
 // Props interfaces
 
@@ -161,10 +161,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
 
         // Les activités partagent la remarque de leur séance, sans toucher
         // au contenu du cours ni répéter une note déjà saisie par l'enseignant.
-        const activityRemark = remarksForSessionDates(sessionActivities, sessionDate);
-        for (const annotation of activityRemark?.split('\n') ?? []) {
-            if (!remarks.some(remark => remark.includes(annotation))) remarks.push(annotation);
-        }
+        appendUniqueActivityAnnotations(remarks, remarksForSessionDates(sessionActivities, sessionDate));
 
         return remarks;
     };

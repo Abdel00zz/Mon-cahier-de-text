@@ -228,7 +228,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     [initialMathTypesetComplete, lessonsData],
   );
 
-  const sessionRemarkEntries = useMemo(() => buildSessionRemarkEntries(config, classInfo.id, t, locale === 'ar' ? '، ' : ', ', lessonsData), [config, classInfo.id, t, locale, lessonsData]);
+  const sessionRemarkEntries = useMemo(
+    () => buildSessionRemarkEntries(config, classInfo.id, t, locale === 'ar' ? '، ' : ', ', lessonsData),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [config.pedagogicalEvents?.[classInfo.id], config.manualAssessments?.[classInfo.id], config.assessmentDates?.[classInfo.id], config.removedAssessments?.[classInfo.id], config.sessionRemarkOverrides?.[classInfo.id], classInfo.id, t, locale, lessonsData],
+  );
   const sessionAnnotationTexts = useMemo(() => sessionRemarkTextMap(sessionRemarkEntries), [sessionRemarkEntries]);
   const sessionAnnotationTextsRef = useRef(sessionAnnotationTexts);
   sessionAnnotationTextsRef.current = sessionAnnotationTexts;
@@ -376,14 +380,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     setEditorState
   });
 
-  const { handleBulkDelete, executeBulkDelete } = useBulkOperations({
-    selectedIndices,
-    setState,
-    setEditorState,
-    setSelectionState,
-    setConfirmBulkDelete
-  });
-
   const getStorageKey = useCallback(() => `classData_v1_${classInfo.id}`, [classInfo.id]);
 
   const showNotification = useCallback((message: string, type: NotificationType) => {
@@ -413,6 +409,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     return { undo: () => restore(patch, before), redo: () => restore(before, patch) };
   }, [config, classInfo.id, updateConfig, workspaceIsActive]);
 
+  const handleBulkDeleteEffects = useCallback((targets: readonly Indices[]) => recordSessionSettings(
+    sessionRemarkSettingsPatch(evaluationContext.current.config, classInfo.id, lessonsDataRef.current, targets, { date: '' }, sessionRemarkEntriesRef.current),
+  ), [classInfo.id, recordSessionSettings]);
+  const { handleBulkDelete, executeBulkDelete, bulkDeleteWarning } = useBulkOperations({
+    lessonsData, locale, confirmBulkDelete, selectedIndices, setState, setEditorState, setSelectionState, setConfirmBulkDelete, onDeleteEffects: handleBulkDeleteEffects,
+  });
+
   const sessionAssignment = useSessionAssignment({
     lessonsData, locale, setState, getDateWarnings, revision: config, isActive: workspaceIsActive,
     getSelectionWarnings: (source, targets, patch) => {
@@ -432,19 +435,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       return recordSessionSettings(result);
     },
     onAbsenceRemark: (date: string, remark: string) => {
-      const classId = classInfo.id;
-      const currentClassRemarks = { ...(config.absenceRemarks?.[classId] ?? {}) };
-      if (remark.trim()) {
-        currentClassRemarks[date] = remark.trim();
-      } else {
-        delete currentClassRemarks[date];
-      }
-      updateConfig({
-        absenceRemarks: {
-          ...(config.absenceRemarks ?? {}),
-          [classId]: currentClassRemarks,
-        },
-      });
+      const nextRemarks = { ...(config.absenceRemarks?.[classInfo.id] ?? {}) };
+      if (remark.trim()) nextRemarks[date] = remark.trim();
+      else delete nextRemarks[date];
+      updateConfig({ absenceRemarks: { ...(config.absenceRemarks ?? {}), [classInfo.id]: nextRemarks } });
       showNotification(t('remark.savedNotification') || 'Remarque enregistrée', 'success');
     },
   });
@@ -1445,6 +1439,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         bulkDelete={{
           open: confirmBulkDelete,
           count: selectedIndices.length,
+          warning: bulkDeleteWarning,
           onOpenChange: setConfirmBulkDelete,
           onConfirm: executeBulkDelete,
         }}

@@ -6,6 +6,7 @@ import { dateTimeFormat } from '@/lib/formatters';
 import { parseDateInput } from '@/domain/notebook/dataUtils';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
+import { normalizeActivityText } from '@/domain/evaluations/pedagogicalActivities';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { SessionDocuments } from './SessionDocuments';
@@ -151,12 +152,27 @@ export const RemarkCell: FC<{
       data-remark-cell="true"
       className={`flex min-h-[44px] h-full flex-1 w-full flex-col justify-center items-start text-start ${editable ? 'cursor-pointer touch-manipulation rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
     >
-      {(!isMergedCell || merge!.indexInGroup === Math.floor(merge!.count / 2)) && (() => {
+      {(() => {
+        const showMainRemark = !isMergedCell || merge!.indexInGroup === Math.floor(merge!.count / 2);
         const fullRemark = merge?.sharedRemark ?? value;
         const { homeworkLine, otherRemark } = splitRemarkContent(fullRemark);
+        const existingNormalized = new Set(
+          (fullRemark ?? '').split('\n').map(normalizeActivityText).filter(Boolean),
+        );
+        const visibleAnnotation = sessionAnnotation
+          ? sessionAnnotation
+              .split('\n')
+              .map(line => line.trim())
+              .filter(line => {
+                if (!line) return false;
+                if (homeworkLine && hasHomeworkMention(line)) return false;
+                return !existingNormalized.has(normalizeActivityText(line));
+              })
+              .join('\n')
+          : '';
         return (
           <>
-            {homeworkLine && (
+            {showMainRemark && homeworkLine && (
               <span
                 data-session-homework="true"
                 dir={textDirectionAttribute(homeworkLine)}
@@ -165,24 +181,23 @@ export const RemarkCell: FC<{
                 {homeworkLine}
               </span>
             )}
-            {otherRemark && (
+            {showMainRemark && otherRemark && (
               <div dir={textDirectionAttribute(otherRemark)} className="editor-type-remark min-h-[22px] w-full whitespace-pre-wrap break-words p-0.5 text-start font-semibold leading-snug text-foreground/80 text-xs sm:text-sm">
                 {renderDescriptionWithBold(otherRemark)}
               </div>
             )}
+            {visibleAnnotation && (
+              <span
+                data-session-annotation="true"
+                dir={textDirectionAttribute(visibleAnnotation)}
+                className="editor-session-note mt-0.5 w-full whitespace-pre-line break-words text-start text-[11px] font-semibold leading-snug text-muted-foreground"
+              >
+                {visibleAnnotation}
+              </span>
+            )}
           </>
         );
       })()}
-      {sessionAnnotation && !(merge?.sharedRemark ?? value ?? '').includes(sessionAnnotation)
-        && !(splitRemarkContent(merge?.sharedRemark ?? value ?? '').homeworkLine && hasHomeworkMention(sessionAnnotation)) && (
-        <span
-          data-session-annotation="true"
-          dir={textDirectionAttribute(sessionAnnotation)}
-          className="editor-session-note mt-0.5 w-full whitespace-pre-line break-words text-start text-[11px] font-semibold leading-snug text-muted-foreground"
-        >
-          {sessionAnnotation}
-        </span>
-      )}
     </button>
     <SessionDocuments documents={sessionDocuments} onOpen={onOpenDocumentPreview}/>
     </div>

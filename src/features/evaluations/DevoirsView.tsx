@@ -67,11 +67,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const selectedClassDisplayName = selectedClass ? formatLocalizedClassDisplayName(selectedClass.name, locale) : '';
   const effectiveConfig = useMemo(() => {
     if (!selectedClass || activeLessons.length === 0) return config;
-    const { patch, updated } = syncNotebookToEvaluations(selectedClass.id, config, activeLessons, {
-      policy: config.evaluationPolicy,
-    });
+    const { patch, updated } = syncNotebookToEvaluations(selectedClass.id, config, activeLessons, { policy: config.evaluationPolicy });
     return updated ? { ...config, ...patch } : config;
-  }, [selectedClass, config, activeLessons]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClass, config.manualAssessments?.[classInfo.id], config.assessmentDates?.[classInfo.id], config.removedAssessments?.[classInfo.id], config.pedagogicalEvents?.[classInfo.id], config.evaluationPolicy, activeLessons]);
   const { assessments } = useClassAssessments(selectedClass, effectiveConfig);
   const evaluationModals = useEvaluationModals();
   const {
@@ -155,12 +154,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     const id = typeof eventOrId === 'string' ? eventOrId : eventOrId.id;
     const title = typeof eventOrId === 'string' ? undefined : eventOrId.title;
     const target = pedagogicalEvents.find(e => e.id === id);
-    const { lessons: nextLessons } = removeEventFromNotebook(
-      activeLessons,
-      id,
-      target?.type,
-      target?.title || title
-    );
+    const { lessons: nextLessons } = removeEventFromNotebook(activeLessons, id, target?.type, target?.title || title, target?.date);
     commitNotebookChange(nextLessons, () => actions.deleteEvent(id));
   };
 
@@ -168,18 +162,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     localizedActivityTitle(event.title, event.type, locale);
 
   const deleteAssessment = (id: string) => {
-    const target = assessments.find(item => item.id === id);
-    let nextLessons = target ? removeAssessmentFromNotebook(
-        activeLessons,
-        target.id,
-        target.type,
-        target.num,
-        links.find(link => link.planned.id === id)?.entry?.key
-      ).lessons : activeLessons;
+    const link = links.find(item => item.planned.id === id);
+    const target = assessments.find(item => item.id === id) ?? link?.planned;
+    const ownerDate = target?.dateISO || link?.entry?.date;
+    let nextLessons = target ? removeAssessmentFromNotebook(activeLessons, target.id, target.type, target.num, link?.entry?.key, ownerDate).lessons : activeLessons;
     if (target?.type === 'maison') {
-      const owner = config.manualAssessments?.[classInfo.id]?.find(item => item.id === id || item.id === target.legacyId);
-      nextLessons = removeHomeworkCorrectionFromNotebook(nextLessons, target.num,
-        { id, legacyId: target.legacyId, date: owner?.correctionDateISO }).lessons;
+      const owner = effectiveConfig.manualAssessments?.[classInfo.id]?.find(item => item.id === id || item.id === target.legacyId);
+      nextLessons = removeHomeworkCorrectionFromNotebook(nextLessons, target.num, { id, legacyId: target.legacyId, date: owner?.correctionDateISO }).lessons;
     }
     if (!commitNotebookChange(nextLessons, () => actions.deleteAssessment(id, target?.legacyId))) return;
     toast.success(t('evaluations.manualDeleted'));
@@ -187,7 +176,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   /** Corbeille de la correction : date et corrigé — et le bloc du cahier, pour qu'elle ne revienne pas. */
   const deleteHomeworkCorrection = (link: AssessmentLink) => {
-    const owner = config.manualAssessments?.[classInfo.id]?.find(item => item.id === link.planned.id || item.id === link.planned.legacyId);
+    const owner = effectiveConfig.manualAssessments?.[classInfo.id]?.find(item => item.id === link.planned.id || item.id === link.planned.legacyId);
     const { lessons: nextLessons } = removeHomeworkCorrectionFromNotebook(activeLessons, link.planned.num,
       { id: link.planned.id, legacyId: link.planned.legacyId, date: owner?.correctionDateISO });
     if (!commitNotebookChange(nextLessons, () => actions.clearHomeworkCorrection(link.planned.id, link.planned.legacyId))) return;
@@ -197,19 +186,19 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const renderAssessmentRows = (group: AssessmentLink[]) => group.map((link) => {
     const a = link.planned;
     const custom = !!(
-      config.assessmentDates?.[selectedClass!.id]?.[a.id]
-      ?? (a.legacyId ? config.assessmentDates?.[selectedClass!.id]?.[a.legacyId] : undefined)
+      effectiveConfig.assessmentDates?.[selectedClass!.id]?.[a.id]
+      ?? (a.legacyId ? effectiveConfig.assessmentDates?.[selectedClass!.id]?.[a.legacyId] : undefined)
     );
     const absenceRecord = (
-      config.assessmentAbsences?.[selectedClass!.id]?.[a.id]
-      ?? (a.legacyId ? config.assessmentAbsences?.[selectedClass!.id]?.[a.legacyId] : undefined)
+      effectiveConfig.assessmentAbsences?.[selectedClass!.id]?.[a.id]
+      ?? (a.legacyId ? effectiveConfig.assessmentAbsences?.[selectedClass!.id]?.[a.legacyId] : undefined)
     );
     const absents = absenceRecord?.names ?? [];
     const hasVerifiedZeroAbsences = Boolean(absenceRecord) && absents.length === 0;
     // Remise du devoir maison : ce que l'enseignant a constaté, élève par élève.
     const submissions = a.type === 'maison'
-      ? config.assessmentParticipants?.[selectedClass!.id]?.[a.id]
-        ?? (a.legacyId ? config.assessmentParticipants?.[selectedClass!.id]?.[a.legacyId] : undefined)
+      ? effectiveConfig.assessmentParticipants?.[selectedClass!.id]?.[a.id]
+        ?? (a.legacyId ? effectiveConfig.assessmentParticipants?.[selectedClass!.id]?.[a.legacyId] : undefined)
       : undefined;
     const submissionSummary = submissions
       ? countHomeworkOutcomes(submissions.names ?? [], submissions.homeworkOutcomes)
@@ -219,7 +208,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     // Second temps du devoir maison : la séance de correction, distincte de la
     // séance d'attribution — elle date le devoir sans changer sa date de remise.
     const correctionDateISO = a.type === 'maison'
-      ? (config.manualAssessments?.[selectedClass!.id]?.find(item => item.id === a.id || item.id === a.legacyId)?.correctionDateISO ?? '')
+      ? (effectiveConfig.manualAssessments?.[selectedClass!.id]?.find(item => item.id === a.id || item.id === a.legacyId)?.correctionDateISO ?? '')
       : '';
     const rawDate = link.entry ? (link.entry.date ?? '') : a.dateISO;
     const formatSingleDate = (iso: string) => {
@@ -229,8 +218,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       return iso;
     };
     const assessmentDocument = (
-      config.assessmentDocuments?.[selectedClass!.id]?.[a.id]
-      ?? (a.legacyId ? config.assessmentDocuments?.[selectedClass!.id]?.[a.legacyId] : undefined)
+      effectiveConfig.assessmentDocuments?.[selectedClass!.id]?.[a.id]
+      ?? (a.legacyId ? effectiveConfig.assessmentDocuments?.[selectedClass!.id]?.[a.legacyId] : undefined)
     );
     const kindPolicy = resolveKindPolicy(policy, a.type);
     const kindStyle = DEVOIR_KIND_CONFIG[a.type] ?? DEVOIR_KIND_CONFIG.controle;
@@ -250,11 +239,11 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
      * « correction » (contenu de la correction · corbeille). Même identité, même enregistrement.
      */
     const dueDateISO = a.type === 'maison'
-      ? (config.manualAssessments?.[selectedClass!.id]?.find(item => item.id === a.id || item.id === a.legacyId)?.dueDateISO ?? '')
+      ? (effectiveConfig.manualAssessments?.[selectedClass!.id]?.find(item => item.id === a.id || item.id === a.legacyId)?.dueDateISO ?? '')
       : '';
     const correctionDocument = a.type === 'maison'
-      ? config.assessmentDocuments?.[selectedClass!.id]?.[homeworkCorrectionDocumentId(a.id)]
-        ?? (a.legacyId ? config.assessmentDocuments?.[selectedClass!.id]?.[homeworkCorrectionDocumentId(a.legacyId)] : undefined)
+      ? effectiveConfig.assessmentDocuments?.[selectedClass!.id]?.[homeworkCorrectionDocumentId(a.id)]
+        ?? (a.legacyId ? effectiveConfig.assessmentDocuments?.[selectedClass!.id]?.[homeworkCorrectionDocumentId(a.legacyId)] : undefined)
       : undefined;
     const correctionIndicator = documentIndicator(documentRequirementForHomeworkCorrection(policy), correctionDocument);
     const correctionName = `${t('manageLessons.type.correction_devoir_maison')} ${number.format(a.num)}`;

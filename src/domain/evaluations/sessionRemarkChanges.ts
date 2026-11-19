@@ -20,6 +20,58 @@ export function withoutActivityCopies(text: string, entries: readonly SessionRem
   return text.split('\n').filter(line => !automatic.has(line.trim())).join('\n').trim();
 }
 
+/** Intègre dans la zone d'édition de remarque les seules lignes d'annotation absentes de `rawRemark`. */
+export function mergeAnnotationIntoRemark(rawRemark: string, activeAnnotation: string): string {
+  if (!activeAnnotation) return rawRemark;
+  const existingNorm = new Set(rawRemark.split('\n').map(normalizeActivityText).filter(Boolean));
+  const missing = activeAnnotation
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line && !existingNorm.has(normalizeActivityText(line)));
+  if (!missing.length) return rawRemark;
+  const prefix = missing.join('\n');
+  return rawRemark ? `${prefix}\n${rawRemark}` : prefix;
+}
+
+/** Détecte les annotations supprimées du champ remarque pour les marquer masquées (`null`). */
+export function syncRemovedActivityRemarks(
+  remark: string,
+  entries: readonly SessionRemarkEntry[] | undefined,
+  current: Record<string, string | null>,
+): Record<string, string | null> {
+  const next = { ...current };
+  for (const entry of entries ?? []) {
+    const primaryLine = entry.text.split('\n')[0]?.trim() ?? '';
+    const originalPrimaryLine = entry.originalText.split('\n')[0]?.trim() ?? '';
+    const hasText = remark.includes(entry.text)
+      || remark.includes(entry.originalText)
+      || (Boolean(primaryLine) && remark.includes(primaryLine))
+      || (Boolean(originalPrimaryLine) && remark.includes(originalPrimaryLine));
+    if (!hasText && (remark.trim() === '' || !Object.hasOwn(current, entry.id))) {
+      next[entry.id] = null;
+    }
+  }
+  return next;
+}
+
+/**
+ * Retire les copies virtuelles issues d'AppConfig (devoir maison, oral, compteurs d'états des cahiers)
+ * pour ne jamais les figer en dur dans `lessonsData`, tout en conservant les lignes déclencheurs `event:remark-`.
+ */
+export function stripVirtualRemarkCopies(remark: string, entries: readonly SessionRemarkEntry[] | undefined): string {
+  const virtualOnly: SessionRemarkEntry[] = [];
+  for (const entry of entries ?? []) {
+    if (!entry.id.startsWith('event:remark-')) {
+      virtualOnly.push(entry);
+    } else {
+      for (const line of entry.text.split('\n').slice(1).map(l => l.trim()).filter(Boolean)) {
+        virtualOnly.push({ ...entry, text: line, originalText: line });
+      }
+    }
+  }
+  return virtualOnly.length ? withoutActivityCopies(remark, virtualOnly) : remark;
+}
+
 /**
  * ATTRIBUER UN DEVOIR MAISON — une seule écriture, quelle que soit la porte :
  * la pastille « Devoir maison N donné » de la remarque, ou la carte « Devoir

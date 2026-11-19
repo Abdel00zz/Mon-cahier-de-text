@@ -59,6 +59,10 @@ export const useNotebookDocumentPreviews = (
     const { t } = useLocale();
     const documents = config.assessmentDocuments?.[classInfo.id];
     const events = config.pedagogicalEvents?.[classInfo.id];
+    const classManual = config.manualAssessments?.[classInfo.id];
+    const classDates = config.assessmentDates?.[classInfo.id];
+    const classRemoved = config.removedAssessments?.[classInfo.id];
+    const classOverrides = config.sessionRemarkOverrides?.[classInfo.id];
     const { assessments } = useClassAssessments(classInfo, config);
     const today = useMoroccoToday();
     // Le parcours des lignes ne dépend que du cahier : le refaire à chaque
@@ -95,5 +99,6 @@ export const useNotebookDocumentPreviews = (
         }
 
         return previews;
-    }, [hasDocuments, documents, assessments, lessonsData, today, config, classInfo.id, t]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasDocuments, documents, events, classManual, classDates, classRemoved, classOverrides, assessments, lessonsData, today, classInfo.id, t]);
 };

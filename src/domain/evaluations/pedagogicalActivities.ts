@@ -35,7 +35,7 @@ export const PEDAGOGICAL_ACTIVITIES: readonly PedagogicalActivity[] = [
     type: 'controle_cahiers',
     labelKey: 'evaluations.event.controle_cahiers',
     short: { fr: 'Contrôle des cahiers', en: 'Notebook check', ar: 'مراقبة الدفاتر' },
-    synonyms: ['مراقبة دفاتر التلاميذ', 'مراقبة الدفاتر', 'Contrôle des cahiers des élèves', 'Contrôle des cahiers', 'Cahiers vérifiés'],
+    synonyms: ['مراقبة دفاتر التلاميذ', 'مراقبة الدفاتر', 'Contrôle des cahiers des élèves', 'Contrôle des cahiers', 'Contrôle cahiers', 'Cahiers vérifiés'],
   },
   {
     type: 'remediation',
@@ -79,10 +79,27 @@ export const normalizeActivityText = (text: string): string =>
 export const activityShortLabel = (activity: PedagogicalActivity, locale: AppLocale): string =>
   activity.short[locale] ?? activity.short.fr;
 
-const candidateLabels = (activity: PedagogicalActivity): string[] =>
-  [activity.short.fr, activity.short.en, activity.short.ar, ...activity.synonyms]
-    .filter(Boolean)
-    .map(normalizeActivityText);
+const NORMALIZED_LABELS = new Map<SessionActivityType, readonly string[]>(
+  PEDAGOGICAL_ACTIVITIES.map(activity => [
+    activity.type,
+    [...new Set([activity.short.fr, activity.short.en, activity.short.ar, ...activity.synonyms].filter(Boolean).map(normalizeActivityText))],
+  ]),
+);
+
+const candidateLabels = (activity: PedagogicalActivity): readonly string[] =>
+  NORMALIZED_LABELS.get(activity.type)
+  ?? [activity.short.fr, activity.short.en, activity.short.ar, ...activity.synonyms].filter(Boolean).map(normalizeActivityText);
+
+const FRENCH_SUPPORT_MATERIAL_RE = /^support\s+(?:de|du|d['’]|des|pedagogique|numerique|papier|ecrit|visuel|imprime)\b/;
+
+const lineStartsWithActivityLabel = (line: string, label: string): boolean => {
+  if (label.length < 3) return false;
+  if (label === 'support' && FRENCH_SUPPORT_MATERIAL_RE.test(line)) return false;
+  if (line === label) return true;
+  if (!line.startsWith(label)) return false;
+  const nextChar = line.charAt(label.length);
+  return /[\s:;,.\-–—/(]/.test(nextChar);
+};
 
 /**
  * Détection STRICTE : une activité est reconnue quand une LIGNE de la remarque
@@ -96,7 +113,7 @@ export function detectRemarkActivities(remark: string | undefined): PedagogicalA
   if (lines.length === 0) return [];
   return PEDAGOGICAL_ACTIVITIES.filter(activity => {
     const labels = candidateLabels(activity);
-    return lines.some(line => labels.some(label => label.length >= 3 && line.startsWith(label)));
+    return lines.some(line => labels.some(label => lineStartsWithActivityLabel(line, label)));
   });
 }
 
@@ -125,7 +142,7 @@ export function removeActivityLines(remark: string, activity: PedagogicalActivit
     .filter(line => {
       const normalized = normalizeActivityText(line);
       if (!normalized) return false;
-      return !labels.some(label => normalized.startsWith(label));
+      return !labels.some(label => lineStartsWithActivityLabel(normalized, label));
     })
     .join('\n')
     .replace(/\n{3,}/g, '\n\n')

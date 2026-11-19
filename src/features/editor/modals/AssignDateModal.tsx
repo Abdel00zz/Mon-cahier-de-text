@@ -30,9 +30,15 @@ import { Input } from '@/components/ui/input';
 import { Segmented } from '@/components/ui/segmented';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
 import type { SessionEditorState } from '../hooks/useSessionAssignment';
-import type { TimetableEntry, TimetableClockPolicy, LessonsData, AppLocale } from '@/types';
+import type { TimetableEntry, TimetableClockPolicy, LessonsData, AppLocale, Cycle } from '@/types';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import type { SessionRemarkEntry } from '@/domain/evaluations/sessionActivityRemarks';
+import {
+  mergeAnnotationIntoRemark,
+  stripVirtualRemarkCopies,
+  syncRemovedActivityRemarks,
+} from '@/domain/evaluations/sessionRemarkChanges';
+import { isKindOffered } from '@/domain/evaluations/kindAvailability';
 import {
   PEDAGOGICAL_ACTIVITIES,
   activityShortLabel,
@@ -61,6 +67,8 @@ interface AssignDateModalProps {
   /** validation intelligente : alertes live pour la date choisie (emploi du temps, fériés, vacances, absences) */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
   classId?: string;
+  cycle?: Cycle;
+  classLevel?: string;
   timetable?: TimetableEntry[];
   timetableClock?: TimetableClockPolicy;
   lessonsData?: LessonsData | unknown;
@@ -110,6 +118,8 @@ interface RemarqueSimplifieeProps {
   onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
   locale: string;
   isRtl: boolean;
+  cycle?: Cycle;
+  classLevel?: string;
   t: (key: string, values?: Record<string, string | number>) => string;
 }
 
@@ -125,6 +135,8 @@ const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
   onOpenDocumentPreview,
   locale,
   isRtl,
+  cycle,
+  classLevel,
   t,
 }) => {
   const charCount = remark.length;
@@ -205,8 +217,8 @@ const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
             <span>{t('remark.devoirMaisonGivenSimple')}</span>
           </motion.button>
 
-          {/* Les activités pédagogiques : Contrôle des cahiers, Remédiation, Soutien, Rattrapage */}
-          {PEDAGOGICAL_ACTIVITIES.map(act => {
+          {/* Les activités pédagogiques filtrées selon le cycle (isKindOffered) : une activité déjà présente reste visible */}
+          {PEDAGOGICAL_ACTIVITIES.filter(act => isKindOffered(act.type, { cycle, level: classLevel }) || remarkHasActivity(remark, act)).map(act => {
             const fullText = t(act.labelKey);
             const chipLabel = activityShortLabel(act, locale as AppLocale);
             const active = remarkHasActivity(remark, act);
@@ -281,6 +293,8 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   session,
   getDateWarnings,
   classId,
+  cycle,
+  classLevel,
   timetable,
   timetableClock,
   lessonsData,
@@ -343,28 +357,21 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
     setEndDate(extractedEnd || '');
     setIsRangeOpen(Boolean(extractedEnd));
 
-    // Initialisation intelligente : intégrer directement le devoir maison et les annotations
-    // de la séance dans la zone remarque pour une édition unifiée, sans blocs redondants en bas.
     const rawRemark = (patch?.remark ?? selection.remark ?? '').trim();
-    const activeAnnotation = ((initialStart ? getSessionAnnotation?.(initialStart) : undefined)
-      ?? sessionAnnotation
-      ?? activityEntries.filter(entry => !entry.hidden).map(entry => entry.text).join('\n')
-    ).trim();
-
     let computedRemark = rawRemark;
-    if (activeAnnotation) {
-      if (!rawRemark) {
-        computedRemark = activeAnnotation;
-      } else if (!rawRemark.includes(activeAnnotation)) {
-        computedRemark = `${activeAnnotation}\n${rawRemark}`;
-      }
+    if (intent === 'remark' && startDate) {
+      const activeAnnotation = ((getSessionAnnotation?.(startDate))
+        ?? sessionAnnotation
+        ?? activityEntries.filter(entry => !entry.hidden).map(entry => entry.text).join('\n')
+      ).trim();
+      computedRemark = mergeAnnotationIntoRemark(rawRemark, activeAnnotation);
     }
 
     setRemark(computedRemark);
     setActivityRemarks(patch?.activityRemarks ?? {});
     setDateChanged(patch?.date !== undefined);
-    setRemarkChanged(patch?.remark !== undefined || computedRemark !== rawRemark);
-  }, [selection, patch, isOpen, sessionAnnotation, getSessionAnnotation, activityEntries]);
+    setRemarkChanged(patch?.remark !== undefined);
+  }, [selection, intent, patch, isOpen, sessionAnnotation, getSessionAnnotation, activityEntries]);
 
   const activeDate = selectedDate || (selection.date ? extractDateRange(selection.date).startDate : '');
   const resolvedDocs = sessionDocuments ?? (activeDate ? getSessionDocuments?.(activeDate) : undefined);
@@ -406,7 +413,9 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
     setSelectedDate(newDate);
     setDateChanged(true);
 
-    // Adaptation contextuelle ultra avancée : réactualiser l'annotation de séance dans la remarque
+    if (intent !== 'remark') return;
+
+    // En édition de remarque : réactualiser l'annotation de séance affichée dans le champ
     const prevAnnotation = ((prevDate ? getSessionAnnotation?.(prevDate) : undefined) ?? sessionAnnotation ?? '').trim();
     const nextAnnotation = ((newDate ? getSessionAnnotation?.(newDate) : undefined) ?? '').trim();
 
@@ -446,29 +455,16 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       finalDate = formatPedagogicalDateCell(selectedDate, endDate, effectiveLocale, intersecting);
     }
 
-    // Synchronisation intelligente : si l'annotation d'activité a été effacée ou modifiée,
-    // refléter fidèlement le choix de l'enseignant pour éviter toute réapparition fantôme.
     const targetDate = actionType === 'associate' ? selectedDate : '';
     const relevantEntries = (targetDate ? getSessionRemarkEntries?.(targetDate) : undefined) ?? activityEntries;
-    const syncedActivityRemarks = { ...activityRemarks };
-
-    if (relevantEntries && relevantEntries.length > 0) {
-      for (const entry of relevantEntries) {
-        const hasText = remark.includes(entry.text) || remark.includes(entry.originalText);
-        if (!hasText && (remark.trim() === '' || !Object.hasOwn(activityRemarks, entry.id))) {
-          syncedActivityRemarks[entry.id] = null;
-        }
-      }
-    }
+    const syncedActivityRemarks = intent === 'remark' ? syncRemovedActivityRemarks(remark, relevantEntries, activityRemarks) : { ...activityRemarks };
+    const cleanRemark = intent === 'remark' ? stripVirtualRemarkCopies(remark, relevantEntries) : remark;
 
     onApply({
       ...(appliesDate ? { date: actionType === 'associate' ? finalDate : '' } : {}),
-      ...(intent === 'remark' || remarkChanged || remark !== (selection.remark ?? '') ? { remark } : {}),
+      ...(intent === 'remark' || remarkChanged ? { remark: cleanRemark } : {}),
       ...(Object.keys(syncedActivityRemarks).length ? { activityRemarks: syncedActivityRemarks } : {}),
-      // La pastille « Devoir maison N donné » crée le devoir dans la feuille
-      // d'évaluations (contrôle continu) : un texte ne suffit pas.
-      ...(hasHomework && actionType === 'associate' && selectedDate ? { homeworkGiven: activeHomeworkNum } : {}),
-
+      ...(intent === 'remark' && hasHomework && actionType === 'associate' && selectedDate ? { homeworkGiven: activeHomeworkNum } : {}),
     });
   };
 
@@ -499,6 +495,8 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       onOpenDocumentPreview={onOpenDocumentPreview}
       locale={locale}
       isRtl={isRtl}
+      cycle={cycle}
+      classLevel={classLevel}
       t={t}
     />
   );
