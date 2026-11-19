@@ -49,19 +49,31 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.85rem;
-    height: 1.85rem;
+    width: 1.5rem;
+    height: 1.5rem;
     border-radius: 9999px;
+    border: 1px solid color-mix(in srgb, hsl(var(--border)) 74%, transparent);
     color: hsl(var(--muted-foreground));
-    background: color-mix(in srgb, hsl(var(--muted)) 65%, transparent);
-    transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), background-color 150ms ease, color 150ms ease;
+    background: color-mix(in srgb, hsl(var(--muted)) 56%, transparent);
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+.ev-accordion__toggle-icon svg {
+    width: 0.82rem;
+    height: 0.82rem;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .ev-accordion__toggle:hover .ev-accordion__toggle-icon {
-    background: color-mix(in srgb, hsl(var(--muted)) 90%, transparent);
+    background: color-mix(in srgb, hsl(var(--muted)) 86%, transparent);
+    border-color: color-mix(in srgb, hsl(var(--foreground)) 18%, transparent);
     color: hsl(var(--foreground));
+    transform: scale(1.05);
+}
+.ev-accordion__toggle:active .ev-accordion__toggle-icon {
+    transform: scale(0.92);
 }
 .ev-accordion[data-open='true'] .ev-accordion__toggle-icon {
     background: color-mix(in srgb, hsl(var(--primary)) 12%, transparent);
+    border-color: color-mix(in srgb, hsl(var(--primary)) 28%, transparent);
     color: hsl(var(--primary));
 }
 /* Corps du tiroir : les occurrences, dans la grille du tableau. Le liseré de
@@ -84,7 +96,7 @@
 
 .ev-accordion__body { animation: evaluation-reveal 180ms ease-out; }
 @keyframes evaluation-reveal { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
-@media (prefers-reduced-motion: reduce) { .ev-accordion__body { animation: none; } .ev-action, .ev-icon-btn, .ev-accordion__toggle { transition: none; transform: none !important; } }
+@media (prefers-reduced-motion: reduce) { .ev-accordion__body { animation: none; } .ev-action, .ev-icon-btn, .ev-accordion__toggle, .ev-accordion__toggle-icon, .ev-accordion__toggle-icon svg { transition: none; transform: none !important; } }
 
 /* Compte porté par une commande écrite (« Absents 2 », « Remises 18/28 ») :
    une pastille qui prend la teinte de la commande, chiffres alignés. */

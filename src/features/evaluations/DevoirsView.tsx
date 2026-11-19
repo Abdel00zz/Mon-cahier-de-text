@@ -65,12 +65,16 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const number = useMemo(() => numberFormat(locale), [locale]);
   const selectedClass = classInfo;
   const selectedClassDisplayName = selectedClass ? formatLocalizedClassDisplayName(selectedClass.name, locale) : '';
-  const effectiveConfig = useMemo(() => {
-    if (!selectedClass || activeLessons.length === 0) return config;
+  const reconciledPatch = useMemo(() => {
+    if (!selectedClass || activeLessons.length === 0) return null;
     const { patch, updated } = syncNotebookToEvaluations(selectedClass.id, config, activeLessons, { policy: config.evaluationPolicy });
-    return updated ? { ...config, ...patch } : config;
+    return updated ? patch : null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedClass, config.manualAssessments?.[classInfo.id], config.assessmentDates?.[classInfo.id], config.removedAssessments?.[classInfo.id], config.pedagogicalEvents?.[classInfo.id], config.evaluationPolicy, activeLessons]);
+  const effectiveConfig = useMemo(
+    () => (reconciledPatch ? { ...config, ...reconciledPatch } : config),
+    [config, reconciledPatch],
+  );
   const { assessments } = useClassAssessments(selectedClass, effectiveConfig);
   const evaluationModals = useEvaluationModals();
   const {
@@ -451,8 +455,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                             <span className="ev-accordion__count" aria-hidden="true">
                               {number.format(count)}
                             </span>
-                            <span className="ev-accordion__toggle-icon inline-flex h-7 w-7 items-center justify-center rounded-full transition-all duration-200" aria-hidden="true">
-                              <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
+                            <span className="ev-accordion__toggle-icon inline-flex h-6 w-6 items-center justify-center rounded-full" aria-hidden="true">
+                              <ChevronDown strokeWidth={2.25} className={cn("h-3.5 w-3.5 transition-transform duration-200", isOpen && "rotate-180")} />
                             </span>
                             <span className="sr-only">{isOpen ? t('evaluations.collapse') : t('evaluations.expand')}</span>
                           </AccordionPrimitive.Trigger>

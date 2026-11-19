@@ -179,7 +179,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .evaluation-reference :is(.ev-action, .ev-icon-btn, .ev-accordion__toggle-icon, .ev-action__icon, .ev-accordion) {
+  .evaluation-reference :is(.ev-action, .ev-icon-btn, .ev-accordion__toggle-icon, .ev-accordion__toggle-icon svg, .ev-action__icon, .ev-accordion) {
     transition: none;
     animation: none;
     transform: none !important;
