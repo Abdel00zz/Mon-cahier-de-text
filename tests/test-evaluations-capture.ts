@@ -3,9 +3,17 @@ import test from 'node:test';
 import { existsSync, readFileSync } from 'node:fs';
 import {
   removeAssessmentFromNotebook,
+  removeEventFromNotebook,
   syncAssessmentDateToNotebook,
   syncEventToNotebook,
 } from '../src/domain/evaluations/notebookSyncBridge';
+import {
+  EVENT_BLOCK_TYPES,
+  LINKABLE_DEVOIR_TYPES,
+  REMOVABLE_ASSESSMENT_BLOCK,
+} from '../src/domain/evaluations/evaluationIdentity';
+import { findNotebookAssessments, linkAssessments } from '../src/domain/evaluations/assessmentSync';
+import { PEDAGOGICAL_ACTIVITIES } from '../src/domain/evaluations/pedagogicalActivities';
 import { nextAssessmentNumber } from '../src/domain/evaluations/assessments';
 import { syncNotebookToEvaluations } from '../src/domain/evaluations/notebookReconciliation';
 import type { AppConfig, LessonsData } from '../src/types';
@@ -201,6 +209,56 @@ test('une évaluation posée au cahier rejoint la feuille avant même d’être 
     ['notebook-diag-1', 'evaluation_diagnostic', ''],
     ['notebook-blanc-1', 'examen_blanc', ''],
   ], 'les évaluations du cahier sont transmises, « + Définir une date »');
+});
+
+test('chaque nature proposée au tableau est liable et supprimable depuis la feuille', () => {
+  // 1. Tous les devoirs du catalogue (y compris colle et oral) sont liables et supprimables du cahier.
+  for (const type of LINKABLE_DEVOIR_TYPES) {
+    if (type === 'maison') continue;
+    const blockType = REMOVABLE_ASSESSMENT_BLOCK[type];
+    assert.ok(blockType, `${type} doit être dans REMOVABLE_ASSESSMENT_BLOCK`);
+    const lessons: LessonsData = [{ type: blockType, title: `${type} 1`, date: '2026-10-15', _tempId: `u-${type}` }];
+    const entries = findNotebookAssessments(lessons);
+    assert.equal(entries.length, 1, `${type} détecté par findNotebookAssessments`);
+    const synced = syncNotebookToEvaluations('c1', {} as AppConfig, lessons);
+    const manual = synced.patch.manualAssessments?.c1?.[0];
+    assert.ok(manual, `${type} transmis à manualAssessments`);
+    const links = linkAssessments([{
+      id: manual.id, schoolYear: manual.schoolYear ?? '2026-2027', semestre: manual.semestre ?? 1,
+      type, num: manual.num, label: `${type} 1`, dateISO: manual.dateISO,
+      semaine: 1, predictionStatus: 'manual', confidence: 'high', predictionReason: 'teacher',
+    }], entries, '2026-10-15');
+    assert.ok(links[0].entry, `${type} relié sans doublon synthétique`);
+    const removed = removeAssessmentFromNotebook(lessons, manual.id, type, manual.num, links[0].entry.key);
+    assert.equal(removed.updated, true, `${type} supprimable depuis la feuille`);
+    assert.equal(removed.lessons.length, 0);
+  }
+
+  // 2. Tous les blocs événements sont transmis et supprimables par identité exacte notebook-<_tempId>.
+  for (const type of EVENT_BLOCK_TYPES) {
+    const lessons: LessonsData = [{ type, title: type, date: '2026-11-10', _tempId: `u-${type}` }];
+    const synced = syncNotebookToEvaluations('c1', {} as AppConfig, lessons);
+    const ev = synced.patch.pedagogicalEvents?.c1?.[0];
+    assert.ok(ev, `${type} transmis à pedagogicalEvents`);
+    const removed = removeEventFromNotebook(lessons, ev.id, ev.type, ev.title, ev.date);
+    assert.equal(removed.updated, true, `${type} supprimable depuis la feuille`);
+    assert.equal(removed.lessons.length, 0);
+  }
+
+  // 3. Toutes les activités de remarque sont détectées et supprimables sans effacer la note libre.
+  for (const activity of PEDAGOGICAL_ACTIVITIES) {
+    const lessons: LessonsData = [{
+      type: 'chapter',
+      title: 'Ch 1',
+      items: [{ type: 'cours', title: 'S1', date: '2026-10-15', remark: `${activity.short.fr}\nNote libre`, _tempId: `r-${activity.type}` }],
+    }];
+    const synced = syncNotebookToEvaluations('c1', {} as AppConfig, lessons);
+    const ev = synced.patch.pedagogicalEvents?.c1?.[0];
+    assert.ok(ev, `${activity.type} détecté dans la remarque`);
+    const removed = removeEventFromNotebook(lessons, ev.id, ev.type, ev.title, ev.date);
+    assert.equal(removed.updated, true, `${activity.type} retiré de la remarque`);
+    assert.equal(removed.lessons[0].items?.[0].remark, 'Note libre');
+  }
 });
 
 test('le contrat de workflow est documenté et référencé — document vivant', () => {
