@@ -1,6 +1,7 @@
 import { ContentDocument, Indices, LessonsData, Section, SubSection, SubSubSection, LessonItem, EmbeddableTopLevelItem, DevoirType } from '../../types.js';
 import { PlannedAssessment } from './assessments.js';
 import { indicesKey } from '../notebook/lessonRows.js';
+import { isLinkableDevoirType, LINKABLE_DEVOIR_TYPES } from './evaluationIdentity.js';
 
 /**
  * Moteur de CORRESPONDANCE devoirs ↔ cahier de textes.
@@ -89,7 +90,7 @@ export const findNotebookAssessments = (lessons: LessonsData): NotebookAssessmen
     /* numérotation finale PAR TYPE : le numéro déclaré dans le titre prime,
        les titres sans numéro prennent le premier ordinal libre (ordre du doc) */
     const result: NotebookAssessmentEntry[] = [];
-    for (const type of ['controle', 'controle_court', 'controle_global', 'oral', 'maison', 'colle'] as const) {
+    for (const type of LINKABLE_DEVOIR_TYPES) {
         const ofType = raw.filter(e => e.type === type);
         const taken = new Set(ofType.map(e => e.declaredNum).filter((n): n is number => n !== null));
         let cursor = 1;
@@ -183,11 +184,7 @@ export const linkAssessments = (
     };
 
     return planned.map(assessment => {
-        const isLinkable = assessment.type === 'controle'
-            || assessment.type === 'maison'
-            || assessment.type === 'controle_court'
-            || assessment.type === 'controle_global'
-            || assessment.type === 'oral';
+        const isLinkable = isLinkableDevoirType(assessment.type);
         // Le numéro recommence au semestre 2. On garde donc toutes les entrées
         // homonymes et on choisit d'abord la date la plus proche, sans réutiliser
         // un même bloc pour deux devoirs.

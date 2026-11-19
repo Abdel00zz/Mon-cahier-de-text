@@ -3,6 +3,7 @@ import type { PlannedAssessment } from './assessments';
 import { findNotebookAssessments, linkAssessments } from './assessmentSync';
 import { buildLessonRows, type LessonRow } from '../notebook/lessonRows';
 import { extractDateRange } from './notebookSyncBridge';
+import { eventIdForRow, isEventBlockRow, rowMatchesEventId } from './evaluationIdentity';
 import { schoolYearLabelFromDate } from '../calendar/calendar';
 import { translateLocaleMessage } from '../../i18n/messages';
 import type { DateWarning } from '../calendar/dateValidation';
@@ -66,10 +67,10 @@ export function evaluationSlots(lessons: LessonsData, assessments: PlannedAssess
       label: entry.title, number: entry.num, year: dates.start ? schoolYearLabelFromDate(dates.start) : undefined,
       semester: dates.start ? (Number(dates.start.slice(5, 7)) >= 2 && Number(dates.start.slice(5, 7)) <= 7 ? 2 : 1) : undefined, ...dates });
   }
-  const rows = buildLessonRows(lessons).filter(row => row.elementType === 'evaluation_diagnostic' || row.elementType === 'correction_controle_continu' || row.data._tempId?.startsWith('event-'));
+  const rows = buildLessonRows(lessons).filter(isEventBlockRow);
   const matched = new Set<string>();
   for (const event of events) {
-    const exact = rows.filter(row => row.data._tempId === `event-${event.id}`);
+    const exact = rows.filter(row => rowMatchesEventId(row, event.id));
     const legacy = rows.filter(row => !matched.has(row.key) && !row.data._tempId?.startsWith('event-') && row.elementType === event.type && normalize(rowTitle(row)) === normalize(event.title));
     const row = exact[0] ?? (legacy.length === 1 ? legacy[0] : undefined);
     if (row) matched.add(row.key);
@@ -77,7 +78,7 @@ export function evaluationSlots(lessons: LessonsData, assessments: PlannedAssess
   }
   for (const row of rows) {
     if (matched.has(row.key)) continue;
-    slots.push({ key: `row:${row.key}`, id: row.data._tempId?.replace(/^event-/, '') || `row:${row.key}`, family: 'event', kind: row.elementType,
+    slots.push({ key: `row:${row.key}`, id: row.data._tempId ? eventIdForRow(row) : `row:${row.key}`, family: 'event', kind: row.elementType,
       label: rowTitle(row), ...range(row.data.date) });
   }
   return slots;

@@ -1,11 +1,12 @@
 import { localizedActivityTitle } from './activityTitle';
 import type { AppConfig, LessonsData } from '../../types';
-import { buildLessonRows } from '../notebook/lessonRows';
+import { buildLessonRows, type LessonRow } from '../notebook/lessonRows';
 import { coveredDates } from './notebookCheckRemarks';
 import { parseTrailingNumber, type AssessmentLink, type NotebookDocumentPreview } from './assessmentSync';
 import { homeworkSessionResolver, sessionDateKeys } from './homeworkPlacement';
 import { homeworkCorrectionDocumentId } from './homeworkIds';
 import { correctionBlockId, correctionOwner } from './homeworkCorrectionContent';
+import { rowMatchesEventId } from './evaluationIdentity';
 
 export const documentsForSessionDates = (documents: ReadonlyMap<string, readonly NotebookDocumentPreview[]>, raw: string) =>
     [...new Map(sessionDateKeys(raw).flatMap(date => documents.get(date) ?? []).map(document => [document.assessmentId, document])).values()];
@@ -20,15 +21,37 @@ export function activityDocumentPreviews(config: AppConfig, classId: string, les
         if (date) sessions.set(date, [...(sessions.get(date) ?? []), preview]);
     };
     const notebook = buildLessonRows(lessons);
+    const byTempId = new Map<string, LessonRow>();
+    const byKey = new Map<string, LessonRow>();
+    const byType = new Map<string, LessonRow[]>();
+    for (const row of notebook) {
+        if (row.data._tempId && !byTempId.has(row.data._tempId)) byTempId.set(row.data._tempId, row);
+        byKey.set(row.key, row);
+        const list = byType.get(row.elementType);
+        if (list) list.push(row);
+        else byType.set(row.elementType, [row]);
+    }
+    const findExactEventRow = (eventId: string): LessonRow | undefined => {
+        const prefixed = byTempId.get(`event-${eventId}`);
+        if (prefixed) return prefixed;
+        if (eventId.startsWith('notebook-')) {
+            const token = eventId.slice(9);
+            const fromTemp = byTempId.get(token);
+            if (fromTemp) return fromTemp;
+            const fromKey = byKey.get(token);
+            if (fromKey && !fromKey.data._tempId) return fromKey;
+        }
+        return notebook.find(row => rowMatchesEventId(row, eventId));
+    };
     for (const event of config.pedagogicalEvents?.[classId] ?? []) {
         if (config.sessionRemarkOverrides?.[classId]?.[`event:${event.id}`]?.hidden) continue;
         if (!event.document?.source.trim()) continue;
         const preview = { document: event.document, title: localizedActivityTitle(event.title, event.type, translate), assessmentId: `event:${event.id}` };
-        const exactId = notebook.find(row => row.data._tempId === 'event-' + event.id);
-        const candidates = notebook.filter(row => row.elementType === event.type && !row.data._tempId?.startsWith('event-')
-            && !!event.date && (row.data.date === event.date || row.data.date?.includes(event.date)));
-        const typeCandidates = notebook.filter(row => row.elementType === event.type && !row.data._tempId?.startsWith('event-'));
-        const eventNum = parseTrailingNumber(event.title);
+        const exactId = findExactEventRow(event.id);
+        const typeCandidates = (byType.get(event.type) ?? []).filter(row => !row.data._tempId?.startsWith('event-'));
+        const candidates = exactId ? [] : typeCandidates.filter(row =>
+            !!event.date && (row.data.date === event.date || row.data.date?.includes(event.date)));
+        const eventNum = exactId ? null : parseTrailingNumber(event.title);
         const numCandidates = eventNum !== null
             ? typeCandidates.filter(row => parseTrailingNumber('title' in row.data ? row.data.title : undefined) === eventNum)
             : [];
@@ -43,6 +66,7 @@ export function activityDocumentPreviews(config: AppConfig, classId: string, les
     const removed = new Set(config.removedAssessments?.[classId] ?? []);
     const documents = config.assessmentDocuments?.[classId];
     const homeworkSession = homeworkSessionResolver(lessons);
+    const correctionRows = byType.get('correction_devoir_maison') ?? [];
     for (const { planned, entry } of links) {
         if ((entry && planned.type !== 'maison') || removed.has(planned.id) || (planned.legacyId && removed.has(planned.legacyId))) continue;
         // Le corrigé d'un devoir maison s'ouvre depuis SA séance : celle où le devoir est corrigé.
@@ -50,10 +74,11 @@ export function activityDocumentPreviews(config: AppConfig, classId: string, les
             const correction = documents?.[homeworkCorrectionDocumentId(planned.id)]
                 ?? (planned.legacyId ? documents?.[homeworkCorrectionDocumentId(planned.legacyId)] : undefined);
             const owner = manual.get(planned.id) ?? (planned.legacyId ? manual.get(planned.legacyId) : undefined);
-            const exactTarget = notebook.find(row => row.data._tempId === correctionBlockId(planned.id) || (planned.legacyId && row.data._tempId === correctionBlockId(planned.legacyId)));
-            const ownerTarget = owner ? notebook.find(row => correctionOwner(row, [owner])) : undefined;
-            const candidates = notebook.filter(row => row.elementType === 'correction_devoir_maison'
-                && parseTrailingNumber('title' in row.data ? row.data.title : undefined) === planned.num);
+            const exactTarget = byTempId.get(correctionBlockId(planned.id))
+                ?? (planned.legacyId ? byTempId.get(correctionBlockId(planned.legacyId)) : undefined);
+            const ownerTarget = owner ? correctionRows.find(row => correctionOwner(row, [owner])) : undefined;
+            const candidates = correctionRows.filter(row =>
+                parseTrailingNumber('title' in row.data ? row.data.title : undefined) === planned.num);
             const fallbackTarget = candidates.length === 1 ? candidates[0] : undefined;
             const target = exactTarget ?? ownerTarget ?? fallbackTarget;
             if (correction?.source.trim() && target) {

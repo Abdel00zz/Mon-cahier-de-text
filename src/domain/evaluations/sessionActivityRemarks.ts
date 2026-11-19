@@ -3,6 +3,7 @@ import { localizedActivityTitle } from './activityTitle';
 import type { AppConfig, LessonsData } from '../../types';
 import { homeworkSessionResolver, sessionDateKeys } from './homeworkPlacement';
 import { findNotebookAssessments } from './assessmentSync';
+import { extractDateRange } from './dateRange';
 import { addDaysIso, parseDateInput } from '../notebook/dataUtils';
 import { buildNotebookCheckRemarks, coveredDates, notebookCheckRemarkText } from './notebookCheckRemarks';
 
@@ -41,6 +42,21 @@ export function buildSessionRemarkEntries(config: ActivitySettings, classId: str
       coveredDates(event).forEach(date => add(date, title, `event:${event.id}`));
     }
   }
+  const notebookEntries = lessons ? findNotebookAssessments(lessons) : [];
+  const oralBlockIds = new Set(
+    notebookEntries.filter(entry => entry.type === 'oral' && entry.assessmentId).map(entry => entry.assessmentId!),
+  );
+  const oralBlockDates = new Set(
+    notebookEntries
+      .filter(entry => entry.type === 'oral')
+      .flatMap(entry => sessionDateKeys(entry.date)),
+  );
+  const hasOralBlock = (id: string, rawDate?: string) => {
+    if (!oralBlockIds.size && !oralBlockDates.size) return false;
+    if (oralBlockIds.has(id) || oralBlockIds.has(id.split(':').at(-1)!)) return true;
+    const normalized = rawDate && parseDateInput(rawDate) ? addDaysIso(rawDate, 0) : extractDateRange(rawDate).startDate;
+    return Boolean(normalized && oralBlockDates.has(normalized));
+  };
   const removed = new Set(config.removedAssessments?.[classId] ?? []);
   const dates = config.assessmentDates?.[classId] ?? {};
   const manual = config.manualAssessments?.[classId] ?? [];
@@ -56,7 +72,7 @@ export function buildSessionRemarkEntries(config: ActivitySettings, classId: str
     const id = canonical(assessment.id);
     const date = dates[id] || dates[assessment.id] || assessment.dateISO;
     if (assessment.type === 'oral' && !deleted(assessment.id)) {
-      add(date, translate('evaluations.type.oral'), `assessment:${id}`);
+      if (!hasOralBlock(id, date)) add(date, translate('evaluations.type.oral'), `assessment:${id}`);
     } else if (assessment.type === 'maison' && !deleted(assessment.id)) {
       const num = assessment.num ? String(assessment.num) : '';
       const text = num
@@ -73,7 +89,7 @@ export function buildSessionRemarkEntries(config: ActivitySettings, classId: str
     if (removed.has(legacyId)) continue;
     if (id === legacyId && Object.keys(dates).some(key => key.endsWith(`:${legacyId}`))) continue;
     if (/^s[12]-oral\d+$/.test(legacyId)) {
-      add(date, translate('evaluations.type.oral'), `assessment:${id}`);
+      if (!hasOralBlock(id, date)) add(date, translate('evaluations.type.oral'), `assessment:${id}`);
     } else if (/^s[12]-maison\d+$/.test(legacyId) || /(?:^|:)maison-?\d*/i.test(id) || /(?:^|-)maison\d*/i.test(legacyId)) {
       const numMatch = legacyId.match(/\d+$/) ?? id.match(/\d+$/);
       const num = numMatch ? numMatch[0] : '';
@@ -84,7 +100,7 @@ export function buildSessionRemarkEntries(config: ActivitySettings, classId: str
     }
   }
   // Legacy notebook-only homework stays visible in remarks after its row is hidden.
-  for (const entry of lessons ? findNotebookAssessments(lessons) : []) {
+  for (const entry of notebookEntries) {
     if (entry.type !== 'maison' || !entry.date || (entry.assessmentId && removed.has(entry.assessmentId))) continue;
     const id = entry.assessmentId ? canonical(entry.assessmentId) : undefined;
     if (id && (dates[id] || manualIds.has(id) || deleted(id))) continue;

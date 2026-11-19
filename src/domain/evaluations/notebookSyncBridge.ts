@@ -5,6 +5,15 @@ import { buildLessonRows, type LessonRow } from '../notebook/lessonRows';
 import { findItem } from '../notebook/dataUtils';
 import { produce } from 'immer';
 import { extractDateRange, extractEarliestDate } from './dateRange';
+import {
+  REMOVABLE_ASSESSMENT_BLOCK,
+  rowMatchesEventId,
+  WRITTEN_TEST_BLOCK,
+} from './evaluationIdentity';
+import {
+  removeHomeworkAssignmentFromNotebook,
+  removeRemarkActivityFromNotebook,
+} from './notebookRemarkCleanup';
 export { extractDateRange, extractEarliestDate } from './dateRange';
 export { syncNotebookToEvaluations, syncNotebookSessionToEvaluations } from './notebookReconciliation';
 
@@ -259,25 +268,20 @@ function deleteRows(lessons: LessonsData, rows: LessonRow[]) {
   }), updated: true };
 }
 
-export function removeEventFromNotebook(lessons: LessonsData, eventId: string, eventType?: string, eventTitle?: string) {
+export function removeEventFromNotebook(
+  lessons: LessonsData,
+  eventId: string,
+  eventType?: string,
+  eventTitle?: string,
+  eventDate?: string,
+) {
   const rows = buildLessonRows(lessons);
-  const exact = rows.filter(row => row.data._tempId === 'event-' + eventId);
+  const remarkRemoval = removeRemarkActivityFromNotebook(lessons, rows, eventId, eventDate);
+  if (remarkRemoval) return remarkRemoval;
+  const exact = rows.filter(row => rowMatchesEventId(row, eventId));
   const legacy = rows.filter(row => !row.data._tempId?.startsWith('event-') && row.elementType === eventType && 'title' in row.data && row.data.title === eventTitle);
   return deleteRows(lessons, exact.length ? exact : legacy.length === 1 ? legacy : []);
 }
-
-/**
- * Devoirs ÉCRITS — les seuls qui matérialisent un bloc « épreuve » daté dans
- * le cahier. L’oral et le devoir maison vivent dans la REMARQUE de leur séance
- * (annotation datée), jamais dans un bloc : le cahier reste le document du
- * cours, la feuille d’évaluations garde la gestion.
- */
-const WRITTEN_TEST_BLOCK: Partial<Record<DevoirType, TopLevelItem['type']>> = {
-  controle: 'controle_continu',
-  controle_court: 'controle_court',
-  controle_global: 'controle_global',
-  colle: 'colle',
-};
 
 /** Titres de repli d’un bloc matérialisé (quand l’appelant ne fournit pas de libellé). */
 const WRITTEN_TEST_TITLES: Record<string, Record<AppLocale, string>> = {
@@ -291,17 +295,30 @@ function assessmentRow(lessons: LessonsData, id: string, type: DevoirType, num?:
   const rows = buildLessonRows(lessons);
   const exact = rows.find(row => row.data._tempId === 'dev-block-' + id);
   if (exact) return exact;
-  if (type !== 'maison' && !WRITTEN_TEST_BLOCK[type]) return undefined;
+  if (type !== 'maison' && !REMOVABLE_ASSESSMENT_BLOCK[type]) return undefined;
   if (entryKey) return rows.find(row => row.key === entryKey && !row.data._tempId?.startsWith('dev-block-'));
   const candidates = findNotebookAssessments(lessons).filter(entry => !entry.assessmentId && entry.type === type && entry.num === num);
   return candidates.length === 1 ? rows.find(row => row.key === candidates[0].key) : undefined;
 }
 
-export function removeAssessmentFromNotebook(lessons: LessonsData, id: string, type: DevoirType, num?: number, entryKey?: string) {
-  if (type !== 'maison' && !WRITTEN_TEST_BLOCK[type]) return { lessons, updated: false };
-  const exact = buildLessonRows(lessons).filter(row => row.data._tempId === 'dev-block-' + id);
+export function removeAssessmentFromNotebook(
+  lessons: LessonsData,
+  id: string,
+  type: DevoirType,
+  num?: number,
+  entryKey?: string,
+  ownerDate?: string,
+) {
+  if (type !== 'maison' && !REMOVABLE_ASSESSMENT_BLOCK[type]) return { lessons, updated: false };
+  const rows = buildLessonRows(lessons);
+  const exact = rows.filter(row => row.data._tempId === 'dev-block-' + id);
   const legacy = exact.length ? undefined : assessmentRow(lessons, id, type, num, entryKey);
-  return deleteRows(lessons, exact.length ? exact : legacy ? [legacy] : []);
+  const afterBlockDelete = deleteRows(lessons, exact.length ? exact : legacy ? [legacy] : []);
+  if (type !== 'maison') return afterBlockDelete;
+
+  const currentRows = afterBlockDelete.updated ? buildLessonRows(afterBlockDelete.lessons) : rows;
+  const cleaned = removeHomeworkAssignmentFromNotebook(afterBlockDelete.lessons, currentRows, num, ownerDate);
+  return cleaned.updated ? cleaned : afterBlockDelete;
 }
 
 export function syncAssessmentDateToNotebook(lessons: LessonsData, assessment: {
