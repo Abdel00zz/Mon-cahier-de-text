@@ -6,7 +6,6 @@ import { useNotebookOpeningFocus } from '../../src/features/editor/hooks/useNote
 import { Toolbar } from '../../src/features/editor/Toolbar';
 import { buildSessionActivityRemarks } from '../../src/domain/evaluations/sessionActivityRemarks';
 import { translateLocaleMessage } from '../../src/i18n/messages';
-import { KindChooser } from '../../src/features/evaluations/components/KindChooser';
 import { DevoirsView } from '../../src/features/evaluations/DevoirsView';
 import { ClassEvaluationsSheet } from '../../src/features/evaluations/ClassEvaluationsSheet';
 import { UiGallery } from './UiGallery';
@@ -113,7 +112,6 @@ function Capture() {
   {screen==='classes'&&<><div className="flex items-center justify-between mb-4"><h1 className={`font-normal ${mobile ? 'text-lg' : 'text-xl'} flex items-center gap-2`} style={dashboardTitleStyle(locale)}><span>{ar?'أقسامي الدراسية :':'Mes classes :'}</span></h1><span className="text-xs text-muted-foreground">{ar?'كل شيء في مكانه':'Tout à portée de main'}</span></div><div className={mobile?'grid gap-4':'grid grid-cols-2 gap-5'}>{(params.has('palette') ? classes : classes.slice(0,mobile?3:4)).map((c,i)=><ClassCard key={c.id} classInfo={c} index={i} onSelect={noop} onConfigure={noop} onDelete={noop}/>)}</div></>}
   {screen==='editor'&&<div data-editor-root className="rounded-2xl bg-white border border-stone-200 p-4 shadow-sm"><h1 className="text-lg font-medium mb-5">{ar?'الثانية بكالوريا علوم فيزيائية 1':'2ème Bac Sciences Physiques 1'}</h1>{params.has('resume')&&<button type="button" onClick={()=>setOpening(value=>value+1)} className="min-h-11 mb-3">{ar?'فتح القسم مجدداً':'Rouvrir la classe'}</button>}{params.has('toolbar')&&<div className="editor-toolbar-row flex items-center"><div className="min-w-0 flex-1"><Toolbar searchQuery={search} setSearchQuery={setSearch} canUndo canRedo saveStatus="saved" onUndo={noop} onRedo={noop} onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop} onOpenEvaluations={noop} onPrint={noop}/></div></div>}<PreviewTable key={opening}/></div>}
   {screen==='print'&&<PrintView lessonsData={lessons} classInfo={classes[0]} config={config} contentDirection={ar?'rtl':'ltr'} newlyAddedIds={[]} preview/>}
-  {screen==='activities'&&<KindChooser onSelect={noop}/>}
   {screen==='checks'&&<DevoirsView key={evaluationClasses[0].id} classInfo={evaluationClasses[0]} config={previewConfig} onConfigChange={patch => setPreviewConfig(previous => ({...previous,...patch}))}/>}
   {screen==='class-menu'&&evaluationClasses.slice(0,2).map(classInfo => <ClassCard key={classInfo.id} classInfo={classInfo} onConfigure={noop} onSelect={noop} onDelete={noop} onOpenEvaluations={entry => setEvaluationTarget({ classInfo, entry, open: true })}/>)}
   {evaluationTarget&&<ClassEvaluationsSheet key={`${evaluationTarget.classInfo.id}-${evaluationTarget.entry}`} classInfo={evaluationTarget.classInfo} entry={evaluationTarget.entry} open={evaluationTarget.open} onOpenChange={open=>setEvaluationTarget(previous=>previous ? {...previous,open} : null)} config={previewConfig} onConfigChange={patch=>setPreviewConfig(previous=>({...previous,...patch}))}/>}

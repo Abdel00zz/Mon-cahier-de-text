@@ -32,46 +32,6 @@
     },
     {
       "kind": "fichier",
-      "file": "src/features/evaluations/components/dateCalendar.css",
-      "name": "src/features/evaluations/components/dateCalendar.css"
-    },
-    {
-      "kind": "fichier",
-      "file": "src/features/evaluations/components/eventDateCalendar.ts",
-      "name": "src/features/evaluations/components/eventDateCalendar.ts"
-    },
-    {
-      "kind": "fichier",
-      "file": "src/features/evaluations/components/EventDateModal.tsx",
-      "name": "src/features/evaluations/components/EventDateModal.tsx"
-    },
-    {
-      "kind": "fichier",
-      "file": "src/features/evaluations/components/eventDateModel.ts",
-      "name": "src/features/evaluations/components/eventDateModel.ts"
-    },
-    {
-      "kind": "export",
-      "file": "src/features/evaluations/components/KindChooser.tsx",
-      "name": "KindHeader"
-    },
-    {
-      "kind": "export",
-      "file": "src/features/evaluations/components/KindChooser.tsx",
-      "name": "ProgrammedList"
-    },
-    {
-      "kind": "export",
-      "file": "src/features/evaluations/components/KindChooser.tsx",
-      "name": "StepTrail"
-    },
-    {
-      "kind": "type",
-      "file": "src/features/evaluations/components/KindChooser.tsx",
-      "name": "ProgrammedItem"
-    },
-    {
-      "kind": "fichier",
       "file": "src/features/guide/GuideFigure.tsx",
       "name": "src/features/guide/GuideFigure.tsx"
     },
@@ -109,21 +69,6 @@
       "kind": "export",
       "file": "src/hooks/useModalHaptics.ts",
       "name": "modalHaptics"
-    },
-    {
-      "kind": "fichier",
-      "file": "src/i18n/messages/ar/dateModal.ts",
-      "name": "src/i18n/messages/ar/dateModal.ts"
-    },
-    {
-      "kind": "fichier",
-      "file": "src/i18n/messages/en/dateModal.ts",
-      "name": "src/i18n/messages/en/dateModal.ts"
-    },
-    {
-      "kind": "fichier",
-      "file": "src/i18n/messages/fr/dateModal.ts",
-      "name": "src/i18n/messages/fr/dateModal.ts"
     },
     {
       "kind": "fichier",

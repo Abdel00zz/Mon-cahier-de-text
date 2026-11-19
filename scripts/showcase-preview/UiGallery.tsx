@@ -31,10 +31,7 @@ import { CommandPalette } from '../../src/components/ui/CommandPalette';
 import { ConfirmDialog } from '../../src/components/ui/confirm-dialog';
 import { PwaInstallModal } from '../../src/features/assistant/PwaInstallModal';
 import { TeacherConversation } from '../../src/features/messages/TeacherConversation';
-import { ManualAssessmentEditor } from '../../src/features/evaluations/components/ManualAssessmentEditor';
-import { KindChooser } from '../../src/features/evaluations/components/KindChooser';
 import { ClassEvaluationsSheet } from '../../src/features/evaluations/ClassEvaluationsSheet';
-import { Modal } from '../../src/components/ui/modal';
 import { readSessionSelection } from '../../src/domain/notebook/sessionEditing';
 import { evaluationFixtures } from './evaluationFixtures';
 
@@ -87,8 +84,6 @@ export function UiGallery({ page, config, classes, lessons }: { page: string; co
         case 'delete-confirmation': view = <ConfirmDialog open onOpenChange={noop} title={isAr ? 'حذف القسم؟' : 'Supprimer la classe ?'} description={classInfo.name} onConfirm={noop}/>; break;
         case 'pwa-install': view = <PwaInstallModal open locale={config.applicationLocale ?? 'ar'} platform="android" onClose={noop} onConfirmInstalled={noop}/>; break;
         case 'teacher-conversation': view = <TeacherConversation open onClose={noop} locale={config.applicationLocale ?? 'ar'} target={classInfo} context={isAr ? 'استفسار تربوي بخصوص استعمال الزمن' : 'Précision pédagogique concernant l’emploi du temps'}/>; break;
-        case 'edit-manual-assessment': view = <Modal isOpen onClose={noop} title={isAr ? 'تعديل الفرض' : 'Modifier le devoir'} maxWidth="lg"><ManualAssessmentEditor today="2026-10-15" homeworkDate="2026-10-20" initialType="controle" cycle="lycee" onCancel={noop} onSave={noop}/></Modal>; break;
-        case 'evaluation-kind-picker': view = <Modal isOpen onClose={noop} title={isAr ? 'نوع التقييم' : 'Nature de l’évaluation'} maxWidth="xl"><KindChooser onSelect={noop}/></Modal>; break;
         case 'class-evaluations-direct': view = <ClassEvaluationsSheet open onOpenChange={noop} classInfo={classInfo} config={draft} onConfigChange={change} entry="all" lessonsData={lessons}/>; break;
         case 'evaluation-types': view = <ClassEvaluationsSheet open onOpenChange={noop} classInfo={classInfo} config={{ ...draft, ...evaluationFixtures(classInfo.id, config.applicationLocale ?? 'fr') }} onConfigChange={change} lessonsData={[]} />; break;
         default: view = <p role="alert">Écran de capture inconnu : {page}</p>;

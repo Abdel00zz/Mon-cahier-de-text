@@ -21,8 +21,6 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
                     [classId]: current.map(item => item.id === id || item.id === legacyId ? { ...item, schoolYear: item.schoolYear ?? schoolYearLabelFromDate(item.dateISO), dateISO: date } : item) } } : {}) });
         },
         addEvent: (event: PedagogicalEvent) => { if (!events.some(item => item.id === event.id)) saveEvents([...events, event]); },
-        updateEvent: (event: PedagogicalEvent) => saveEvents(events.map(item => item.id === event.id ? event : item)),
-        toggleEvent: (id: string) => saveEvents(events.map(event => event.id === id ? { ...event, status: event.status === 'done' ? 'planned' : 'done' } : event)),
         deleteEvent: (id: string) => saveEvents(events.filter(event => event.id !== id)),
         saveEventDocument: (id: string, source: string) => saveEvents(events.map(event => event.id === id ? { ...event, document: source.trim() ? { source: source.trim(), updatedAt: new Date().toISOString() } : { source: '', updatedAt: new Date().toISOString() } } : event)),
         saveAssessmentDocument(id: string, source: string, legacyId?: string) {
